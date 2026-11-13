@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="description" content="Two card-driven rivals for the original Dominant Species board game. An offline tabletop companion.">
+<title>Dominant Species · Solo Companion</title>
+<!-- FONT_LICENSES -->
+<style>/* APP_CSS */</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to game</a>
+<header class="mast">
+  <div class="wrap mast-inner">
+    <a class="brand" href="#main" aria-label="Dominant Species companion"><span class="emblem" aria-hidden="true"><i></i><i></i><i></i></span><span>Dominant Species</span></a>
+    <nav aria-label="Companion tools">
+      <button data-do="decks">Bot decks</button>
+      <button data-do="help">How to play</button>
+      <button id="menu" data-do="menu" hidden>Game menu</button>
+    </nav>
+  </div>
+</header>
+<main id="main" class="wrap" tabindex="-1"></main>
+<footer class="wrap footer">
+  <span>Unofficial solo playtest · Original GMT edition · <span id="version"></span></span>
+  <span id="save-status" role="status"></span>
+</footer>
+<dialog id="modal" aria-labelledby="modal-heading"></dialog>
+<input type="file" id="import-file" accept="application/json,.json" hidden>
+<noscript>This companion needs JavaScript. Open the downloaded HTML file in a browser.</noscript>
+<script>/* APP_JS */</script>
+</body>
+</html>

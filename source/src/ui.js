@@ -45,16 +45,40 @@ function fail(message) {
 }
 function save() {
   try {
-    if (game) localStorage.setItem(SAVE_KEY, JSON.stringify({format:SAVE_KEY,game}));
+    if (game) localStorage.setItem(SAVE_KEY, saveContents());
     else localStorage.removeItem(SAVE_KEY);
     status.textContent = game ? 'Saved on this device' : '';
   } catch {
     status.textContent = game ? 'Local saving unavailable. Use Export save.' : '';
   }
 }
+function saveContents() {
+  const supply = game.phase === 'supply' ? draft : undefined;
+  return JSON.stringify({format:SAVE_KEY,game,supply});
+}
+function readSupplyDraft(s, raw) {
+  if (s.phase !== 'supply' || !raw || typeof raw !== 'object') return {};
+  const restored = {supplyDraws:{}};
+  const entered = Object.fromEntries(ELEMENT_IDS.map(type => [type,0]));
+  for (const row of SUPPLY_ROWS) {
+    const values = Array.isArray(raw.supplyDraws?.[row]) ? raw.supplyDraws[row].slice(0,4) : [];
+    restored.supplyDraws[row] = values.map(type => {
+      if (!ELEMENT_IDS.includes(type) || entered[type] >= bagCount(s,type)) return null;
+      entered[type]++;
+      return type;
+    });
+  }
+  for (const [i,stack] of s.stacks.entries()) {
+    if (!stack.face && stack.left && LARGE_TERRAIN.includes(raw['stack-'+i])) restored['stack-'+i] = raw['stack-'+i];
+  }
+  for (const i of nextCardSlots(s)) {
+    if (DOMINANCE.includes(raw['card-'+i])) restored['card-'+i] = raw['card-'+i];
+  }
+  return restored;
+}
 function validateState(s) {
   function assert(ok) { if (!ok) throw new Error('This is not a valid Dominant Species companion save.'); }
-  if (s && s.version === '0.1.0') s.version = VERSION;
+  if (s && ['0.1.0', '0.2.0'].includes(s.version)) s.version = VERSION;
   const keys = value => value && typeof value === 'object' ? Object.keys(value) : [];
   assert(s && s.version === VERSION && ['supply','planning','execution','finished'].includes(s.phase) &&
     num(s.turn) && s.turn > 0 && num(s.rng) && s.rng <= 0xffffffff && num(s.seed) && s.seed <= 0xffffffff);
@@ -70,7 +94,7 @@ function validateState(s) {
   assert(s.ids.every(id => {
     const a = s.animals[id];
     return a && num(a.vp) && num(a.ap) && a.ap <= 10 && num(a.remaining) && a.remaining <= 10 && num(a.pool) && num(a.dead) &&
-      a.pool + a.dead + sum(occupied(s,id).map(t => s.tiles[t].cubes[id])) === 49 && Array.isArray(a.added) &&
+      a.pool + a.dead + sum(occupied(s,id).map(t => s.tiles[t].cubes[id])) === PLAYABLE_SPECIES && Array.isArray(a.added) &&
       a.added.length + ANIMALS[id].affinity <= 6 && a.added.every(type => ELEMENT_IDS.includes(type)) && a.ward &&
       keys(a.ward).every(tile => s.tiles[tile] && num(a.ward[tile]) && a.ward[tile] <= s.tiles[tile].cubes[id]);
   }));
@@ -114,7 +138,11 @@ function validPending(s, step) {
 function restore() {
   try {
     const raw = localStorage.getItem(SAVE_KEY);
-    if (raw) game = validateState(JSON.parse(raw).game);
+    if (raw) {
+      const save = JSON.parse(raw);
+      game = validateState(save.game);
+      draft = readSupplyDraft(game,save.supply);
+    }
     if (game) activeTile = game.tiles.D3 ? 'D3' : terrainIds(game)[0];
   } catch (err) {
     if (err.name !== 'SecurityError') initialError = 'The local save could not be opened. Import a previously exported save from the setup screen.';
@@ -254,22 +282,37 @@ function showSupply() {
   const eligible = DOMINANCE.filter(card => !game.market.includes(card) && !game.usedCards.includes(card) &&
     (!game.short || !SHORT_EXCLUDES.includes(card)) && (card !== 'Ice Age' || finalDraw));
   const cards = emptyCardSlots.map(i => field('Card space ' + (i+1),select('card-'+i,eligible))).join('');
-  const bagRemaining = sum(ELEMENT_IDS.map(type=>bagCount(game,type)));
-  const draws = ['adaptation','abundance','wanderlust'].map(row => '<fieldset><legend>' + ROW_BY_ID[row].name + ' draws</legend><div class="draw-row">' +
-    Array.from({length:4},(_,i) => '<label><span class="sr-only">' + ROW_BY_ID[row].name + ' disk ' + (i+1) + '</span>' +
-      select(row+'-'+i,E(ELEMENT_IDS.filter(type=>bagCount(game,type)>0)),bagRemaining>=12,bagRemaining<12?'Empty or choose…':null) +
-      '</label>').join('') + '</div></fieldset>').join('');
+  const draws = SUPPLY_ROWS.map(supplyRow).join('');
   const stackList = game.stacks.flatMap((x,i) => x.left && !x.face ?
     [field('Wanderlust stack ' + (i+1),select('stack-'+i,LARGE_TERRAIN.map(t=>[t,terrainName(t)])))] : []).join('');
   const instruction = game.turn === 1 ?
-    'Set up the physical board for the three animals. Match the center to the Earth map with Wetland at the top. Then enter your face-up supply.' :
+    'For each animal, set out six action pawns and 50 cubes. Use one cube to mark VP, put four on the map and leave 45 in the gene pool. Match the Earth map with Wetland at the top.' :
     'Slide the physical action display as usual. Refill the three draw rows, turn up any face-down tile stacks, and fill the open card spaces.';
   return '<div class="block-head"><h2 id="turn-focus" tabindex="-1">Enter board draws</h2><span class="phase-badge">' + (game.turn === 1 ? 'Setup' : 'Reseed') +
     '</span></div><p class="instruction">' + instruction + '</p>' +
     (game.turn === 1 ? '<p class="lead">' + (game.short ? 'For the 22-card game, set aside Immigrants, Intelligence, Omnivore and Parasitism. ' : '') +
       'Put Ice Age at the bottom of the deck.</p>' : '') +
-    form(draws + (stackList ? '<div class="fields three">' + stackList + '</div>' : '') +
+    form('<p class="draw-instruction">Tap the element colors in the order you place the disks.</p>' + draws + (stackList ? '<div class="fields three">' + stackList + '</div>' : '') +
       (cards ? '<div class="fields two">' + cards + '</div>' : ''),'supply','Begin Planning');
+}
+const SUPPLY_ROWS = ['adaptation','abundance','wanderlust'];
+const supplyEntries = () => draft.supplyDraws ?? {};
+function supplyRow(row) {
+  const label = ROW_BY_ID[row].name;
+  const selected = supplyEntries()[row] ?? [];
+  const entered = Object.values(supplyEntries()).flat();
+  const filled = selected.filter(Boolean).length;
+  return '<fieldset class="draw-field"><legend>' + label + ' draws <span>' + filled + ' / 4</span></legend>' +
+    '<div class="draw-choices">' + ELEMENT_IDS.map(type =>
+      button(elementName(type),'add-disk','disk-pick','data-row="' + row + '" data-element="' + type + '" style="--disk:' +
+        ELEMENTS[type].color + '" aria-label="Add ' + elementName(type) + ' to ' + label + '"' +
+        enable(filled < 4 && count(entered,type) < bagCount(game,type)))).join('') + '</div>' +
+    '<div class="draw-order" aria-label="' + label + ' entered disks">' + Array.from({length:4},(_,i) => {
+      const type = selected[i];
+      if (!type) return '<span class="empty-disk" aria-hidden="true">–</span>';
+      return button(ELEMENTS[type].mark,'remove-disk','disk-remove','data-row="' + row + '" data-index="' + i +
+        '" style="--disk:' + ELEMENTS[type].color + '" aria-label="Remove ' + elementName(type) + ' from ' + label + ' slot ' + (i+1) + '"');
+    }).join('') + '</div></fieldset>';
 }
 function drawPanel() {
   const planner = currentPlanner(game);

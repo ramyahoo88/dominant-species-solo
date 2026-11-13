@@ -36,7 +36,7 @@ function newGame(human, rivals, short, seed) {
     animals: {}, decks: {}, log: [],
   };
   for (const id of ids) {
-    s.animals[id] = { added:[], pool:45, dead:0, vp:0, ap:6, remaining:0, ward:{} };
+    s.animals[id] = { added:[], pool:PLAYABLE_SPECIES - sum(Object.values(INITIAL_CUBES[id])), dead:0, vp:0, ap:STARTING_PAWNS, remaining:0, ward:{} };
     if (isBot(s, id)) s.decks[id] = { queue:shuffle(s, DECKS[id].map((_, i) => i)), discards:[] };
   }
   for (const [id, terrain] of Object.entries(INITIAL_TILES)) {

@@ -312,8 +312,15 @@ input[type=number]{max-width:90px;width:100%}
 .fields.three{grid-template-columns:repeat(3,minmax(0,1fr))}
 .fields .wide{grid-column:1/-1}
 .form-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.draw-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-bottom:11px}
-.draw-row select{padding-inline:5px}
+.draw-instruction{margin:0 0 11px;color:var(--muted);font-size:13px}
+.draw-field{margin-bottom:13px}
+.draw-field legend span{color:var(--muted);font-weight:400;margin-left:7px}
+.draw-choices,.draw-order{display:grid;gap:5px}
+.draw-choices{grid-template-columns:repeat(3,minmax(0,1fr))}
+.draw-order{grid-template-columns:repeat(4,44px);margin-top:6px}
+.button.disk-pick,.button.disk-remove{min-height:44px;background:var(--disk);border-color:#7f8c7e;padding:6px 4px;color:#24352d;font-size:13px}
+.button.disk-pick:hover,.button.disk-remove:hover{filter:brightness(.95)}
+.empty-disk{display:grid;place-items:center;min-height:44px;border:1px dashed #bdccc0;border-radius:8px;color:var(--muted)}
 .choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
 .checked{display:flex;gap:8px;align-items:center;padding:6px 8px;border:1px solid var(--line);border-radius:7px}
 .checked input{flex-shrink:0}
@@ -438,8 +445,12 @@ dialog::backdrop{background:#132d2c88}
 <noscript>This companion needs JavaScript. Open the downloaded HTML file in a browser.</noscript>
 <script>'use strict';
 
-const VERSION = '0.2.0';
+const VERSION = '0.3.0';
 const SAVE_KEY = 'dominant-species-solo-v1';
+// GMT rules p. 4: of the 50 gathered cubes, one marks VP.
+const THREE_PLAYER_CUBES = 50;
+const PLAYABLE_SPECIES = THREE_PLAYER_CUBES - 1;
+const STARTING_PAWNS = 6;
 const RULEBOOK = 'https://www.gmtgames.com/living_rules/DS3_Rulebook-web_FINAL.pdf';
 const PHOTO = 'https://commons.wikimedia.org/wiki/File:Portage_Glacier_USGS.jpg';
 const ANIMALS = {
@@ -670,7 +681,7 @@ function newGame(human, rivals, short, seed) {
     animals: {}, decks: {}, log: [],
   };
   for (const id of ids) {
-    s.animals[id] = { added:[], pool:45, dead:0, vp:0, ap:6, remaining:0, ward:{} };
+    s.animals[id] = { added:[], pool:PLAYABLE_SPECIES - sum(Object.values(INITIAL_CUBES[id])), dead:0, vp:0, ap:STARTING_PAWNS, remaining:0, ward:{} };
     if (isBot(s, id)) s.decks[id] = { queue:shuffle(s, DECKS[id].map((_, i) => i)), discards:[] };
   }
   for (const [id, terrain] of Object.entries(INITIAL_TILES)) {
@@ -1070,7 +1081,7 @@ const FALLBACK = ['domination','speciation','adaptation','abundance','competitio
 
 function threatScore(s, id) {
   const a = s.animals[id];
-  return a.vp + (49 - a.pool - a.dead) * 1.1 + a.added.length * 2.5 + (a.ap - 6) * 5;
+  return a.vp + (PLAYABLE_SPECIES - a.pool - a.dead) * 1.1 + a.added.length * 2.5 + (a.ap - STARTING_PAWNS) * 5;
 }
 function context(s, actor, focus = 'majority') {
   const order = s.ids.filter(id => id !== actor).sort((a,b) => threatScore(s,b) - threatScore(s,a) || rank(a) - rank(b));
@@ -1118,12 +1129,11 @@ function delta(s, ids, ctx, change, revert) {
   return gain;
 }
 function cornerGain(s, key, type, ctx) {
-  const was = s.corners[key];
-  return delta(s, CORNER_TILES[key], ctx, () => {
-    if (type) s.corners[key] = type; else delete s.corners[key];
-  }, () => {
-    if (was) s.corners[key] = was; else delete s.corners[key];
-  });
+  const corners = {...s.corners};
+  if (type) corners[key] = type;
+  else delete corners[key];
+  const after = {...s,corners};
+  return sum(CORNER_TILES[key].map(id => utility(after,id,ctx) - utility(s,id,ctx)));
 }
 function changeCubes(s, tile, actor, n, ctx) {
   const cubes = s.tiles[tile].cubes;
@@ -1133,18 +1143,38 @@ function changeElements(s, actor, additions, ctx) {
   const before = s.animals[actor].added;
   return delta(s,occupied(s,actor),ctx,() => { s.animals[actor].added = additions; },() => { s.animals[actor].added = before; });
 }
+function wastelandRemoval(s, pick) {
+  const type = s.boxes.wasteland[pick];
+  const keepsType = type && count(s.boxes.wasteland,type) === 1;
+  return wastelandDisks(s).filter(key => !keepsType || s.corners[key] !== type);
+}
+function withWastelandLosses(s, disks, fn) {
+  if (!disks.length) return fn();
+  const original = s.corners;
+  s.corners = {...original};
+  for (const key of disks) delete s.corners[key];
+  try { return fn(); }
+  finally { s.corners = original; }
+}
+function wastelandProtection(s, ctx) {
+  const disks = wastelandDisks(s);
+  if (!disks.length) return null;
+  const tiles = unique(disks.flatMap(key => CORNER_TILES[key]));
+  const candidates = s.boxes.wasteland.flatMap((type,pick) => type ? [{pick,type}] : []);
+  const before = withWastelandLosses(s,disks,() => sum(tiles.map(id => utility(s,id,ctx))));
+  return choiceBest(candidates.map(({pick,type}) => {
+    const value = withWastelandLosses(s,wastelandRemoval(s,pick),() => sum(tiles.map(id => utility(s,id,ctx)))) - before;
+    return {pick,value,label:'Remove one ' + elementName(type) + ' disk from the Wasteland box.'};
+  }));
+}
 function doomedWastelandCorners(s) {
   if (s.phase === 'execution' && s.cursor > EXECUTION.indexOf('!wasteland')) return [];
-  const canSaveOne = !!s.pawns['wasteland-0'];
-  return wastelandDisks(s).filter(key => !canSaveOne || count(s.boxes.wasteland, s.corners[key]) > 1);
+  const pawn = s.pawns['wasteland-0'];
+  const protection = pawn && wastelandProtection(s,context(s,pawn.actor,pawn.focus || 'majority'));
+  return wastelandRemoval(s, protection?.value > .04 ? protection.pick : null);
 }
 function withPostWasteland(s, fn) {
-  const doomed = doomedWastelandCorners(s);
-  if (!doomed.length) return fn();
-  const saved = doomed.map(key => [key, s.corners[key]]);
-  for (const [key] of saved) delete s.corners[key];
-  try { return fn(); }
-  finally { for (const [key, type] of saved) s.corners[key] = type; }
+  return withWastelandLosses(s,doomedWastelandCorners(s),fn);
 }
 function postRegressionGain(s, actor, type, ctx) {
   const added = [...s.animals[actor].added, type];
@@ -1173,8 +1203,7 @@ function placementTargets(s, row, index, actor) {
   if (row === 'domination') return terrainIds(s).filter(id => !s.scored.includes(id) && s.ids.some(a => s.tiles[id].cubes[a]));
   return [];
 }
-function chooseSpeciation(s, key, ctx, quick = false) {
-  let available = s.animals[ctx.actor].pool;
+function chooseSpeciation(s, key, ctx, quick = false, available = s.animals[ctx.actor].pool) {
   const cost = quick ? .18 : (available > 10 ? .03 : .09);
   const candidates = CORNER_TILES[key].filter(id => s.tiles[id]).map(tile => {
     const options = Array.from({length:TERRAIN[s.tiles[tile].terrain].cap},(_,i) => {
@@ -1192,6 +1221,31 @@ function chooseSpeciation(s, key, ctx, quick = false) {
     if (best?.value > 0) { add[t.tile] = best.n; available -= best.n; value += best.value; }
   }
   return {corner:key,add,value,label:addLabel(s,add)};
+}
+function speciationPlanValue(s, actor, slots, focus) {
+  return withPostWasteland(s,() => {
+    let available = s.animals[actor].pool;
+    const cubesAdded = [];
+    let value = 0;
+    try {
+      for (const slot of slots) {
+        if (!available) break;
+        const ctx = context(s,actor,s.pawns[slot]?.focus || focus);
+        const {index} = splitSlot(slot);
+        const best = choiceBest(placementTargets(s,'speciation',index,actor).map(key => chooseSpeciation(s,key,ctx,true,available)));
+        if (!best) continue;
+        for (const [id,n] of Object.entries(best.add)) {
+          s.tiles[id].cubes[actor] += n;
+          available -= n;
+          cubesAdded.push([id,n]);
+        }
+        value += best.value;
+      }
+    } finally {
+      for (const [id,n] of cubesAdded) s.tiles[id].cubes[actor] -= n;
+    }
+    return value;
+  });
 }
 function addLabel(s, add) {
   const list = Object.entries(add).filter(([,n]) => n).map(([tile,n]) => n + ' cube' + (n === 1 ? '' : 's') + ' to ' + tileLabel(s,tile));
@@ -1346,9 +1400,7 @@ function choosePawnTarget(s, step, quick = false) {
       break;
     }
     case 'wasteland': {
-      const disks = wastelandDisks(s);
-      best = max(s.boxes.wasteland.flatMap((type,pick) => type ? [{pick,value:count(s.boxes.wasteland,type) > 1 ? 0 : -sum(disks.filter(key => s.corners[key] === type).map(key => cornerGain(s,key,null,ctx))),
-        label:'Remove one ' + elementName(type) + ' disk from the Wasteland box.'}] : []));
+      best = wastelandProtection(s,ctx);
       break;
     }
     case 'depletion': {
@@ -1465,14 +1517,42 @@ function fastValue(s, actor, row, index, focus, cache) {
   }
   if (row === 'adaptation') {
     if (s.boxes.adaptation.filter(Boolean).length <= earlierInRow) return 0;
+    const earlierOwn = ROW_BY_ID.adaptation.slots.slice(0,index).filter(k => s.pawns[k]?.actor === actor).length;
+    if (s.animals[actor].added.length + ANIMALS[actor].affinity + earlierOwn >= 6) return 0;
     if (!cache.has('adaptation')) cache.set('adaptation', choosePawnTarget(s,{row,index:0,actor,focus},true).value || 0);
     return cache.get('adaptation');
+  }
+  if (row === 'speciation') {
+    if (!s.animals[actor].pool) return 0;
+    const slots = ROW_BY_ID.speciation.slots;
+    const own = slots.filter(key => s.pawns[key]?.actor === actor);
+    if (own.length) {
+      if (!cache.has('committedSpeciation')) cache.set('committedSpeciation',speciationPlanValue(s,actor,own,focus));
+      const proposed = slots.filter((key,i) => i === index || own.includes(key));
+      return Math.max(0,speciationPlanValue(s,actor,proposed,focus) - cache.get('committedSpeciation'));
+    }
   }
   const key = ['competition','speciation','domination'].includes(row) ? row + index : row;
   if (cache.has(key)) return cache.get(key);
   const value = choosePawnTarget(s,{row,index,actor,focus},true).value || 0;
   cache.set(key,value);
   return value;
+}
+function blockRival(s, actor, slots) {
+  const rival = s.ids.filter(id => id !== actor && s.animals[id].remaining > 0)
+    .sort((a,b) => threatScore(s,b) - threatScore(s,a) || rank(a) - rank(b))[0];
+  if (!rival) return null;
+  const cache = new Map();
+  const scored = slots.map(plan => {
+    const {row,index} = splitSlot(plan.slot);
+    return {plan,row,opportunity:fastValue(s,rival,row,index,'majority',cache)};
+  });
+  const best = choiceBest(scored.map(({plan,row,opportunity}) => {
+    const substitute = Math.max(0,...scored.filter(other => other.plan !== plan && other.row === row).map(other => other.opportunity));
+    return {plan,value:Math.min(5,opportunity) + Math.min(5,opportunity - substitute)};
+  }));
+  if (!best || best.value <= .12) return null;
+  return {...best.plan,blockedRival:rival,reason:'Deny ' + nameOf(rival) + ' this useful ' + ROW_BY_ID[best.plan.row].name + ' space.'};
 }
 function dominanceSetup(s, actor) {
   return withPostWasteland(s, () => {
@@ -1569,11 +1649,16 @@ function planPlacement(s, actor, cardIndex, override, duringExecution = false) {
       value += .65;
     }
     if (followUp && opportunity > .12) value += 1.25;
-    return {slot:key,value, row, priority, focus, card:cardIndex, face:positive,
+    return {slot:key,value, row, priority, focus, card:cardIndex, face:positive,opportunity,
       reason:followUp && opportunity > .12 ? followUp : priority >= 0 && opportunity > .12 ? 'The ' + (positive ? 'primary' : 'reverse') + ' face favors ' + ROW_BY_ID[row].name + ' here.' :
         opportunity > .12 ? 'The current board favors this fallback.' : 'Place in an open space.'};
   });
-  return choiceBest(slots);
+  const fallback = choiceBest(slots);
+  if (!duringExecution && fallback && fallback.opportunity <= 1 && fallback.value < .25) {
+    const denial = blockRival(s,actor,slots);
+    if (denial && (fallback.opportunity <= .12 || denial.slot !== fallback.slot)) return denial;
+  }
+  return fallback;
 }
 function botPlacement(s) {
   const actor = currentPlanner(s).actor;
@@ -2029,16 +2114,40 @@ function fail(message) {
 }
 function save() {
   try {
-    if (game) localStorage.setItem(SAVE_KEY, JSON.stringify({format:SAVE_KEY,game}));
+    if (game) localStorage.setItem(SAVE_KEY, saveContents());
     else localStorage.removeItem(SAVE_KEY);
     status.textContent = game ? 'Saved on this device' : '';
   } catch {
     status.textContent = game ? 'Local saving unavailable. Use Export save.' : '';
   }
 }
+function saveContents() {
+  const supply = game.phase === 'supply' ? draft : undefined;
+  return JSON.stringify({format:SAVE_KEY,game,supply});
+}
+function readSupplyDraft(s, raw) {
+  if (s.phase !== 'supply' || !raw || typeof raw !== 'object') return {};
+  const restored = {supplyDraws:{}};
+  const entered = Object.fromEntries(ELEMENT_IDS.map(type => [type,0]));
+  for (const row of SUPPLY_ROWS) {
+    const values = Array.isArray(raw.supplyDraws?.[row]) ? raw.supplyDraws[row].slice(0,4) : [];
+    restored.supplyDraws[row] = values.map(type => {
+      if (!ELEMENT_IDS.includes(type) || entered[type] >= bagCount(s,type)) return null;
+      entered[type]++;
+      return type;
+    });
+  }
+  for (const [i,stack] of s.stacks.entries()) {
+    if (!stack.face && stack.left && LARGE_TERRAIN.includes(raw['stack-'+i])) restored['stack-'+i] = raw['stack-'+i];
+  }
+  for (const i of nextCardSlots(s)) {
+    if (DOMINANCE.includes(raw['card-'+i])) restored['card-'+i] = raw['card-'+i];
+  }
+  return restored;
+}
 function validateState(s) {
   function assert(ok) { if (!ok) throw new Error('This is not a valid Dominant Species companion save.'); }
-  if (s && s.version === '0.1.0') s.version = VERSION;
+  if (s && ['0.1.0', '0.2.0'].includes(s.version)) s.version = VERSION;
   const keys = value => value && typeof value === 'object' ? Object.keys(value) : [];
   assert(s && s.version === VERSION && ['supply','planning','execution','finished'].includes(s.phase) &&
     num(s.turn) && s.turn > 0 && num(s.rng) && s.rng <= 0xffffffff && num(s.seed) && s.seed <= 0xffffffff);
@@ -2054,7 +2163,7 @@ function validateState(s) {
   assert(s.ids.every(id => {
     const a = s.animals[id];
     return a && num(a.vp) && num(a.ap) && a.ap <= 10 && num(a.remaining) && a.remaining <= 10 && num(a.pool) && num(a.dead) &&
-      a.pool + a.dead + sum(occupied(s,id).map(t => s.tiles[t].cubes[id])) === 49 && Array.isArray(a.added) &&
+      a.pool + a.dead + sum(occupied(s,id).map(t => s.tiles[t].cubes[id])) === PLAYABLE_SPECIES && Array.isArray(a.added) &&
       a.added.length + ANIMALS[id].affinity <= 6 && a.added.every(type => ELEMENT_IDS.includes(type)) && a.ward &&
       keys(a.ward).every(tile => s.tiles[tile] && num(a.ward[tile]) && a.ward[tile] <= s.tiles[tile].cubes[id]);
   }));
@@ -2098,7 +2207,11 @@ function validPending(s, step) {
 function restore() {
   try {
     const raw = localStorage.getItem(SAVE_KEY);
-    if (raw) game = validateState(JSON.parse(raw).game);
+    if (raw) {
+      const save = JSON.parse(raw);
+      game = validateState(save.game);
+      draft = readSupplyDraft(game,save.supply);
+    }
     if (game) activeTile = game.tiles.D3 ? 'D3' : terrainIds(game)[0];
   } catch (err) {
     if (err.name !== 'SecurityError') initialError = 'The local save could not be opened. Import a previously exported save from the setup screen.';
@@ -2238,22 +2351,37 @@ function showSupply() {
   const eligible = DOMINANCE.filter(card => !game.market.includes(card) && !game.usedCards.includes(card) &&
     (!game.short || !SHORT_EXCLUDES.includes(card)) && (card !== 'Ice Age' || finalDraw));
   const cards = emptyCardSlots.map(i => field('Card space ' + (i+1),select('card-'+i,eligible))).join('');
-  const bagRemaining = sum(ELEMENT_IDS.map(type=>bagCount(game,type)));
-  const draws = ['adaptation','abundance','wanderlust'].map(row => '<fieldset><legend>' + ROW_BY_ID[row].name + ' draws</legend><div class="draw-row">' +
-    Array.from({length:4},(_,i) => '<label><span class="sr-only">' + ROW_BY_ID[row].name + ' disk ' + (i+1) + '</span>' +
-      select(row+'-'+i,E(ELEMENT_IDS.filter(type=>bagCount(game,type)>0)),bagRemaining>=12,bagRemaining<12?'Empty or choose…':null) +
-      '</label>').join('') + '</div></fieldset>').join('');
+  const draws = SUPPLY_ROWS.map(supplyRow).join('');
   const stackList = game.stacks.flatMap((x,i) => x.left && !x.face ?
     [field('Wanderlust stack ' + (i+1),select('stack-'+i,LARGE_TERRAIN.map(t=>[t,terrainName(t)])))] : []).join('');
   const instruction = game.turn === 1 ?
-    'Set up the physical board for the three animals. Match the center to the Earth map with Wetland at the top. Then enter your face-up supply.' :
+    'For each animal, set out six action pawns and 50 cubes. Use one cube to mark VP, put four on the map and leave 45 in the gene pool. Match the Earth map with Wetland at the top.' :
     'Slide the physical action display as usual. Refill the three draw rows, turn up any face-down tile stacks, and fill the open card spaces.';
   return '<div class="block-head"><h2 id="turn-focus" tabindex="-1">Enter board draws</h2><span class="phase-badge">' + (game.turn === 1 ? 'Setup' : 'Reseed') +
     '</span></div><p class="instruction">' + instruction + '</p>' +
     (game.turn === 1 ? '<p class="lead">' + (game.short ? 'For the 22-card game, set aside Immigrants, Intelligence, Omnivore and Parasitism. ' : '') +
       'Put Ice Age at the bottom of the deck.</p>' : '') +
-    form(draws + (stackList ? '<div class="fields three">' + stackList + '</div>' : '') +
+    form('<p class="draw-instruction">Tap the element colors in the order you place the disks.</p>' + draws + (stackList ? '<div class="fields three">' + stackList + '</div>' : '') +
       (cards ? '<div class="fields two">' + cards + '</div>' : ''),'supply','Begin Planning');
+}
+const SUPPLY_ROWS = ['adaptation','abundance','wanderlust'];
+const supplyEntries = () => draft.supplyDraws ?? {};
+function supplyRow(row) {
+  const label = ROW_BY_ID[row].name;
+  const selected = supplyEntries()[row] ?? [];
+  const entered = Object.values(supplyEntries()).flat();
+  const filled = selected.filter(Boolean).length;
+  return '<fieldset class="draw-field"><legend>' + label + ' draws <span>' + filled + ' / 4</span></legend>' +
+    '<div class="draw-choices">' + ELEMENT_IDS.map(type =>
+      button(elementName(type),'add-disk','disk-pick','data-row="' + row + '" data-element="' + type + '" style="--disk:' +
+        ELEMENTS[type].color + '" aria-label="Add ' + elementName(type) + ' to ' + label + '"' +
+        enable(filled < 4 && count(entered,type) < bagCount(game,type)))).join('') + '</div>' +
+    '<div class="draw-order" aria-label="' + label + ' entered disks">' + Array.from({length:4},(_,i) => {
+      const type = selected[i];
+      if (!type) return '<span class="empty-disk" aria-hidden="true">–</span>';
+      return button(ELEMENTS[type].mark,'remove-disk','disk-remove','data-row="' + row + '" data-index="' + i +
+        '" style="--disk:' + ELEMENTS[type].color + '" aria-label="Remove ' + elementName(type) + ' from ' + label + ' slot ' + (i+1) + '"');
+    }).join('') + '</div></fieldset>';
 }
 function drawPanel() {
   const planner = currentPlanner(game);
@@ -2762,6 +2890,7 @@ function hydrateFields() {
 function capture(input) {
   if (!input.name || !input.form?.classList.contains('turn-form')) return;
   draft[input.name] = input.type === 'checkbox' ? input.checked : input.value;
+  if (game?.phase === 'supply' && input.form.dataset.form === 'supply') save();
 }
 function clearDraft(prefixes) {
   for (const key of Object.keys(draft)) if (prefixes.some(prefix=>key.startsWith(prefix))) delete draft[key];
@@ -2812,7 +2941,7 @@ main.addEventListener('submit',event => {
       save(); render(true);
     }
     if (form.dataset.form === 'supply') {
-      const draws = Object.fromEntries(['adaptation','abundance','wanderlust'].map(row=>[row,Array.from({length:4},(_,i)=>values.get(row+'-'+i) || null)]));
+      const draws = Object.fromEntries(SUPPLY_ROWS.map(row=>[row,Array.from({length:4},(_,i)=>supplyEntries()[row]?.[i] ?? null)]));
       const stacks = game.stacks.map((x,i)=>x.face || values.get('stack-'+i) || null);
       const market = game.market.map((x,i)=>x || values.get('card-'+i) || null);
       edit(s=>enterSupply(s,{...draws,stacks,market}));
@@ -2875,6 +3004,24 @@ function addMove() {
   notice=''; render(false);
   main.querySelector('select[name="origin"]')?.focus({preventScroll:true});
 }
+function editSupplyDisks(button) {
+  const {row, element, index, do: action} = button.dataset;
+  if (game.phase !== 'supply' || !SUPPLY_ROWS.includes(row)) return;
+  const entries = draft.supplyDraws ??= {};
+  const disks = entries[row] ??= [];
+  if (action === 'remove-disk') disks[Number(index)] = null;
+  else if (ELEMENT_IDS.includes(element) && count(Object.values(entries).flat(),element) < bagCount(game,element)) {
+    const slot = [0,1,2,3].find(i => !disks[i]);
+    if (slot !== undefined) disks[slot] = element;
+  }
+  notice = '';
+  save();
+  render(false);
+  const same = main.querySelector('[data-row="' + row + '"][data-element="' + (element ?? '') + '"]:not(:disabled)');
+  const next = main.querySelector('[data-row="' + row + '"][data-do="add-disk"]:not(:disabled)') ??
+    main.querySelector('[data-row="' + row + '"][data-do="remove-disk"]');
+  (same ?? next)?.focus({preventScroll:true});
+}
 function openModal(kind) {
   modalKind=kind;
   renderModal();
@@ -2906,7 +3053,7 @@ function renderModal() {
 }
 function exportSave() {
   if (!game) return;
-  const body=JSON.stringify({format:SAVE_KEY,game},null,2);
+  const body=saveContents();
   const url=URL.createObjectURL(new Blob([body],{type:'application/json'}));
   const a=document.createElement('a');
   a.href=url; a.download='Dominant_Species_Turn_'+game.turn+'.json';
@@ -2921,7 +3068,7 @@ async function importSave(file) {
     if (parsed.format !== SAVE_KEY) throw new Error('Choose a save exported by this companion.');
     const loaded=validateState(parsed.game);
     if (game) undo=[copy(game)]; else undo=[];
-    game=loaded; activeTile='D3'; reveal=null; preview=null; draft={}; notice=''; initialError='';
+    game=loaded; activeTile='D3'; reveal=null; preview=null; draft=readSupplyDraft(loaded,parsed.supply); notice=''; initialError='';
     if (modal.open) modal.close();
     save(); render(true);
   } catch (err) {
@@ -2988,6 +3135,7 @@ document.addEventListener('click',event => {
         }
         break;
       case 'add-move': addMove(); break;
+      case 'add-disk': case 'remove-disk': editSupplyDisks(btn); break;
       case 'remove-move':
         draft.moves.splice(Number(btn.dataset.index),1); render(false); break;
     }

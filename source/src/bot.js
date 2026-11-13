@@ -3,7 +3,7 @@ const FALLBACK = ['domination','speciation','adaptation','abundance','competitio
 
 function threatScore(s, id) {
   const a = s.animals[id];
-  return a.vp + (49 - a.pool - a.dead) * 1.1 + a.added.length * 2.5 + (a.ap - 6) * 5;
+  return a.vp + (PLAYABLE_SPECIES - a.pool - a.dead) * 1.1 + a.added.length * 2.5 + (a.ap - STARTING_PAWNS) * 5;
 }
 function context(s, actor, focus = 'majority') {
   const order = s.ids.filter(id => id !== actor).sort((a,b) => threatScore(s,b) - threatScore(s,a) || rank(a) - rank(b));
@@ -51,12 +51,11 @@ function delta(s, ids, ctx, change, revert) {
   return gain;
 }
 function cornerGain(s, key, type, ctx) {
-  const was = s.corners[key];
-  return delta(s, CORNER_TILES[key], ctx, () => {
-    if (type) s.corners[key] = type; else delete s.corners[key];
-  }, () => {
-    if (was) s.corners[key] = was; else delete s.corners[key];
-  });
+  const corners = {...s.corners};
+  if (type) corners[key] = type;
+  else delete corners[key];
+  const after = {...s,corners};
+  return sum(CORNER_TILES[key].map(id => utility(after,id,ctx) - utility(s,id,ctx)));
 }
 function changeCubes(s, tile, actor, n, ctx) {
   const cubes = s.tiles[tile].cubes;
@@ -66,18 +65,38 @@ function changeElements(s, actor, additions, ctx) {
   const before = s.animals[actor].added;
   return delta(s,occupied(s,actor),ctx,() => { s.animals[actor].added = additions; },() => { s.animals[actor].added = before; });
 }
+function wastelandRemoval(s, pick) {
+  const type = s.boxes.wasteland[pick];
+  const keepsType = type && count(s.boxes.wasteland,type) === 1;
+  return wastelandDisks(s).filter(key => !keepsType || s.corners[key] !== type);
+}
+function withWastelandLosses(s, disks, fn) {
+  if (!disks.length) return fn();
+  const original = s.corners;
+  s.corners = {...original};
+  for (const key of disks) delete s.corners[key];
+  try { return fn(); }
+  finally { s.corners = original; }
+}
+function wastelandProtection(s, ctx) {
+  const disks = wastelandDisks(s);
+  if (!disks.length) return null;
+  const tiles = unique(disks.flatMap(key => CORNER_TILES[key]));
+  const candidates = s.boxes.wasteland.flatMap((type,pick) => type ? [{pick,type}] : []);
+  const before = withWastelandLosses(s,disks,() => sum(tiles.map(id => utility(s,id,ctx))));
+  return choiceBest(candidates.map(({pick,type}) => {
+    const value = withWastelandLosses(s,wastelandRemoval(s,pick),() => sum(tiles.map(id => utility(s,id,ctx)))) - before;
+    return {pick,value,label:'Remove one ' + elementName(type) + ' disk from the Wasteland box.'};
+  }));
+}
 function doomedWastelandCorners(s) {
   if (s.phase === 'execution' && s.cursor > EXECUTION.indexOf('!wasteland')) return [];
-  const canSaveOne = !!s.pawns['wasteland-0'];
-  return wastelandDisks(s).filter(key => !canSaveOne || count(s.boxes.wasteland, s.corners[key]) > 1);
+  const pawn = s.pawns['wasteland-0'];
+  const protection = pawn && wastelandProtection(s,context(s,pawn.actor,pawn.focus || 'majority'));
+  return wastelandRemoval(s, protection?.value > .04 ? protection.pick : null);
 }
 function withPostWasteland(s, fn) {
-  const doomed = doomedWastelandCorners(s);
-  if (!doomed.length) return fn();
-  const saved = doomed.map(key => [key, s.corners[key]]);
-  for (const [key] of saved) delete s.corners[key];
-  try { return fn(); }
-  finally { for (const [key, type] of saved) s.corners[key] = type; }
+  return withWastelandLosses(s,doomedWastelandCorners(s),fn);
 }
 function postRegressionGain(s, actor, type, ctx) {
   const added = [...s.animals[actor].added, type];
@@ -106,8 +125,7 @@ function placementTargets(s, row, index, actor) {
   if (row === 'domination') return terrainIds(s).filter(id => !s.scored.includes(id) && s.ids.some(a => s.tiles[id].cubes[a]));
   return [];
 }
-function chooseSpeciation(s, key, ctx, quick = false) {
-  let available = s.animals[ctx.actor].pool;
+function chooseSpeciation(s, key, ctx, quick = false, available = s.animals[ctx.actor].pool) {
   const cost = quick ? .18 : (available > 10 ? .03 : .09);
   const candidates = CORNER_TILES[key].filter(id => s.tiles[id]).map(tile => {
     const options = Array.from({length:TERRAIN[s.tiles[tile].terrain].cap},(_,i) => {
@@ -125,6 +143,31 @@ function chooseSpeciation(s, key, ctx, quick = false) {
     if (best?.value > 0) { add[t.tile] = best.n; available -= best.n; value += best.value; }
   }
   return {corner:key,add,value,label:addLabel(s,add)};
+}
+function speciationPlanValue(s, actor, slots, focus) {
+  return withPostWasteland(s,() => {
+    let available = s.animals[actor].pool;
+    const cubesAdded = [];
+    let value = 0;
+    try {
+      for (const slot of slots) {
+        if (!available) break;
+        const ctx = context(s,actor,s.pawns[slot]?.focus || focus);
+        const {index} = splitSlot(slot);
+        const best = choiceBest(placementTargets(s,'speciation',index,actor).map(key => chooseSpeciation(s,key,ctx,true,available)));
+        if (!best) continue;
+        for (const [id,n] of Object.entries(best.add)) {
+          s.tiles[id].cubes[actor] += n;
+          available -= n;
+          cubesAdded.push([id,n]);
+        }
+        value += best.value;
+      }
+    } finally {
+      for (const [id,n] of cubesAdded) s.tiles[id].cubes[actor] -= n;
+    }
+    return value;
+  });
 }
 function addLabel(s, add) {
   const list = Object.entries(add).filter(([,n]) => n).map(([tile,n]) => n + ' cube' + (n === 1 ? '' : 's') + ' to ' + tileLabel(s,tile));
@@ -279,9 +322,7 @@ function choosePawnTarget(s, step, quick = false) {
       break;
     }
     case 'wasteland': {
-      const disks = wastelandDisks(s);
-      best = max(s.boxes.wasteland.flatMap((type,pick) => type ? [{pick,value:count(s.boxes.wasteland,type) > 1 ? 0 : -sum(disks.filter(key => s.corners[key] === type).map(key => cornerGain(s,key,null,ctx))),
-        label:'Remove one ' + elementName(type) + ' disk from the Wasteland box.'}] : []));
+      best = wastelandProtection(s,ctx);
       break;
     }
     case 'depletion': {
@@ -398,14 +439,42 @@ function fastValue(s, actor, row, index, focus, cache) {
   }
   if (row === 'adaptation') {
     if (s.boxes.adaptation.filter(Boolean).length <= earlierInRow) return 0;
+    const earlierOwn = ROW_BY_ID.adaptation.slots.slice(0,index).filter(k => s.pawns[k]?.actor === actor).length;
+    if (s.animals[actor].added.length + ANIMALS[actor].affinity + earlierOwn >= 6) return 0;
     if (!cache.has('adaptation')) cache.set('adaptation', choosePawnTarget(s,{row,index:0,actor,focus},true).value || 0);
     return cache.get('adaptation');
+  }
+  if (row === 'speciation') {
+    if (!s.animals[actor].pool) return 0;
+    const slots = ROW_BY_ID.speciation.slots;
+    const own = slots.filter(key => s.pawns[key]?.actor === actor);
+    if (own.length) {
+      if (!cache.has('committedSpeciation')) cache.set('committedSpeciation',speciationPlanValue(s,actor,own,focus));
+      const proposed = slots.filter((key,i) => i === index || own.includes(key));
+      return Math.max(0,speciationPlanValue(s,actor,proposed,focus) - cache.get('committedSpeciation'));
+    }
   }
   const key = ['competition','speciation','domination'].includes(row) ? row + index : row;
   if (cache.has(key)) return cache.get(key);
   const value = choosePawnTarget(s,{row,index,actor,focus},true).value || 0;
   cache.set(key,value);
   return value;
+}
+function blockRival(s, actor, slots) {
+  const rival = s.ids.filter(id => id !== actor && s.animals[id].remaining > 0)
+    .sort((a,b) => threatScore(s,b) - threatScore(s,a) || rank(a) - rank(b))[0];
+  if (!rival) return null;
+  const cache = new Map();
+  const scored = slots.map(plan => {
+    const {row,index} = splitSlot(plan.slot);
+    return {plan,row,opportunity:fastValue(s,rival,row,index,'majority',cache)};
+  });
+  const best = choiceBest(scored.map(({plan,row,opportunity}) => {
+    const substitute = Math.max(0,...scored.filter(other => other.plan !== plan && other.row === row).map(other => other.opportunity));
+    return {plan,value:Math.min(5,opportunity) + Math.min(5,opportunity - substitute)};
+  }));
+  if (!best || best.value <= .12) return null;
+  return {...best.plan,blockedRival:rival,reason:'Deny ' + nameOf(rival) + ' this useful ' + ROW_BY_ID[best.plan.row].name + ' space.'};
 }
 function dominanceSetup(s, actor) {
   return withPostWasteland(s, () => {
@@ -502,11 +571,16 @@ function planPlacement(s, actor, cardIndex, override, duringExecution = false) {
       value += .65;
     }
     if (followUp && opportunity > .12) value += 1.25;
-    return {slot:key,value, row, priority, focus, card:cardIndex, face:positive,
+    return {slot:key,value, row, priority, focus, card:cardIndex, face:positive,opportunity,
       reason:followUp && opportunity > .12 ? followUp : priority >= 0 && opportunity > .12 ? 'The ' + (positive ? 'primary' : 'reverse') + ' face favors ' + ROW_BY_ID[row].name + ' here.' :
         opportunity > .12 ? 'The current board favors this fallback.' : 'Place in an open space.'};
   });
-  return choiceBest(slots);
+  const fallback = choiceBest(slots);
+  if (!duringExecution && fallback && fallback.opportunity <= 1 && fallback.value < .25) {
+    const denial = blockRival(s,actor,slots);
+    if (denial && (fallback.opportunity <= .12 || denial.slot !== fallback.slot)) return denial;
+  }
+  return fallback;
 }
 function botPlacement(s) {
   const actor = currentPlanner(s).actor;

@@ -86,8 +86,15 @@ function pawnForm(step) {
     case 'speciation': {
       if (!targets.length || !mine.pool) return noChoice('There is no eligible element or gene-pool cube.');
       body = field('Element corner',select('corner',cornersFor(targets)));
-      if (draft.corner) body += fields(CORNER_TILES[draft.corner].filter(id=>game.tiles[id]).map(id=>field(tileLabel(game,id),
-        intInput('add-'+id,Math.min(mine.pool,TERRAIN[game.tiles[id].terrain].cap)))).join(''),'three');
+      if (draft.corner) {
+        let rem = mine.pool;
+        body += fields(CORNER_TILES[draft.corner].filter(id=>game.tiles[id]).map(id=>{
+          const cap = Math.min(mine.pool,TERRAIN[game.tiles[id].terrain].cap);
+          const def = Math.min(rem,cap);
+          rem -= def;
+          return field(tileLabel(game,id),intInput('add-'+id,cap,def));
+        }).join(''),'three');
+      }
       break;
     }
     case 'wanderlust': {
@@ -96,9 +103,12 @@ function pawnForm(step) {
       if (!tiles.length || !stacks.length) return noChoice('There is no face-up tile or vacant space next to Earth.');
       body = fields(field('Face-up tile',select('stack',stacks)) + tilePick('tile',tiles,'Place the tile at'),'two');
       if (draft.tile) {
-        body += field('Optional element',select('pick',offer('wanderlust'),false,'Place no element'));
-        if (draft.pick !== '' && draft.pick !== undefined) body += field('Corner',select('corner',
-          remainingCorners(draft.tile).map(key=>[key,'Corner '+cornerIndex(draft.tile,key)+(CORNER_TILES[key].some(id=>game.tiles[id]) ? ' · ' + cornerLabel(key) : '')])));
+        const openCorners = remainingCorners(draft.tile);
+        if (openCorners.length) {
+          body += field('Optional element',select('pick',offer('wanderlust'),false,'Place no element'));
+          if (draft.pick !== '' && draft.pick !== undefined) body += field('Corner',select('corner',
+            openCorners.map(key=>[key,'Corner '+cornerIndex(draft.tile,key)+(CORNER_TILES[key].some(id=>game.tiles[id]) ? ' · ' + cornerLabel(game,key) : '')])));
+        }
       }
       break;
     }
@@ -235,7 +245,7 @@ function effectForm(step) {
       break;
     case 'Fecundity':
       if (!a.pool || !occupied(game,actor).length) return noChoice('There are no eligible tiles or cubes.');
-      body = '<div class="choice-grid">' + occupied(game,actor).map(id=>'<label class="checked"><input type="checkbox" name="grow-'+id+'"> ' + tileLabel(game,id) + '</label>').join('') + '</div>';
+      body = '<div class="choice-grid">' + occupied(game,actor).map((id,idx)=>'<label class="checked"><input type="checkbox" name="grow-'+id+'"'+(idx<a.pool?' checked':'')+'> ' + tileLabel(game,id) + '</label>').join('') + '</div>';
       break;
     case 'Habitat':
       if (!elementOptions(game).length || !activeCorners(game).some(key=>!game.corners[key])) return noChoice('There is no available disk or vacant corner.');
@@ -249,7 +259,7 @@ function effectForm(step) {
     case 'Instinct': {
       const slots = ALL_SLOTS.filter(key=>!game.pawns[key]);
       if (a.ap <= pawnCount(game,actor) || !slots.length) return noChoice('There is no available pawn or vacant space.');
-      body = field('Place an available pawn',select('slot',slots.map(key=>[key,slotLabel(key)])));
+      body = field('Place an available pawn',select('slot',slots.map(key=>[key,slotLabel(key) + (EXECUTION.indexOf(key) >= game.cursor ? ' · This turn' : ' · Next turn')])));
       break;
     }
     case 'Metamorphosis':

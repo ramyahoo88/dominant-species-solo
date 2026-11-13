@@ -87,7 +87,9 @@ function chooseImmigrant(s, actor) {
   if (s.animals[actor].ap > 0) {
     const from = ALL_SLOTS.filter(key => s.pawns[key]?.actor === actor).at(-1);
     const slot = s.animals[actor].ap > pawnCount(s,actor) ? null : from;
-    choices.push({mode:'pawn',slot,value:-3.1,label:'Lose one action pawn' + (slot ? ' from ' + slotLabel(slot) : ' from the available supply') + '.'});
+    const isLastTurn = s.ending || s.market.includes('Ice Age');
+    const pawnPenalty = (isLastTurn && !slot) ? -.15 : -3.1;
+    choices.push({mode:'pawn',slot,value:pawnPenalty,label:'Lose one action pawn' + (slot ? ' from ' + slotLabel(slot) : ' from the available supply') + '.'});
   }
   const loss = sum(occupied(s,actor).map(tile => changeCubes(s,tile,actor,1 - s.tiles[tile].cubes[actor],ctx) - .12 * (s.tiles[tile].cubes[actor] - 1)));
   choices.push({mode:'cubes',value:loss,label:'On every occupied tile, eliminate all but one of this animal’s cubes.'});
@@ -190,16 +192,26 @@ function chooseEffect(s, step) {
         label:'Take ' + elementName(type) + ' from the bag and place it at the corner shared by ' + cornerLabel(s,corner) + '.',
       }))));
       break;
-    case 'Hibernation':
+    case 'Hibernation': {
+      const n = Math.min(5,me.dead);
+      if (!n) return {tile:land[0],n:0,value:0,label:'There are no eliminated cubes to return.'};
+      const isFinal = s.ending || s.market.includes('Ice Age');
       best = choiceBest(land.map(tile => {
-        const n = Math.min(5,me.dead);
+        const matched = match(s,tile,actor) > 0;
+        const isTundra = s.tiles[tile].terrain === 'tundra';
         const ward = me.ward[tile] || 0;
-        me.ward[tile] = ward + n;
-        const value = changeCubes(s,tile,actor,n,ctx) + (n && !match(s,tile,actor) ? .30*n : 0);
-        if (ward) me.ward[tile] = ward; else delete me.ward[tile];
-        return {tile,n,value,label:n ? 'Return ' + n + ' eliminated cubes to ' + tileLabel(s,tile) + '. These cubes are safe from Extinction this turn.' : 'There are no eliminated cubes to return.'};
+        let value;
+        if (matched || isFinal || isTundra) {
+          me.ward[tile] = ward + n;
+          value = changeCubes(s,tile,actor,n,ctx) + (!matched && isFinal ? .25*n : 0);
+          if (ward) me.ward[tile] = ward; else delete me.ward[tile];
+        } else {
+          value = changeCubes(s,tile,actor,n,ctx) * .25;
+        }
+        return {tile,n,value,label:'Return ' + n + ' eliminated cubes to ' + tileLabel(s,tile) + '. These cubes are safe from Extinction this turn.'};
       }));
       break;
+    }
     case 'Ice Age': {
       const points = icePoints(s);
       return {value:0,label:s.ids.map(id => nameOf(id) + ' ' + signed(points[id]) + ' VP').join(' · ') + '. Finish this turn, then score every tile.'};
@@ -211,7 +223,7 @@ function chooseEffect(s, step) {
       return {value:chooseImmigrant(s,actor).value * .65 - sum(others.map(id => chooseImmigrant(s,id).value * ctx.rival[id])),
         label:'Each animal chooses its loss in food-chain order.'};
     case 'Instinct': {
-      const slot = me.ap > pawnCount(s,actor) ? planPlacement(s,actor,null,step.focus)?.slot : null;
+      const slot = me.ap > pawnCount(s,actor) ? planPlacement(s,actor,null,step.focus,'instinct')?.slot : null;
       return {slot,value:slot ? 2.9 : 0,label:slot ? 'Place an available pawn at ' + slotLabel(slot) + '.' : 'No available action pawn or vacant space.'};
     }
     case 'Intelligence':

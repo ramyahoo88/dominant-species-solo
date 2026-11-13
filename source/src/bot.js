@@ -1,13 +1,17 @@
 const PASS = {pass:true, label:'Forfeit this action.'};
 const FALLBACK = ['domination','speciation','adaptation','abundance','competition','wanderlust','migration','glaciation','regression','wasteland','depletion','initiative'];
 
+function threatScore(s, id) {
+  const a = s.animals[id];
+  return a.vp + (49 - a.pool - a.dead) * 1.1 + a.added.length * 2.5 + (a.ap - 6) * 5;
+}
 function context(s, actor, focus = 'majority') {
-  const order = standings(s).filter(id => id !== actor);
+  const order = s.ids.filter(id => id !== actor).sort((a,b) => threatScore(s,b) - threatScore(s,a) || rank(a) - rank(b));
   const other = order[0], third = order[1];
-  const gap = s.animals[other].vp - s.animals[third].vp;
+  const gap = Math.max(0, threatScore(s,other) - threatScore(s,third));
   return {
     actor, focus,
-    rival: {[other]:.52 + Math.min(.21, gap / 100), [third]:.48 - Math.min(.21, gap / 100)},
+    rival: {[other]:.56 + Math.min(.26, gap / 65), [third]:.44 - Math.min(.22, gap / 65)},
     cardWeight:focus === 'dominance' ? 3.2 : s.market.some(Boolean) ? 2.1 : 1.25,
     vpWeight:focus === 'majority' ? .85 : .55,
     endWeight:s.ending || s.market.includes('Ice Age') ? 1.2 : .75,
@@ -18,6 +22,9 @@ function utility(s, tile, ctx) {
   if (!t) return 0;
   const vals = tileScores(s,tile);
   const owner = cone(s,tile);
+  const scored = s.scored.includes(tile);
+  const domFactor = scored ? (s.ending ? 0 : .42) : 1;
+  const vpFactor = scored && !s.ending ? .55 : 1;
   let result = 0;
   for (const id of s.ids) {
     const n = t.cubes[id];
@@ -27,11 +34,11 @@ function utility(s, tile, ctx) {
     const stability = matching > 0 || s.animals[id].ward[tile];
     const reach = own && ctx.focus === 'reach' ? 1.25 : .6;
     const depth = own && ctx.focus === 'growth' ? .4 : .25;
-    const vp = (vals.find(([a]) => a === id)?.[1] || 0) * ctx.vpWeight;
+    const vp = (vals.find(([a]) => a === id)?.[1] || 0) * ctx.vpWeight * vpFactor;
     const tundra = t.terrain === 'tundra' ? (ctx.focus === 'survival' ? 2.1 : 1) * (1 + Math.min(3,n) * .6) : 0;
     const presence = stability ? reach + depth * Math.min(5,n) + vp * ctx.endWeight + tundra : -.47 * n;
     const preservation = stability && own && ctx.focus === 'conserve' ? .44 * Math.min(n,6) : 0;
-    const dominance = owner === id ? ctx.cardWeight : 0;
+    const dominance = owner === id ? ctx.cardWeight * domFactor : 0;
     result += (own ? 1 : -ctx.rival[id]) * (presence + preservation + dominance);
   }
   return result;
@@ -59,6 +66,28 @@ function changeElements(s, actor, additions, ctx) {
   const before = s.animals[actor].added;
   return delta(s,occupied(s,actor),ctx,() => { s.animals[actor].added = additions; },() => { s.animals[actor].added = before; });
 }
+function doomedWastelandCorners(s) {
+  if (s.phase === 'execution' && s.cursor > EXECUTION.indexOf('!wasteland')) return [];
+  const canSaveOne = !!s.pawns['wasteland-0'];
+  return wastelandDisks(s).filter(key => !canSaveOne || count(s.boxes.wasteland, s.corners[key]) > 1);
+}
+function withPostWasteland(s, fn) {
+  const doomed = doomedWastelandCorners(s);
+  if (!doomed.length) return fn();
+  const saved = doomed.map(key => [key, s.corners[key]]);
+  for (const [key] of saved) delete s.corners[key];
+  try { return fn(); }
+  finally { for (const [key, type] of saved) s.corners[key] = type; }
+}
+function postRegressionGain(s, actor, type, ctx) {
+  const added = [...s.animals[actor].added, type];
+  const threats = unique(s.boxes.regression.filter(Boolean)).filter(t => added.includes(t));
+  const protects = pawnCount(s, actor, 'regression') + Number(actor === 'reptiles');
+  const drops = Math.max(0, threats.length - protects);
+  const curDrops = regressionDue(s, actor).drops;
+  if (drops <= curDrops && !(drops > 0 && s.boxes.regression.includes(type))) return changeElements(s, actor, added, ctx);
+  return -1.2;
+}
 function choiceBest(choices) {
   return choices.reduce((best, c) => !best || c.value > best.value + 1e-8 ? c : best,null);
 }
@@ -77,12 +106,15 @@ function placementTargets(s, row, index, actor) {
   if (row === 'domination') return terrainIds(s).filter(id => !s.scored.includes(id) && s.ids.some(a => s.tiles[id].cubes[a]));
   return [];
 }
-function chooseSpeciation(s, key, ctx) {
+function chooseSpeciation(s, key, ctx, quick = false) {
   let available = s.animals[ctx.actor].pool;
+  const cost = quick ? .18 : (available > 10 ? .03 : .09);
   const candidates = CORNER_TILES[key].filter(id => s.tiles[id]).map(tile => {
     const options = Array.from({length:TERRAIN[s.tiles[tile].terrain].cap},(_,i) => {
       const n = i + 1;
-      return {n,value:changeCubes(s,tile,ctx.actor,n,ctx) - n * .20};
+      const base = changeCubes(s,tile,ctx.actor,n,ctx) - n * cost;
+      const safe = match(s,tile,ctx.actor) > 0 ? .06 * n : 0;
+      return {n,value:base + (quick ? 0 : safe)};
     });
     return {tile,options,value:choiceBest(options).value};
   }).sort((a,b) => b.value - a.value);
@@ -107,7 +139,6 @@ function migrationPlan(s, ctx, limit, destination = null) {
   const origins = occupied(s,actor);
   const legal = Object.fromEntries(origins.map(from => [from, destination ? legalNeighbors(s,from,actor,1).filter(t => t === destination) : legalNeighbors(s,from,actor)]));
   const available = Object.fromEntries(origins.map(id => [id,s.tiles[id].cubes[actor]]));
-  // Trial moves only mutate cube counts. Received cubes cannot move again.
   while (limit > 0) {
     let best = null;
     for (const from of origins) {
@@ -135,7 +166,8 @@ function migrationPlan(s, ctx, limit, destination = null) {
 }
 function hitValue(s, tile, victim, ctx) {
   const gain = changeCubes(s,tile,victim,-1,ctx);
-  return gain + (ctx.focus === 'pressure' ? .62 : .39) * ctx.rival[victim];
+  const lastCube = s.tiles[tile].cubes[victim] === 1 && match(s,tile,victim) > 0 ? .35 * ctx.rival[victim] : 0;
+  return gain + (ctx.focus === 'pressure' ? .62 : .39) * ctx.rival[victim] + lastCube;
 }
 function hitLabel(s, hits) {
   return hits.length ? hits.map(h => 'Remove one ' + nameOf(h.victim) + ' cube at ' + tileLabel(s,h.tile)).join('; ') + '.' : 'Forfeit Competition.';
@@ -222,8 +254,8 @@ function choosePawnTarget(s, step, quick = false) {
       if (s.animals[actor].added.length + ANIMALS[actor].affinity < 6) {
         best = max(indexed(s.boxes.adaptation).map(({pick,type}) => {
           const nearby = terrainIds(s).filter(id => VERTICES_OF[id].some(c => s.corners[c] === type) && !match(s,id,actor)).length;
-          const regresses = s.boxes.regression.includes(type) ? .75 : 0;
-          const value = changeElements(s,actor,[...s.animals[actor].added,type],ctx) + Math.min(2,nearby) * .45 + .31 - regresses;
+          const gain = postRegressionGain(s,actor,type,ctx);
+          const value = gain < -0.5 ? gain : gain + Math.min(2,nearby) * .45 + .31;
           return {pick,value,label:'Add ' + elementName(type) + ' from Adaptation position ' + (pick + 1) + ' to the animal display.'};
         }));
       }
@@ -232,45 +264,82 @@ function choosePawnTarget(s, step, quick = false) {
       const threats = regressionDue(s,actor).threats.length;
       return {value:threats ? 1.6 + .6 * threats : 0,label:'Protect one added element from Regression.'};
     }
-    case 'abundance':
-      best = max(indexed(s.boxes.abundance).flatMap(({type,pick}) => activeCorners(s).filter(key => !s.corners[key]).map(corner => ({
-        pick,corner,value:cornerGain(s,corner,type,ctx) + (type === ANIMALS[actor].el ? .08 : 0),
-        label:'Place ' + elementName(type) + ' from Abundance position ' + (pick + 1) + ' at the corner shared by ' + cornerLabel(s,corner) + ' (corner ' + cornerIndex(CORNER_TILES[corner].find(id => s.tiles[id]),corner) + ' on ' + CORNER_TILES[corner].find(id => s.tiles[id]) + ').',
-      }))));
+    case 'abundance': {
+      const plannedSpec = new Set(Object.keys(s.pawns).filter(k => s.pawns[k].actor === actor && splitSlot(k).row === 'speciation').map(k => ELEMENT_IDS[splitSlot(k).index]));
+      best = max(indexed(s.boxes.abundance).flatMap(({type,pick}) => activeCorners(s).filter(key => !s.corners[key]).map(corner => {
+        const specBonus = plannedSpec.has(type) && CORNER_TILES[corner].some(id => s.tiles[id] && match(s,id,actor)) ? .75 : 0;
+        const ownMatch = type === ANIMALS[actor].el ? .12 : s.animals[actor].added.includes(type) ? .08 : 0;
+        const cg = cornerGain(s,corner,type,ctx);
+        const salvage = !quick && cg >= -1e-6 && ownMatch === 0 ? .05 : 0;
+        return {
+          pick,corner,value:cg + ownMatch + specBonus + salvage,
+          label:'Place ' + elementName(type) + ' from Abundance position ' + (pick + 1) + ' at the corner shared by ' + cornerLabel(s,corner) + ' (corner ' + cornerIndex(CORNER_TILES[corner].find(id => s.tiles[id]),corner) + ' on ' + CORNER_TILES[corner].find(id => s.tiles[id]) + ').',
+        };
+      })));
       break;
+    }
     case 'wasteland': {
       const disks = wastelandDisks(s);
       best = max(s.boxes.wasteland.flatMap((type,pick) => type ? [{pick,value:count(s.boxes.wasteland,type) > 1 ? 0 : -sum(disks.filter(key => s.corners[key] === type).map(key => cornerGain(s,key,null,ctx))),
         label:'Remove one ' + elementName(type) + ' disk from the Wasteland box.'}] : []));
       break;
     }
-    case 'depletion':
-      best = max(placementTargets(s,row,index,actor).map(corner => ({
+    case 'depletion': {
+      const run = () => max(placementTargets(s,row,index,actor).map(corner => ({
         corner,value:cornerGain(s,corner,null,ctx),label:'Remove ' + elementName(s.corners[corner]) + ' from the corner shared by ' + cornerLabel(s,corner) + ' (corner ' + cornerIndex(CORNER_TILES[corner].find(id => s.tiles[id]),corner) + ' on ' + CORNER_TILES[corner].find(id => s.tiles[id]) + ').',
       })));
+      best = quick ? withPostWasteland(s,run) : run();
       break;
+    }
     case 'glaciation': best = glaciationChoice(s,actor,step.focus); break;
     case 'speciation':
-      if (s.animals[actor].pool) best = max(placementTargets(s,row,index,actor).map(key => chooseSpeciation(s,key,ctx)));
+      if (s.animals[actor].pool) {
+        const run = () => max(placementTargets(s,row,index,actor).map(key => chooseSpeciation(s,key,ctx,quick)));
+        best = quick ? withPostWasteland(s,run) : run();
+      }
       break;
     case 'wanderlust': best = wanderChoice(s,ctx); break;
     case 'migration': {
       if (quick) {
-        const reach = occupied(s,actor).some(from => legalNeighbors(s,from,actor).some(to => match(s,to,actor) && (!s.tiles[to].cubes[actor] || !match(s,from,actor))));
-        return {value:reach ? 2.3 : occupied(s,actor).length ? 1.05 : 0};
+        const run = () => {
+          for (const from of occupied(s,actor)) {
+            const avail = s.tiles[from].cubes[actor];
+            for (const to of legalNeighbors(s,from,actor)) {
+              if (!match(s,to,actor)) continue;
+              for (const n of [1, Math.min(2, avail)]) {
+                const gain = delta(s,[from,to],ctx,() => { s.tiles[from].cubes[actor]-=n; s.tiles[to].cubes[actor]+=n; },
+                  () => { s.tiles[from].cubes[actor]+=n; s.tiles[to].cubes[actor]-=n; });
+                if (gain > .06) return {value:Math.min(2.6, 1.0 + gain)};
+              }
+            }
+          }
+          return {value:0};
+        };
+        return withPostWasteland(s,run);
       }
       best = migrationPlan(s,ctx,7-index);
       break;
     }
     case 'competition': best = pickHits(s,actor,['tundra',COMPETITION_EDGES[index],COMPETITION_EDGES[index+1]],ctx); break;
     case 'domination': {
-      const values = availableCards(s).length ? Object.fromEntries(s.ids.map(id => [id,Math.max(0,...availableCards(s).map(card => cardValue(s,id,card,null,quick)))])) : {};
-      best = max(placementTargets(s,row,index,actor).map(tile => {
-        const owner = cone(s,tile);
-        let value = sum(tileScores(s,tile).map(([id,vp]) => (id === actor ? 1 : -ctx.rival[id] * 1.32) * vp));
-        if (owner) value += (owner === actor ? 1 : -ctx.rival[owner] * 1.30) * Math.min(6, values[owner] || 0);
-        return {tile,value,label:quick ? '' : describeScore(s,tile)};
-      }));
+      const run = () => {
+        const cards = availableCards(s);
+        const values = cards.length ? Object.fromEntries(s.ids.map(id => [id,Math.max(0,...cards.map(card => cardValue(s,id,card,null,quick)))])) : {};
+        const laterRivalDom = !quick && ROW_BY_ID.domination.slots.slice(index + 1).some(k => s.pawns[k] && s.pawns[k].actor !== actor);
+        const scoredTiles = placementTargets(s,row,index,actor).map(tile => {
+          const owner = cone(s,tile);
+          const vpScale = (!quick && (owner === actor || laterRivalDom)) ? .85 : 1.32;
+          let value = sum(tileScores(s,tile).map(([id,vp]) => (id === actor ? 1 : -ctx.rival[id] * vpScale) * vp));
+          if (owner && cards.length) value += (owner === actor ? 1.15 : -ctx.rival[owner] * 1.30) * Math.min(6, values[owner] || 0);
+          return {tile,value,label:quick ? '' : describeScore(s,tile)};
+        }).sort((a,b) => b.value - a.value);
+        if (quick && index > 0) {
+          const earlierCount = ROW_BY_ID.domination.slots.slice(0,index).filter(k => s.pawns[k]).length;
+          return scoredTiles[earlierCount] || null;
+        }
+        return scoredTiles[0] || null;
+      };
+      best = quick ? withPostWasteland(s,run) : run();
       break;
     }
   }
@@ -309,41 +378,93 @@ function checkCard(s, actor, test) {
   }
 }
 function fastValue(s, actor, row, index, focus, cache) {
-  const key = ['competition','speciation','glaciation'].includes(row) ? row + index : row;
+  const earlierInRow = ROW_BY_ID[row].slots.slice(0,index).filter(k => s.pawns[k]).length;
+  if (row === 'initiative') return s.initiative[0] === actor ? 0 : 2.0;
+  if (row === 'wanderlust') {
+    const stacksAvail = s.stacks.filter(a => a.face).length;
+    return stacksAvail > earlierInRow && frontTiles(s).length ? 2.5 : 0;
+  }
+  if (row === 'glaciation') {
+    const tundraLeft = 12 - Object.values(s.tiles).filter(t => t.terrain === 'tundra').length;
+    const lateGame = s.ending || s.market.includes('Ice Age') || s.usedCards.length >= (s.short ? 17 : 21);
+    if (tundraLeft <= earlierInRow || (index > 0 && lateGame) || !glazeTargets(s).length) return 0;
+    return 1.85 / (1 + index * 1.22);
+  }
+  if (row === 'regression') return regressionDue(s,actor).drops > 0 ? 3.1 : 0;
+  if (row === 'abundance') {
+    if (s.boxes.abundance.filter(Boolean).length <= earlierInRow) return 0;
+    if (!cache.has('abundance')) cache.set('abundance', choosePawnTarget(s,{row,index:0,actor,focus},true).value || 0);
+    return cache.get('abundance');
+  }
+  if (row === 'adaptation') {
+    if (s.boxes.adaptation.filter(Boolean).length <= earlierInRow) return 0;
+    if (!cache.has('adaptation')) cache.set('adaptation', choosePawnTarget(s,{row,index:0,actor,focus},true).value || 0);
+    return cache.get('adaptation');
+  }
+  const key = ['competition','speciation','domination'].includes(row) ? row + index : row;
   if (cache.has(key)) return cache.get(key);
-  const land = occupied(s,actor);
-  let value;
-  if (row === 'initiative') value = s.initiative[0] === actor ? .64 : 2.0;
-  else if (row === 'wanderlust') value = s.stacks.some(a => a.face) && frontTiles(s).length ? 2.5 : 0;
-  else if (row === 'glaciation') value = Math.max(0,glaciationChoice(s,actor,focus)?.value || 0) / (1 + index * 1.22);
-  else if (row === 'regression') value = regressionDue(s,actor).drops ? 3.1 : 0;
-  else if (row === 'abundance') value = indexed(s.boxes.abundance).length && activeCorners(s).some(k => !s.corners[k]) ? (land.length ? 1.7 : .9) : 0;
-  else value = choosePawnTarget(s,{row,index,actor,focus},true).value || 0;
+  const value = choosePawnTarget(s,{row,index,actor,focus},true).value || 0;
   cache.set(key,value);
   return value;
 }
 function dominanceSetup(s, actor) {
-  const planned = Object.entries(s.pawns).filter(([,pawn]) => pawn.actor === actor).map(([key]) => splitSlot(key));
-  const adaptation = s.animals[actor].added.length + ANIMALS[actor].affinity < 6 ?
-    indexed(s.boxes.adaptation).map(({type}) => [...s.animals[actor].added,type]) : [];
-  const migration = new Set(occupied(s,actor).flatMap(from => legalNeighbors(s,from,actor)));
-  const speciation = new Set(Object.entries(s.corners).filter(([,type]) =>
-    planned.some(slot => slot.row === 'speciation' && ELEMENT_IDS[slot.index] === type)).flatMap(([key]) => CORNER_TILES[key]));
-  const options = new Map();
-  for (const tile of terrainIds(s)) {
-    if (s.scored.includes(tile) || cone(s,tile) === actor) continue;
-    const other = Math.max(0,...s.ids.filter(id => id !== actor && s.tiles[tile].cubes[id]).map(id => match(s,tile,id)));
-    const presence = s.tiles[tile].cubes[actor] > 0;
-    if (presence && adaptation.some(elements => match(s,tile,actor,elements) > other)) options.set('adaptation',tile);
-    if (!presence && match(s,tile,actor) > other) {
-      if (migration.has(tile)) options.set('migration',tile);
-      if (s.animals[actor].pool && speciation.has(tile)) options.set('speciation',tile);
+  return withPostWasteland(s, () => {
+    const planned = Object.entries(s.pawns).filter(([,pawn]) => pawn.actor === actor).map(([key]) => splitSlot(key));
+    const hasOpen = r => ROW_BY_ID[r].slots.some(k => !s.pawns[k]);
+    const hasPlanned = r => planned.some(slot => slot.row === r);
+    const canUse = r => hasPlanned(r) || (hasOpen(r) && s.animals[actor].remaining >= 1);
+    const protects = pawnCount(s,actor,'regression') + Number(actor === 'reptiles');
+    const curThreats = regressionDue(s,actor).threats.length;
+    const adaptation = s.animals[actor].added.length + ANIMALS[actor].affinity < 6 && canUse('adaptation') ?
+      indexed(s.boxes.adaptation).filter(({type}) => !s.boxes.regression.includes(type) || s.animals[actor].added.includes(type) || protects > curThreats)
+        .map(({type}) => [...s.animals[actor].added,type]) : [];
+    const migration = canUse('migration') ? new Set(occupied(s,actor).flatMap(from => legalNeighbors(s,from,actor))) : new Set();
+    const specCorners = Object.entries(s.corners).filter(([,type]) =>
+      planned.some(slot => slot.row === 'speciation' && ELEMENT_IDS[slot.index] === type) ||
+      (s.animals[actor].remaining >= 2 && ROW_BY_ID.speciation.slots.some((k,idx) => !s.pawns[k] && ELEMENT_IDS[idx] === type))
+    ).flatMap(([key]) => CORNER_TILES[key]);
+    const speciation = new Set(specCorners);
+    const options = new Map();
+    for (const tile of terrainIds(s)) {
+      if (s.scored.includes(tile) || cone(s,tile) === actor) continue;
+      const other = Math.max(0,...s.ids.filter(id => id !== actor && s.tiles[tile].cubes[id]).map(id => match(s,tile,id)));
+      const presence = s.tiles[tile].cubes[actor] > 0;
+      if (presence && adaptation.some(elements => match(s,tile,actor,elements) > other)) options.set('adaptation',tile);
+      if (!presence && match(s,tile,actor) > other) {
+        if (migration.has(tile)) options.set('migration',tile);
+        if (s.animals[actor].pool && speciation.has(tile)) options.set('speciation',tile);
+      }
     }
-  }
-  const committed = [...options].find(([row]) => planned.some(slot => slot.row === row));
-  return {options,committed,hasDomination:planned.some(slot => slot.row === 'domination')};
+    const committed = [...options].find(([row]) => hasPlanned(row));
+    const openDomSlots = ROW_BY_ID.domination.slots.filter(k => !s.pawns[k]).length;
+    return {options,committed,hasDomination:hasPlanned('domination'),openDomSlots};
+  });
 }
 function planPlacement(s, actor, cardIndex, override, duringExecution = false) {
+  if (duringExecution === 'instinct') {
+    const focus = override || 'dominance';
+    const open = ALL_SLOTS.filter(key => !s.pawns[key]).filter(key => {
+      const {row} = splitSlot(key);
+      const executesNow = EXECUTION.indexOf(key) >= s.cursor;
+      if (s.ending && !executesNow) return false;
+      if (row === 'domination' && !executesNow) return false;
+      return true;
+    });
+    if (!open.length) return null;
+    const cache = new Map();
+    const slots = open.map(key => {
+      const {row,index} = splitSlot(key);
+      const executesNow = EXECUTION.indexOf(key) >= s.cursor;
+      const n = pawnCount(s,actor,row);
+      const opportunity = fastValue(s,actor,row,index,focus,cache);
+      const effOpp = executesNow ? opportunity : opportunity * .35;
+      let value = Math.min(8,effOpp) * .64 - n * (row === 'domination' ? 2.25 : 1.65) - index * .08;
+      if (opportunity > .12) value += .32 - FALLBACK.indexOf(row) * .018 + (executesNow ? 2.2 : 0);
+      else value -= 3;
+      return {slot:key,value,row,priority:-1,focus,card:null,face:false,reason:'Place in an open space.'};
+    });
+    return choiceBest(slots);
+  }
   const card = cardIndex === null ? null : DECKS[actor][cardIndex];
   const positive = card ? checkCard(s,actor,card.check) : false;
   const face = card ? (positive ? card.yes : card.no) : null;
@@ -352,14 +473,17 @@ function planPlacement(s, actor, cardIndex, override, duringExecution = false) {
   const open = ALL_SLOTS.filter(key => !s.pawns[key] && (!duringExecution || key !== 'initiative-0'));
   const cache = new Map();
   const setup = s.market.some(Boolean) && !duringExecution ? dominanceSetup(s,actor) : null;
+  const firstOption = setup?.options?.entries()?.next()?.value;
+  const canReserveFirst = setup && !setup.hasDomination && !setup.committed && firstOption && s.animals[actor].remaining >= 2 &&
+    (setup.openDomSlots <= 2 || face?.rows[0] === 'domination');
   const slots = open.map(key => {
     const {row,index} = splitSlot(key);
     const n = pawnCount(s,actor,row);
     const priority = face?.rows.indexOf(row) ?? -1;
     const alternate = otherFace?.rows.includes(row);
     let opportunity = fastValue(s,actor,row,index,focus,cache);
-    if (row === 'domination' && !opportunity && s.market.some(Boolean) && ['migration','speciation','adaptation','abundance','competition'].some(r => pawnCount(s,actor,r))) opportunity = 1.35;
-    if (row === 'migration' && !opportunity && pawnCount(s,actor,'speciation')) opportunity = 1.25;
+    if (row === 'domination' && !opportunity && s.market.some(Boolean) && (setup?.committed || canReserveFirst)) opportunity = 1.65;
+    if (row === 'migration' && !opportunity && pawnCount(s,actor,'speciation') && setup?.options?.has('migration')) opportunity = 1.25;
     let value = Math.min(8,opportunity) * .64 - n * (row === 'domination' ? 2.25 : 1.65) - index * .08;
     if (opportunity > .12) value += priority >= 0 ? 4.6 - priority * 1.10 : alternate ? 1.15 : .32 - FALLBACK.indexOf(row) * .018;
     else value -= 3;
@@ -369,8 +493,13 @@ function planPlacement(s, actor, cardIndex, override, duringExecution = false) {
     if (row === 'domination' && setup?.committed && !setup.hasDomination) {
       const [earlier,tile] = setup.committed;
       followUp = 'Reserve scoring after ' + ROW_BY_ID[earlier].name + ' could open a Dominance Card at ' + tileLabel(s,tile) + '.';
+    } else if (row === 'domination' && canReserveFirst) {
+      const [earlier,tile] = firstOption;
+      followUp = 'Reserve scoring before ' + ROW_BY_ID[earlier].name + ' sets up a Dominance Card at ' + tileLabel(s,tile) + '.';
+      if (setup.openDomSlots === 1) value += 5.8;
     } else if (setup?.hasDomination && setup.options.has(row) && !n) {
       followUp = 'Set up the reserved Domination action at ' + tileLabel(s,setup.options.get(row)) + '.';
+      value += .65;
     }
     if (followUp && opportunity > .12) value += 1.25;
     return {slot:key,value, row, priority, focus, card:cardIndex, face:positive,

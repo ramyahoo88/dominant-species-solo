@@ -71,22 +71,34 @@ main.addEventListener('submit',event => {
     }
   } catch(err) { fail(err.message); }
 });
+function coneDiffSummary(before, after) {
+  const changes = [];
+  for (const tile of terrainIds(after)) {
+    const prev = before.tiles[tile] ? cone(before, tile) : null;
+    const next = cone(after, tile);
+    if (prev === next) continue;
+    if (!prev && next) changes.push('Place ' + nameOf(next) + '’s Dominance cone on ' + tileLabel(after, tile) + '.');
+    else if (prev && !next) changes.push('Remove ' + nameOf(prev) + '’s Dominance cone from ' + tileLabel(after, tile) + '.');
+    else changes.push('Replace ' + nameOf(prev) + '’s Dominance cone with ' + nameOf(next) + '’s on ' + tileLabel(after, tile) + '.');
+  }
+  return changes.length ? ' ' + changes.join(' ') : '';
+}
 function showChoicePreview(step,decision) {
+  const trial=copy(game);
+  runStep(trial,nextStep(trial),copy(decision));
   if (step.kind === 'weather' || step.kind === 'extinction' || step.kind === 'regression' || step.kind === 'effect' && step.name === 'Ice Age') {
-    const trial=copy(game);
-    runStep(trial,nextStep(trial),copy(decision));
     decision.label = step.kind === 'extinction' ? trial.log.findLast(x=>x.title==='Extinction and Survival').body :
       step.kind === 'regression' ? 'Check which added elements need protection. Affected animals will resolve their losses in food-chain order.' :
         trial.log.at(-1)?.body || 'Continue.';
   } else if (step.kind === 'pawn' && step.row === 'domination' && !decision.pass) decision.label=describeScore(game,decision.tile);
   else if ((step.kind === 'pawn' && step.row === 'glaciation' || step.kind === 'effect' && step.name === 'Ice Sheet') && decision.tile) {
-    const trial=copy(game);
-    decision.label=glaciation(trial,step.actor,decision.tile);
+    decision.label=glaciation(copy(game),step.actor,decision.tile);
   }
   const end = decision.label || 'Follow the indicated action on your board.';
   const pawn = step.kind === 'pawn' && step.row !== 'initiative' ? 'Remove the pawn from ' + slotLabel(step.key) + '. ' : '';
   const card = step.kind === 'claim' ? ' Take it from the physical display.' : '';
-  preview={...decision,label:pawn+end+card};
+  const cones = step.kind === 'extinction' && trial.phase === 'finished' ? '' : coneDiffSummary(game, trial);
+  preview={...decision,label:pawn+end+card+cones};
   notice='';
   render(true,true);
 }

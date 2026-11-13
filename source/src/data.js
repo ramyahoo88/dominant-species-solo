@@ -1,6 +1,6 @@
 'use strict';
 
-const VERSION = '0.1.0';
+const VERSION = '0.2.0';
 const SAVE_KEY = 'dominant-species-solo-v1';
 const RULEBOOK = 'https://www.gmtgames.com/living_rules/DS3_Rulebook-web_FINAL.pdf';
 const PHOTO = 'https://commons.wikimedia.org/wiki/File:Portage_Glacier_USGS.jpg';

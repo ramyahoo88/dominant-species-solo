@@ -82,19 +82,19 @@ function validateState(s) {
   const keys = value => value && typeof value === 'object' ? Object.keys(value) : [];
   assert(s && s.version === VERSION && ['supply','planning','execution','finished'].includes(s.phase) &&
     num(s.turn) && s.turn > 0 && num(s.rng) && s.rng <= 0xffffffff && num(s.seed) && s.seed <= 0xffffffff);
-  assert(Array.isArray(s.ids) && s.ids.length === 3 && unique(s.ids).length === 3 && s.ids.every(id => FOOD.includes(id)) &&
-    s.ids.includes(s.human) && Array.isArray(s.rivals) && s.rivals.length === 2 && unique(s.rivals).length === 2 &&
+  assert(Array.isArray(s.ids) && s.ids.length === s.rivals?.length + 1 && unique(s.ids).length === s.ids.length && s.ids.every(id => FOOD.includes(id)) &&
+    s.ids.includes(s.human) && Array.isArray(s.rivals) && s.rivals.length >= 2 && s.rivals.length <= 5 && unique(s.rivals).length === s.rivals.length &&
     s.rivals.every(id => id !== s.human && s.ids.includes(id)) && typeof s.short === 'boolean');
-  assert(Array.isArray(s.initiative) && s.initiative.length === 3 && unique(s.initiative).length === 3 && s.initiative.every(id => s.ids.includes(id)) &&
-    num(s.cursor) && s.cursor <= EXECUTION.length && num(s.planning) && s.planning < 3 && typeof s.ending === 'boolean');
+  assert(Array.isArray(s.initiative) && s.initiative.length === s.ids.length && unique(s.initiative).length === s.ids.length && s.initiative.every(id => s.ids.includes(id)) &&
+    num(s.cursor) && s.cursor <= EXECUTION.length && num(s.planning) && s.planning < s.ids.length && typeof s.ending === 'boolean');
   assert(s.tiles && s.corners && s.pawns && s.animals && s.boxes && s.decks && terrainIds(s).length >= 7 && Object.keys(INITIAL_TILES).every(id => s.tiles[id]));
   assert(keys(s.tiles).every(id => Object.hasOwn(HEXES,id) && Object.hasOwn(TERRAIN,s.tiles[id]?.terrain) && s.ids.every(a => num(s.tiles[id].cubes?.[a])) &&
-    keys(s.tiles[id].cubes).length === 3) && keys(s.corners).every(key => Object.hasOwn(CORNER_TILES,key) &&
+    keys(s.tiles[id].cubes).length === s.ids.length) && keys(s.corners).every(key => Object.hasOwn(CORNER_TILES,key) &&
     CORNER_TILES[key].some(id => s.tiles[id]) && ELEMENT_IDS.includes(s.corners[key])));
   assert(s.ids.every(id => {
     const a = s.animals[id];
     return a && num(a.vp) && num(a.ap) && a.ap <= 10 && num(a.remaining) && a.remaining <= 10 && num(a.pool) && num(a.dead) &&
-      a.pool + a.dead + sum(occupied(s,id).map(t => s.tiles[t].cubes[id])) === PLAYABLE_SPECIES && Array.isArray(a.added) &&
+      a.pool + a.dead + sum(occupied(s,id).map(t => s.tiles[t].cubes[id])) === SETUP_BY_PLAYERS[s.ids.length][1] - 1 && Array.isArray(a.added) &&
       a.added.length + ANIMALS[id].affinity <= 6 && a.added.every(type => ELEMENT_IDS.includes(type)) && a.ward &&
       keys(a.ward).every(tile => s.tiles[tile] && num(a.ward[tile]) && a.ward[tile] <= s.tiles[tile].cubes[id]);
   }));

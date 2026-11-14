@@ -31,6 +31,17 @@ function load(ref, extra = []) {
     // Instinct can add a pawn after the Instinct row has passed. Use the fixed
     // player's placement policy for that choice as well.
     runtime.run(`
+      // The pinned helpers weigh exactly two opponents. With more, give the others an equal share of the second weight.
+      const referenceContext = context;
+      context = (s, actor, focus = 'majority') => {
+        const ctx = referenceContext(s, actor, focus);
+        if (s.ids.length > 3) {
+          const order = s.ids.filter(id => id !== actor).sort((a,b) => threatScore(s,b) - threatScore(s,a) || rank(a) - rank(b));
+          const lead = ctx.rival[order[0]], second = ctx.rival[order[1]];
+          ctx.rival = {[order[0]]: lead, ...Object.fromEntries(order.slice(1).map(id => [id, second / (order.length - 1)]))};
+        }
+        return ctx;
+      };
       const referenceAction = botAction;
       const referencePlan = planPlacement;
       planPlacement = (s, actor, card, focus, timing) => {

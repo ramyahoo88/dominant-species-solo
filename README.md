@@ -59,6 +59,7 @@ See [benchmark instructions](source/benchmark/README.md) and [results](BENCHMARK
 - **v0.3.2** — five near-constant rival deck checks recalibrated so both card faces get played. See [benchmark results](BENCHMARK_RESULTS.md).
 - **v0.3.3** — rival Planning values Wanderlust with its real evaluator.
 - **v0.3.4** — rivals block spaces the leading opponent needs.
+- **Paper rivals** — rules for running the rivals at the table without the app. See [PAPER_RIVALS.md](PAPER_RIVALS.md).
 
 ## Licenses
 

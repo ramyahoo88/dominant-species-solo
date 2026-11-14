@@ -1,5 +1,11 @@
 # Release notes
 
+## Paper rivals · November 14, 2026
+
+- Added table-playable rival rules for playing without the app: [Paper rivals](PAPER_RIVALS.md). Rules as code in `source/paper/paper.js`, deck tables from `source/paper/decktables.cjs`, and a `--paper N` option on `source/benchmark.cjs`.
+- Difficulty is set with extra action pawns per rival: Standard 6, Hard 7, Expert 8. Against a fixed scripted player, Expert comes close to the app's rivals (24–30% player wins, against 22–23%).
+- The app itself is unchanged.
+
 ## v0.3.4 · November 14, 2026 · merged by owner decision despite a narrowly failed guard
 
 - Rivals now block. Every open space in Planning gets a small bonus for how much it would cost the leading opponent to lose it, counted only when that opponent has no equally good space left in the same row. Blocks went from almost none to about 3.2 per rival per game; each block is also a space the blocker can use, and 40% of them target the player.

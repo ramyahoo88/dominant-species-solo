@@ -157,8 +157,8 @@ function migrationForm(step) {
   const list = moves.map((m,i)=>'<div class="move-line"><span>' + esc(moveLabel(game,[m])) + '</span>' +
     button('Remove','remove-move','sm subtle','data-index="'+i+'" aria-label="Remove move ' + (i+1) + '"') + '</div>').join('');
   return form('<p class="lead">' + remaining + ' of ' + (7-step.index) + ' moves left.</p>' + list +
-    (canAdd ? fields(tilePick('origin',origins.filter(id=>game.tiles[id].cubes[step.actor] > sum(moves.filter(m=>m.from===id).map(m=>m.n))),'From') +
-      (to.length ? tilePick('destination',to,'To') + field('Cubes',intInput('quantity',max,1)) : ''),'three') +
+    (canAdd ? fields(tilePick('origin',origins.filter(id=>game.tiles[id].cubes[step.actor] > sum(moves.filter(m=>m.from===id).map(m=>m.n))),'From','Choose…') +
+      (to.length ? tilePick('destination',to,'To','Choose…') + field('Cubes',intInput('quantity',max,1)) : ''),'three') +
       button('Add move','add-move','sm',enable(!!(draft.origin && draft.destination && max))) : ''),
       'action',moves.length ? 'Confirm Migration' : 'Finish Migration',true);
 }
@@ -241,7 +241,7 @@ function effectForm(step) {
     }
     case 'Evolution':
       if (!a.pool) return noChoice('The gene pool is empty.');
-      body = fields(game.ids.filter(id=>id!==actor && occupied(game,id).length).map(id=>tilePick('evo-'+id,occupied(game,id),'Replace one ' + nameOf(id) + ' cube','Skip this animal')).join(''),'two');
+      body = '<p class="lead">Choose up to two opposing animals.</p>' + fields(game.ids.filter(id=>id!==actor && occupied(game,id).length).map(id=>tilePick('evo-'+id,occupied(game,id),'Replace one ' + nameOf(id) + ' cube','Skip this animal')).join(''),'two');
       break;
     case 'Fecundity':
       if (!a.pool || !occupied(game,actor).length) return noChoice('There are no eligible tiles or cubes.');
@@ -257,7 +257,7 @@ function effectForm(step) {
       body = fields(tilePick('tile',terrainIds(game)) + field('Eliminated cubes to return',intInput('n',Math.min(5,a.dead),Math.min(5,a.dead))),'two');
       break;
     case 'Instinct': {
-      const slots = ALL_SLOTS.filter(key=>!game.pawns[key]);
+      const slots = ALL_SLOTS.filter(key=>!game.pawns[key] && (!game.ending || EXECUTION.indexOf(key) >= game.cursor));
       if (a.ap <= pawnCount(game,actor) || !slots.length) return noChoice('There is no available pawn or vacant space.');
       body = field('Place an available pawn',select('slot',slots.map(key=>[key,slotLabel(key) + (EXECUTION.indexOf(key) >= game.cursor ? ' · This turn' : ' · Next turn')])));
       break;
@@ -367,6 +367,7 @@ function makeEffectChoice(step,data) {
   const hits=[...data].flatMap(([key,id])=>key.startsWith('victim-') && id ? [{tile:key.slice(7),victim:id}] : []);
   if (['Biodiversity','Cold Snap','Disease','Ecodiversity','Ice Age','Immigrants','Intelligence','Niche Biomes','Nocturnal','Omnivore','Parasitism','Symbiotic'].includes(name)) return chooseEffect(game,step);
   const skipped={skip:true,label:'This card has no legal target.'};
+  if (name === 'Aquatic' && tile && elementOptions(game).length && remainingCorners(tile).length && (!type || !corner)) throw new Error('Aquatic places an element: choose the element and the corner.');
   if (name === 'Aquatic') return tile ? {tile,type,corner,n,label:(type ? 'Place '+elementName(type)+' at '+tile+' corner '+cornerIndex(tile,corner)+'. ' : '')+addLabel(game,{[tile]:n})} : skipped;
   if (name === 'Biomass' || name === 'Predator') return {hits,label:hits.length ? hitLabel(game,hits) : 'No eligible cubes.'};
   if (name === 'Blight') return tile ? {tile,keep,label:'Keep '+elementName(game.corners[keep])+' at '+tile+' corner '+cornerIndex(tile,keep)+'. Remove the other disks from that tile.'} : skipped;
@@ -384,6 +385,7 @@ function makeEffectChoice(step,data) {
   }
   if (name === 'Evolution') {
     const targets=game.ids.flatMap(id=>val('evo-'+id) ? [{tile:val('evo-'+id),victim:id}] : []);
+    if (targets.length > 2) throw new Error('Evolution replaces cubes of at most two opposing animals.');
     if (targets.length > a.pool) throw new Error('You do not have enough gene-pool cubes to replace both.');
     return {hits:targets,label:targets.length ? targets.map(h=>'Replace one '+nameOf(h.victim)+' cube at '+tileLabel(game,h.tile)+'.').join(' ') : 'Replace no cubes.'};
   }

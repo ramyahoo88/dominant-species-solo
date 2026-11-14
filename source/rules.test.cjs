@@ -193,3 +193,59 @@ verify('v0.3.6: paper-rules games add difficulty pawns, use the printed rules, a
   const planner = currentPlanner(s);
   if (planner && planner.actor !== s.human) assert.match(botPlacement(s).reason, /^Paper rule, /);
 `);
+
+verify('GPT audit A1: Evolution replaces cubes of at most two opposing animals, even with five opponents', `
+  const s = newGame('mammals',['reptiles','birds','amphibians','arachnids','insects'],true,314159);
+  s.animals.mammals.pool = 20;
+  const choice = chooseEffect(s,{kind:'effect',actor:'mammals',name:'Evolution',tile:null});
+  assert.ok(choice.hits.length <= 2, 'app chooser took ' + choice.hits.length);
+  assert.ok(new Set(choice.hits.map(h => h.victim)).size === choice.hits.length);
+`);
+
+verify('GPT audit A3: Glaciation removes every element surrounded by three tundra tiles, not only on the covered tile', `
+  const s = newGame('mammals',['birds','insects'],true,314159);
+  const key = Object.keys(CORNER_TILES).find(k => CORNER_TILES[k].length === 3 && CORNER_TILES[k].every(t => s.tiles[t]));
+  for (const t of CORNER_TILES[key]) s.tiles[t].terrain = 'tundra';
+  s.corners[key] = 'meat';
+  const target = glazeTargets(s).find(t => !CORNER_TILES[key].includes(t) && !VERTICES_OF[t].includes(key));
+  assert.ok(target, 'no remote target');
+  const text = glaciation(s,'mammals',target);
+  assert.equal(s.corners[key], undefined);
+  assert.match(text, /corner shared by/);
+`);
+
+verify('GPT audit P2–P4: paper Instinct reserves next turn, Aquatic places its element, Wasteland tests agree', `
+  const s = newGame('mammals',['birds','insects'],true,314159,{extra:0});
+  s.phase = 'execution'; s.cursor = EXECUTION.length - 1; s.ending = false;
+  s.pawns = {[EXECUTION.at(-1)]: {actor:'insects', card:null, focus:null}};
+  const inst = botAction(s,{kind:'effect',actor:'birds',name:'Instinct',tile:null});
+  assert.ok(inst.slot && EXECUTION.indexOf(inst.slot) < s.cursor, 'paper Instinct did not reserve a next-turn space');
+  assert.match(inst.label, /waits for next turn/);
+  s.ending = true;
+  const last = botAction(s,{kind:'effect',actor:'birds',name:'Instinct',tile:null});
+  if (last.slot) assert.ok(EXECUTION.indexOf(last.slot) >= s.cursor);
+  s.ending = false;
+  const sea = terrainIds(s).find(t => !['sea','wetland','tundra'].includes(s.tiles[t].terrain) && VERTICES_OF[t].some(k => !s.corners[k]));
+  s.tiles[sea].terrain = 'sea';
+  const wet = terrainIds(s).filter(t => s.tiles[t].terrain === 'wetland');
+  const types = ['meat','sun','seed','water','grub','grass'];
+  VERTICES_OF[wet[0]].forEach((k,i) => { s.corners[k] = types[i]; });
+  const roomy = terrainIds(s).filter(t => ['sea','wetland'].includes(s.tiles[t].terrain) && VERTICES_OF[t].some(k => !s.corners[k]));
+  const aq = botAction(s,{kind:'effect',actor:'birds',name:'Aquatic',tile:null});
+  assert.ok(roomy.length && aq.type && aq.corner, 'Aquatic skipped its element'); assert.ok(roomy.includes(aq.tile));
+  for (const type of ['seed','water']) {
+    s.boxes.wasteland = [type];
+    const legal = paperLegal(s,'birds','wasteland',0);
+    const act = botAction(s,{kind:'pawn',actor:'birds',row:'wasteland',index:0});
+    assert.equal(legal, act.pick !== undefined && !act.pass, 'Wasteland Planning and Execution disagree for ' + type);
+  }
+`);
+
+verify('GPT audit P1: paper instructions name positions, elements and corners', `
+  const s = newGame('mammals',['birds','insects'],true,314159,{extra:0});
+  s.boxes.abundance = ['seed'];
+  const ab = botAction(s,{kind:'pawn',actor:'birds',row:'abundance',index:0});
+  if (!ab.pass) assert.match(ab.label, /Abundance position 1 .*corner shared by .*corner \\d on/);
+  const hab = botAction(s,{kind:'effect',actor:'birds',name:'Habitat',tile:null});
+  if (!hab.skip) assert.match(hab.label, /Habitat: take \\w+ from the bag and place it at the corner shared by/);
+`);

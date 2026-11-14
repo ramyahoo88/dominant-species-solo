@@ -179,7 +179,7 @@ function chooseEffect(s, step) {
       const hits = others.map(victim => choiceBest(occupied(s,victim).map(tile => ({
         tile,victim,value:delta(s,[tile],ctx,() => { s.tiles[tile].cubes[actor]++; s.tiles[tile].cubes[victim]--; },
           () => { s.tiles[tile].cubes[actor]--; s.tiles[tile].cubes[victim]++; }),
-      })))).filter(hit => hit && hit.value > 0).sort((a,b) => b.value-a.value).slice(0,me.pool);
+      })))).filter(hit => hit && hit.value > 0).sort((a,b) => b.value-a.value).slice(0,Math.min(2,me.pool));
       return {hits,value:sum(hits.map(hit => hit.value)),label:hits.length ? hits.map(h => 'Replace one ' + nameOf(h.victim) + ' cube with your cube at ' + tileLabel(s,h.tile)).join('; ') + '.' : 'Replace no cubes.'};
     }
     case 'Fecundity': return addPriority(s,actor,occupied(s,actor),1);

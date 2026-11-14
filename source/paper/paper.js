@@ -16,7 +16,7 @@ function paperLegal(s, actor, row, index) {
     case 'adaptation': return s.animals[actor].added.length + ANIMALS[actor].affinity < 6 && s.boxes.adaptation.some(Boolean);
     case 'regression': return s.animals[actor].added.some(type => s.boxes.adaptation.includes(type) || s.boxes.regression.includes(type)) || actor === 'reptiles';
     case 'abundance': return s.boxes.abundance.some(type => type && (paperBarren(s) || paperUses(s,actor,type))) && occupied(s,actor).some(t => VERTICES_OF[t].some(key => !s.corners[key]));
-    case 'wasteland': return s.boxes.wasteland.some(type => type && !paperUses(s,actor,type));
+    case 'wasteland': return s.boxes.wasteland.some(type => type && paperUses(s,actor,type)); // as Execution: protect an element it uses
     case 'depletion': return s.boxes.depletion.some(type => type && !paperUses(s,actor,type)) && placementTargets(s,row,index,actor).length > 0;
     case 'glaciation': return glazeTargets(s).some(t => !s.tiles[t].cubes[actor] && s.ids.some(id => s.tiles[t].cubes[id]));
     case 'speciation': return s.animals[actor].pool > 0 && paperSpeciationTiles(s,actor,index).length > 0;
@@ -121,6 +121,8 @@ function pVacantMyCorners(s, actor) { // vacant corners touching my tiles, with 
     .map(k => ({corner:k, mine:CORNER_TILES[k].filter(t => s.tiles[t]?.cubes[actor]).length, vp:Math.max(...CORNER_TILES[k].filter(t => s.tiles[t]).map(t => pFirstVP(s,t)))}));
 }
 function pLabel(text) { return 'Paper rule: ' + text; }
+// Full table instructions: every location, element, quantity and pawn the decision changes.
+function pAt(s, key) { const t = CORNER_TILES[key].find(id => s.tiles[id]); return 'the corner shared by ' + cornerLabel(s,key) + ' (corner ' + cornerIndex(t,key) + ' on ' + t + ')'; }
 
 // ---------- Actions ----------
 function paperPawn(s, step) {
@@ -138,7 +140,7 @@ function paperPawn(s, step) {
       const picks = indexed(s.boxes.adaptation);
       if (!picks.length) return {...PASS};
       const best = pBy(picks.map(p => ({...p, tile:p.pick})), p => PAPER.simpleAdapt ? 0 : pCornersNear(s,actor,p.type), p => p.type === ANIMALS[actor].el ? 1 : 0, p => -p.pick);
-      return {pick:best.pick,label:pLabel('add ' + elementName(best.type) + '.')};
+      return {pick:best.pick,label:pLabel('take ' + elementName(best.type) + ' from Adaptation position ' + (best.pick + 1) + ' and add it to its display.')};
     }
     case 'regression': return {label:pLabel('protect an element.')};
     case 'abundance': {
@@ -148,14 +150,14 @@ function paperPawn(s, step) {
       const mine = picks.filter(p => pTypes(s,actor).includes(p.type));
       const p = (mine.length ? mine : picks)[0];
       const c = pBy(corners.map(c => ({...c, tile:c.corner})), c => c.mine, c => c.vp);
-      return {pick:p.pick,corner:c.corner,label:pLabel('place ' + elementName(p.type) + '.')};
+      return {pick:p.pick,corner:c.corner,label:pLabel('take ' + elementName(p.type) + ' from Abundance position ' + (p.pick + 1) + ' and place it at ' + pAt(s,c.corner) + '.')};
     }
     case 'wasteland': {
       const picks = indexed(s.boxes.wasteland);
       if (!picks.length) return {...PASS};
       const mine = picks.filter(p => pTypes(s,actor).includes(p.type));
       if (!mine.length) return {...PASS};
-      return {pick:mine[0].pick,label:pLabel('remove ' + elementName(mine[0].type) + ' from Wasteland.')};
+      return {pick:mine[0].pick,label:pLabel('remove ' + elementName(mine[0].type) + ' from Wasteland position ' + (mine[0].pick + 1) + '.')};
     }
     case 'depletion': {
       const corners = placementTargets(s,row,index,actor).filter(k => !pTypes(s,actor).includes(s.corners[k]));
@@ -163,11 +165,11 @@ function paperPawn(s, step) {
       const c = pBy(corners.map(k => ({corner:k,tile:k})),
         c => CORNER_TILES[c.corner].filter(t => s.tiles[t] && cone(s,t) === leader).length,
         c => CORNER_TILES[c.corner].filter(t => s.tiles[t] && cone(s,t) && cone(s,t) !== actor).length);
-      return {corner:c.corner,label:pLabel('remove ' + elementName(s.corners[c.corner]) + '.')};
+      return {corner:c.corner,label:pLabel('remove ' + elementName(s.corners[c.corner]) + ' from ' + pAt(s,c.corner) + '.')};
     }
     case 'glaciation': {
       const t = paperGlaciationTile(s,actor);
-      return t ? {tile:t,label:pLabel('glaciate ' + t + '.')} : {...PASS};
+      return t ? {tile:t,label:pLabel('cover ' + tileLabel(s,t) + ' with tundra.')} : {...PASS};
     }
     case 'speciation': return paperSpeciation(s,actor,index);
     case 'wanderlust': return paperWanderlust(s,actor);
@@ -208,7 +210,7 @@ function paperSpeciation(s, actor, index) {
     const n = Math.min(leading && !PAPER.simpleSpec ? 1 : TERRAIN[s.tiles[t].terrain].cap, pool);
     if (n > 0) { add[t] = n; pool -= n; }
   }
-  return {corner:k.corner,add,label:pLabel(addLabel(s,add))};
+  return {corner:k.corner,add,label:pLabel('use the ' + elementName(type) + ' disk at ' + pAt(s,k.corner) + '. ' + addLabel(s,add))};
 }
 function paperWanderlust(s, actor) {
   const front = frontTiles(s).filter(t => NEIGHBORS[t].some(id => s.tiles[id]?.cubes[actor]));
@@ -221,7 +223,9 @@ function paperWanderlust(s, actor) {
   const d = PAPER.simpleWander ? null : mine[0] || null;
   const corners = d ? VERTICES_OF[tile].filter(k => !s.corners[k]) : [];
   const corner = corners.length ? pBy(corners.map(k => ({tile:k,k})), c => CORNER_TILES[c.k].filter(t => s.tiles[t]?.cubes[actor]).length).k : null;
-  return {stack:st.i,tile,pick:d && corner ? d.pick : null,corner:d && corner ? corner : null,label:pLabel('place ' + terrainName(st.face) + ' at ' + tile + '.')};
+  const vp = bonus(NEIGHBORS[tile].filter(id => s.tiles[id]).length);
+  return {stack:st.i,tile,pick:d && corner ? d.pick : null,corner:d && corner ? corner : null,label:pLabel('place the face-up ' + terrainName(st.face) + ' from stack ' + (st.i + 1) + ' at ' + tile +
+    (d && corner ? ', and add ' + elementName(d.type) + ' from Wanderlust position ' + (d.pick + 1) + ' at corner ' + cornerIndex(tile,corner) + ' of ' + tile : '') + '. +' + vp + ' VP.')};
 }
 function pLosesRank(s, tile, actor) {
   const before = pRank(s,tile,actor);
@@ -329,7 +333,10 @@ function paperEffect(s, step) {
     case 'Intelligence': case 'Omnivore': case 'Parasitism': case 'Niche Biomes': case 'Nocturnal': case 'Symbiotic':
       return chooseEffect(s,step); // no choice for the chooser
     case 'Aquatic': {
-      const wet = land.filter(t => ['sea','wetland'].includes(s.tiles[t].terrain));
+      let wet = land.filter(t => ['sea','wetland'].includes(s.tiles[t].terrain));
+      // The element is part of the card: if the bag has one and any sea or wetland tile has a free corner, choose among those tiles.
+      const roomy = wet.filter(t => VERTICES_OF[t].some(k => !s.corners[k]));
+      if (bagTypes.length && roomy.length) wet = roomy;
       if (!wet.length) return {skip:true,label:pLabel('no sea or wetland tile.')};
       const n = Math.min(4,me.pool);
       const type0 = bagTypes.length ? myType() : null;
@@ -345,7 +352,7 @@ function paperEffect(s, step) {
       const tile = PAPER.simpleCards ? pBy(wet, t => match(s,t,actor) > 0 ? 1 : 0, t => pFirstVP(s,t)) : pBy(wet, score, t => pFirstVP(s,t));
       const corner = bagTypes.length ? VERTICES_OF[tile].find(k => !s.corners[k]) || null : null;
       const type = corner ? type0 : null;
-      return {tile,corner,type,n,label:pLabel('Aquatic at ' + tile + '.')};
+      return {tile,corner,type,n,label:pLabel('Aquatic at ' + tileLabel(s,tile) + ': ' + (type ? 'take ' + elementName(type) + ' from the bag and place it at corner ' + cornerIndex(tile,corner) + ' of ' + tile + '. ' : 'no element can be placed. ') + addLabel(s,{[tile]:n}))};
     }
     case 'Biomass': {
       const hits = land.filter(t => sum(Object.values(s.tiles[t].cubes)) > VERTICES_OF[t].filter(k => s.corners[k]).length)
@@ -368,7 +375,7 @@ function paperEffect(s, step) {
       };
       const o = PAPER.simpleCards ? pBy(options, o => s.tiles[o.tile].cubes[leader] - 2 * s.tiles[o.tile].cubes[actor], o => pTypes(s,actor).includes(s.corners[o.keep]) ? 1 : 0, o => pFirstVP(s,o.tile))
         : pBy(options, swing, o => pFirstVP(s,o.tile));
-      return {tile:o.tile,keep:o.keep,label:pLabel('Blight ' + o.tile + '.')};
+      return {tile:o.tile,keep:o.keep,label:pLabel('Blight: on ' + tileLabel(s,o.tile) + ', keep ' + elementName(s.corners[o.keep]) + ' at corner ' + cornerIndex(o.tile,o.keep) + ' and remove the other disks.')};
     }
     case 'Catastrophe': {
       const tiles = land.filter(t => s.ids.some(id => s.tiles[t].cubes[id]));
@@ -381,7 +388,7 @@ function paperEffect(s, step) {
         return {tile:t,keep,hits,value};
       };
       const best = pBy(tiles.map(plan), p => p.value, p => pFirstVP(s,p.tile));
-      return {tile:best.tile,keep:best.keep,hits:best.hits,label:pLabel('Catastrophe at ' + best.tile + '.')};
+      return {tile:best.tile,keep:best.keep,hits:best.hits,label:pLabel('Catastrophe: ' + (best.keep ? 'leave one ' + nameOf(best.keep) + ' cube at ' + tileLabel(s,best.tile) + ' and eliminate all other cubes there. ' : 'target ' + tileLabel(s,best.tile) + '. ') + (best.hits.length ? hitLabel(s,best.hits) : 'No adjacent eliminations.'))};
     }
     case 'Evolution': {
       const hits = [];
@@ -394,7 +401,7 @@ function paperEffect(s, step) {
         hits.push({tile,victim}); s.tiles[tile].cubes[victim]--; s.tiles[tile].cubes[actor]++;
       }
       for (const h of hits) { s.tiles[h.tile].cubes[h.victim]++; s.tiles[h.tile].cubes[actor]--; }
-      return {hits,label:pLabel(hits.length ? 'Evolution.' : 'Replace no cubes.')};
+      return {hits,label:pLabel(hits.length ? hits.map(h => 'replace one ' + nameOf(h.victim) + ' cube with its own cube at ' + tileLabel(s,h.tile)).join('; ') + '.' : 'replace no cubes.')};
     }
     case 'Fecundity': {
       const tiles = [...occupied(s,actor)].sort((a,b) => (match(s,b,actor) > 0) - (match(s,a,actor) > 0) || pFirstVP(s,b) - pFirstVP(s,a) || a.localeCompare(b)).slice(0,me.pool);
@@ -405,7 +412,7 @@ function paperEffect(s, step) {
       const tiles = occupied(s,actor);
       if (!tiles.length) return {skip:true,label:pLabel('no tile.')};
       const tile = pBy(tiles, t => sum(Object.values(s.tiles[t].cubes)));
-      return {tile,label:pLabel('Fertile at ' + tile + '.')};
+      return {tile,label:pLabel('Fertile: score its cubes at ' + tileLabel(s,tile) + '.')};
     }
     case 'Habitat': {
       if (!bagTypes.length) return {skip:true,label:pLabel('empty bag.')};
@@ -413,24 +420,29 @@ function paperEffect(s, step) {
       const any = activeCorners(s).filter(k => !s.corners[k]);
       if (!corners.length && !any.length) return {skip:true,label:pLabel('no vacant corner.')};
       const c = corners.length ? pBy(corners.map(c => ({...c,tile:c.corner})), c => c.mine, c => c.vp).corner : any[0];
-      return {corner:c,type:myType(),label:pLabel('Habitat.')};
+      return {corner:c,type:myType(),label:pLabel('Habitat: take ' + elementName(myType()) + ' from the bag and place it at ' + pAt(s,c) + '.')};
     }
     case 'Hibernation': {
       const n = Math.min(5,me.dead);
       if (!n) return {tile:land[0],n:0,label:pLabel('nothing to return.')};
       const matched = land.filter(t => match(s,t,actor) > 0);
       const tile = PAPER.simpleCards ? pBy(matched.length ? matched : land, t => pFirstVP(s,t)) : pBy(matched.length ? matched : land, t => s.tiles[t].terrain === 'tundra' ? 1 : 0, t => s.tiles[t].cubes[actor] ? 0 : 1, t => pGainsRank(s,t,actor,n) ? 1 : 0, t => pFirstVP(s,t));
-      return {tile,n,label:pLabel('Hibernation at ' + tile + '.')};
+      return {tile,n,label:pLabel('Hibernation: return ' + n + ' eliminated cubes to ' + tileLabel(s,tile) + '. These cubes are safe from Extinction this turn.')};
     }
     case 'Ice Sheet': {
       const tile = paperGlaciationTile(s,actor);
-      return tile ? {tile,label:pLabel('Ice Sheet at ' + tile + '.')} : {skip:true,label:pLabel('no target.')};
+      return tile ? {tile,label:pLabel('Ice Sheet: cover ' + tileLabel(s,tile) + ' with tundra.')} : {skip:true,label:pLabel('no target.')};
     }
     case 'Instinct': {
       if (me.ap <= pawnCount(s,actor)) return {slot:null,label:pLabel('no pawn.')};
-      const open = ALL_SLOTS.filter(k => !s.pawns[k] && EXECUTION.indexOf(k) >= s.cursor && !(s.ending && EXECUTION.indexOf(k) < s.cursor));
+      // GMT p.19: a pawn on a space already resolved waits for next turn. Prefer a space that still runs this turn;
+      // otherwise reserve one for next turn, unless this is the final turn.
+      const vacant = ALL_SLOTS.filter(k => !s.pawns[k]);
+      const now = vacant.filter(k => EXECUTION.indexOf(k) >= s.cursor);
+      const open = now.length ? now : s.ending ? [] : vacant;
       if (!open.length) return {slot:null,label:pLabel('no space.')};
-      return {slot:paperPlacement(s,actor,null,open).slot,label:pLabel('Instinct.')};
+      const slot = paperPlacement(s,actor,null,open).slot;
+      return {slot,label:pLabel('Instinct: place an available pawn at ' + slotLabel(slot) + (EXECUTION.indexOf(slot) >= s.cursor ? '. It resolves this turn.' : '. It waits for next turn.'))};
     }
     case 'Mass Exodus': {
       const opp = t => sum(s.ids.filter(id => id !== actor).map(id => s.tiles[t].cubes[id]));
@@ -445,7 +457,7 @@ function paperEffect(s, step) {
         const to = id === actor ? pBy(near, t => match(s,t,id), t => pFirstVP(s,t)) : pBy(near, t => -match(s,t,id), t => -pFirstVP(s,t));
         moves[id] = [{from:tile,to,n}];
       }
-      return {tile,moves,label:pLabel('Mass Exodus from ' + tile + '.')};
+      return {tile,moves,label:pLabel('Mass Exodus from ' + tileLabel(s,tile) + ': ' + Object.entries(moves).map(([id,group]) => nameOf(id) + ' · ' + moveLabel(s,group)).join(' '))};
     }
     case 'Metamorphosis': {
       if (!me.added.length || !bagTypes.length) return {skip:true,label:pLabel('nothing to swap.')};
@@ -467,7 +479,7 @@ function paperImmigrant(s, actor) {
   const thin = occupied(s,actor).every(t => s.tiles[t].cubes[actor] <= 2);
   if (thin) return {mode:'cubes',label:pLabel('keep one species per tile.')};
   if (me.added.length) { const type = [...me.added].sort((a,b) => pCornersNear(s,actor,a) - pCornersNear(s,actor,b))[0]; return {mode:'element',type,label:pLabel('discard ' + elementName(type) + '.')}; }
-  if (me.ap > 0) { const from = ALL_SLOTS.filter(k => s.pawns[k]?.actor === actor).at(-1); return {mode:'pawn',slot:me.ap > pawnCount(s,actor) ? null : from,label:pLabel('lose a pawn.')}; }
+  if (me.ap > 0) { const from = ALL_SLOTS.filter(k => s.pawns[k]?.actor === actor).at(-1); const slot = me.ap > pawnCount(s,actor) ? null : from; return {mode:'pawn',slot,label:pLabel('lose one action pawn' + (slot ? ' from ' + slotLabel(slot) : ' from the available supply') + '.')}; }
   return {mode:'cubes',label:pLabel('keep one species per tile.')};
 }
 function paperLoss(s, actor, options, amount) {
@@ -485,7 +497,8 @@ botAction = function(s, step) {
     case 'spider': return paperCompetition(s,actor,['tundra',...LARGE_TERRAIN],true);
     case 'arrival': {
       const moves = NEIGHBORS[step.tile].filter(t => s.tiles[t]?.cubes[actor] >= 2 && !pLosesRank(s,t,actor)).map(t => ({from:t,to:step.tile,n:1}));
-      return {moves: match(s,step.tile,actor) > 0 ? moves : [],label:pLabel('arrival.')};
+      const arrive = match(s,step.tile,actor) > 0 ? moves : [];
+      return {moves:arrive,label:pLabel(arrive.length ? 'arrival: ' + moveLabel(s,arrive) : 'arrival: keep the cubes where they are.')};
     }
     case 'insect': {
       const tiles = pTiles(s).filter(t => match(s,t,actor) > 0);

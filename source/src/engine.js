@@ -154,12 +154,13 @@ function glaciation(s, actor, id) {
   const n = NEIGHBORS[id].filter(h => s.tiles[h]?.terrain === 'tundra').length;
   t.terrain = 'tundra';
   for (const a of s.ids) removeCube(s, id, a, Math.max(0,t.cubes[a] - 1), 'pool');
-  const gone = VERTICES_OF[id].filter(key => s.corners[key] && CORNER_TILES[key].filter(h => s.tiles[h]?.terrain === 'tundra').length === 3);
-  const removed = gone.map(key => elementName(s.corners[key]) + ' at corner ' + cornerIndex(id,key));
+  // GMT p.13: remove every element surrounded by three tundra tiles, anywhere on Earth (a disk can return to such a corner by Abundance).
+  const gone = Object.keys(s.corners).filter(key => CORNER_TILES[key].filter(h => s.tiles[h]?.terrain === 'tundra').length === 3);
+  const removed = gone.map(key => elementName(s.corners[key]) + (VERTICES_OF[id].includes(key) ? ' at corner ' + cornerIndex(id,key) + ' of ' + id : ' at the corner shared by ' + cornerLabel(s,key)));
   for (const key of gone) delete s.corners[key];
   earned(s, actor, bonus(n));
   return 'Cover ' + id + ' with tundra. Return all but one cube per animal to their gene pools. ' +
-    (removed.length ? 'Remove ' + removed.join(', ') + ' of ' + id + '. ' : '') + '+' + bonus(n) + ' VP.';
+    (removed.length ? 'Remove ' + removed.join(', ') + '. ' : '') + '+' + bonus(n) + ' VP.';
 }
 function discardElement(s, actor, type) {
   const values = s.animals[actor].added;

@@ -1,5 +1,13 @@
 # Release notes
 
+## v0.3.6 · November 14, 2026
+
+- **Paper rules in the app.** The setup screen has a Rival rules choice: App rivals (strongest) or Paper rules (as printed), with Easy, Standard, Hard and Expert (−1 to +2 pawns per rival). Paper games show which Planning step chose each space. App-rival games are unchanged: a 2-rival benchmark is game-for-game identical to v0.3.5. Imports preserve v0.3.5 saves.
+- **One paper version.** The detailed paper rules were retired. The paper rules are now the former quick mode plus **Block the leader** (deny the leader's Domination), which curbs the card-chasing strategy. Card list skips pawn cards at 10 pawns. The rivals draw a card at every placement, as the app always did.
+- **Difficulty** (seed block 190000): Standard is about an even game at every table size; Hard is close to the app's rivals; Expert is tougher. See [PAPER_RIVALS.md](PAPER_RIVALS.md).
+- **Rulebook:** rewritten for the single version, with the audit's wording fixes (opponents in VP order, Evolution's two opponents, Barren Earth) and a printable card appendix.
+- The test loader and benchmark load the paper rules the way the build ships them.
+
 ## v0.3.5 · November 14, 2026
 
 - The app takes two to five rivals. Setup uses the base game's pawns and cubes for the player count (6/50, 5/45, 4/40, 3/35). With two rivals nothing changes: a 2-rival benchmark run is game-for-game identical to v0.3.4. Imports preserve v0.3.4 saves.

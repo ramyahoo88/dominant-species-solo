@@ -1,12 +1,25 @@
 # Paper rivals
 
-Table-playable rules for the two rival animals, so Dominant Species can be played solo without the app. The full rulebook (setup, Planning, Execution, Dominance Cards, other decisions, all six rival decks, testing) is the Doc **[Dominant Species — Paper Rivals](https://claude.ai/artifact/DfXqXU6D3HcUDfh8isLRUr)**, which exports to PDF or Word.
+Table-playable rules for the rival animals (two to five), so Dominant Species can be played solo without the app. The rulebook (setup and difficulty, Planning, Execution, Dominance Cards, other decisions, all six decks, testing, and a printable card appendix) is the Doc **[Dominant Species — Paper Rivals](https://claude.ai/artifact/DfXqXU6D3HcUDfh8isLRUr)**, which exports to PDF or Word. Since v0.3.6 the app can also run these rules: choose **Paper rules** and a level on the setup screen.
 
-- Rules as code: [`source/paper/paper.js`](source/paper/paper.js). Every decision uses only what a person can count at the table: species per tile, matching elements, dominance, first-place VP and the VP track.
-- Deck tables: `node source/paper/decktables.cjs source/src/decks.js` prints them from the app's decks, so the printed decks always match the app.
-- Benchmark: `node source/benchmark.cjs --base main --candidate worktree --paper N` plays the app's rivals (base) against paper rivals with N extra action pawns (candidate) on the same seeds.
+- Rules as code: [`source/paper/paper.js`](source/paper/paper.js), shipped in the app build and inactive unless a game turns it on. Every decision uses only what a person can count at the table.
+- One version only (November 2026): flat element matching, a fixed Dominance Card list, always the card's reverse (No) face, simple Adaptation, full Speciation, Migration without rank checks, Glaciation without the tundra bonus, Barren Earth, and **Block the leader** (deny the leader's Domination). The earlier detailed rules (card checks, card scoring, rank checks) were retired; `--paper-options full` restores them only to reproduce old results.
+- Benchmark: `node source/benchmark.cjs --base main --candidate worktree --paper N [--bots 2..5]` plays the app's rivals (base) against paper rivals with N extra action pawns (candidate) on the same seeds. Use `--paper=-1` for Easy.
 
-## Quick mode and two-player games
+## Difficulty (seed block 190000, 360 games per cell; scripted player's win rate, lower is tougher)
+
+| Rivals (even game) | Easy −1 | Standard +0 | Hard +1 | Expert +2 | App |
+|---|---|---|---|---|---|
+| 2 (33%) | 46% | 30% | 20% | 13% | 17% |
+| 3 (25%) | 41% | 25% | 15% | 10% | 15% |
+| 4 (20%) | 33% | 20% | 16% | 8% | 9% |
+| 5 (17%) | 39% | 20% | 9% | 5% | 5% |
+
+**Strategy balance.** Chasing Dominance Cards is the strongest scripted strategy against both paper and app rivals. Block the leader was added for that: on fresh seeds it cut the strategy's wins from 65 to 47 of 120 (2 rivals, block 180000) and from 43 to 34 (4 rivals), and lowered the player's total from 113 to 85 of 360. It weakened the retired detailed rules, so it was never used there. At Expert the three strategies even out. See [the v0.3.5 audit](AUDIT_v0.3.5.md).
+
+## History
+
+### Quick mode and two-player games (earlier tests)
 
 - **Quick mode** (optional, 6 pawns) cuts the rivals' upkeep. It uses flat element matching (printed count plus added elements, capped by the disks on the tile) and a fixed card list instead of card scoring. On seed 150000 the scripted player won 30% (107/360), against 19% (70/360) against the app's rivals on the same seeds. On the tuning seeds it was 34%. Quick-mode difficulty is set by pawns: on seed 150000 the scripted player won 48% at 5 pawns (`--paper=-1`), 30% at 6 and 25% at 7 (`--paper 1`); 7 pawns is within noise of the app's rivals. Run it with `--paper 0 --paper-options flatMatch,cardList`.
 - **Two players plus a rival:** the rules work unchanged with two people and one rival, because "leader" means whichever opponent leads on VP.
@@ -16,7 +29,7 @@ Table-playable rules for the two rival animals, so Dominant Species can be playe
   - a center-out clockwise tie-breaker: 57%
   - the card list with real matching: 56%
 
-## Three to five rivals
+### Three to five rivals (earlier tests)
 
 Use the base game's pawns and cubes for the player count, and add difficulty pawns on top (+0 Standard, +1 Hard, +2 Expert; quick mode −1/+0/+1). Results on seed block 160000, 360 games per cell; an even game is 25%, 20% and 17%:
 
@@ -28,7 +41,7 @@ Use the base game's pawns and cubes for the player count, and add difficulty paw
 
 Quick mode now includes five cuts (always the "no" face, simple Adaptation, full Speciation, Migration without rank checks, Glaciation without the tundra bonus). Single-cut results on seed 6200 (quick base 34%): 31%, 33%, 32%, 35%, 36%. Combined across 2–5 rivals they average the same as the two-change version. Cuts that weakened the rivals and were dropped: "yes" face 39%, leftmost space 38%, simple Competition 38%, simple card effects 45%, no Wanderlust element 51%, no Domination-first 67%. Every cut weakened the full rules (52–91% against 49%).
 
-## Difficulty
+### Original difficulty tests (detailed rules)
 
 | Level | Action pawns per rival |
 | --- | --- |

@@ -1,8 +1,8 @@
 # Dominant Species solo companion audit handoff
 
-Current review build is v0.3.4. See [release notes](CHANGELOG.md), [paired benchmark results](BENCHMARK_RESULTS.md), and [Claude’s v0.2.0 review](REVIEW.md). The first-build handoff below records the original v0.1.0 scope and baseline. The source now accepts v0.1 through v0.3.3 saves.
+Current review build is v0.3.6: two to five rivals, and a choice between the app's rivals and the printed Paper Rivals rules. See [release notes](CHANGELOG.md), [the v0.3.5 audit](AUDIT_v0.3.5.md), [paired benchmark results](BENCHMARK_RESULTS.md), and [Claude’s v0.2.0 review](REVIEW.md). The first-build handoff below records the original v0.1.0 scope and baseline. The source accepts v0.1 through v0.3.5 saves.
 
-For the next audit, run the targeted rules and Chromium checks in the README, then compare rival changes on fresh seeds. Open items: the paper rivals ([PAPER_RIVALS.md](PAPER_RIVALS.md)) have not been played at a real table, and their Hard level varies between seed blocks. Prioritize exact card effects, hard cases around Instinct or queued Glaciation, and which starting animals the scripts favor. Keep role-specific results separate from animal balance claims.
+For the next audit, run the targeted rules and Chromium checks in the README, then compare rival changes on fresh seeds. Open items: the paper rivals ([PAPER_RIVALS.md](PAPER_RIVALS.md)) have not been played at a real table; card-chasing remains the strongest scripted strategy against all rivals; a rare six-animal stall (1 in ~2,900 simulated games) survives the Barren Earth rule. Prioritize exact card effects, hard cases around Instinct or queued Glaciation, and which starting animals the scripts favor. Keep role-specific results separate from animal balance claims.
 
 ## Request for Gemini
 

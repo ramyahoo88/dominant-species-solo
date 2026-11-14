@@ -20,6 +20,12 @@ function paperLegal(s, actor, row, index) {
   }
   return false;
 }
+function paperCheck(s, actor, test) { // the app's card conditions, with 'elements' made countable
+  if (test !== 'elements') return checkCard(s,actor,test);
+  const mine = occupied(s,actor);
+  return indexed(s.boxes.adaptation).some(({type}) => !paperUses(s,actor,type) && mine.some(t => VERTICES_OF[t].some(k => s.corners[k] === type))) ||
+    indexed(s.boxes.abundance).some(({type}) => type === ANIMALS[actor].el);
+}
 function paperUses(s, actor, type) { return ANIMALS[actor].el === type || s.animals[actor].added.includes(type); }
 function paperDominated(s, actor) { return terrainIds(s).filter(t => !s.scored.includes(t) && cone(s,t) === actor); }
 function paperSpeciationTiles(s, actor, index) {
@@ -35,7 +41,7 @@ const PAPER_FALLBACK = ['domination','wanderlust','speciation','adaptation','com
 const PAPER_WEAK = ['abundance','glaciation','wasteland','depletion','regression','initiative'];
 function paperPlacement(s, actor, cardIndex, openOverride = null) {
   const card = cardIndex === null ? null : DECKS[actor][cardIndex];
-  const positive = card ? checkCard(s,actor,card.check) : false;
+  const positive = card ? paperCheck(s,actor,card.check) : false;
   const face = card ? (positive ? card.yes : card.no) : null;
   const focus = face?.focus || 'majority';
   const open = openOverride || ALL_SLOTS.filter(key => !s.pawns[key]);
@@ -51,7 +57,7 @@ function paperPlacement(s, actor, cardIndex, openOverride = null) {
     return null;
   };
   const doms = pawnCount(s,actor,'domination'), dominated = paperDominated(s,actor).length;
-  const domFirst = availableCards(s).length && dominated > doms && doms < 2 ? pick(['domination'], true) : null;
+  const domFirst = availableCards(s).length && dominated > doms && doms < (PAPER.dom3 ? 3 : 2) ? pick(['domination'], true) : null;
   const slot = domFirst || pick(face ? face.rows : [], false, true) || pick(PAPER_FALLBACK, false) || pick(PAPER_FALLBACK, true) || open[0];
   const {row} = splitSlot(slot);
   return {slot,row,priority:face ? face.rows.indexOf(row) : -1,focus,card:cardIndex,face:positive,opportunity:1,reason:'Paper rule: ' + ROW_BY_ID[row].name + '.'};
@@ -107,7 +113,10 @@ function paperPawn(s, step) {
       if (s.animals[actor].added.length + ANIMALS[actor].affinity >= 6) return {...PASS};
       const picks = indexed(s.boxes.adaptation);
       if (!picks.length) return {...PASS};
-      const best = pBy(picks.map(p => ({...p, tile:p.pick})), p => pCornersNear(s,actor,p.type), p => p.type === ANIMALS[actor].el ? 1 : 0, p => -p.pick);
+      const notDom = t => cone(s,t) !== actor;
+      const nearNotDom = type => occupied(s,actor).filter(notDom).reduce((n,t) => n + VERTICES_OF[t].filter(k => s.corners[k] === type).length, 0);
+      const best = PAPER.adaptDom ? pBy(picks.map(p => ({...p, tile:p.pick})), p => nearNotDom(p.type), p => pCornersNear(s,actor,p.type), p => -p.pick)
+        : pBy(picks.map(p => ({...p, tile:p.pick})), p => pCornersNear(s,actor,p.type), p => p.type === ANIMALS[actor].el ? 1 : 0, p => -p.pick);
       return {pick:best.pick,label:pLabel('add ' + elementName(best.type) + '.')};
     }
     case 'regression': return {label:pLabel('protect an element.')};
@@ -225,15 +234,6 @@ function paperMigration(s, actor, limit, destination = null) {
   }
   for (const {from,to,n} of moves) { s.tiles[from].cubes[actor] += n; s.tiles[to].cubes[actor] -= n; }
   return {moves,label:pLabel(moves.length ? moveLabel(s,moves) : 'no move.')};
-}
-function paperHitScore(s, tile, victim, actor) {
-  const vp = pFirstVP(s,tile);
-  const mine = s.tiles[tile].cubes[actor], theirs = s.tiles[tile].cubes[victim];
-  let score = vp;
-  if (pRank(s,tile,victim) < pRank(s,tile,actor) && theirs - 1 <= mine) score += vp;       // you pass or tie them
-  if (theirs === 1) score += vp / 2;                                                       // they leave the tile
-  if (cone(s,tile) === victim && theirs === 1) score += 6;                                // they lose dominance
-  return score;
 }
 function paperHitScore(s, tile, victim, actor) {
   const vp = pFirstVP(s,tile);
@@ -470,4 +470,13 @@ botAction = function(s, step) {
     case 'immigrant': return paperImmigrant(s,actor);
   }
   paperNote('kind:' + kind); return _appBotAction(s,step);
+};
+
+// ---------- Difficulty: extra action pawns for paper rivals ----------
+const _appNewGame = newGame;
+newGame = function(human, rivals, short, seed) {
+  const s = _appNewGame(human, rivals, short, seed);
+  const extra = PAPER.extraAP ? Number(PAPER.extraAP) : 0;
+  if (extra) for (const id of rivals) s.animals[id].ap += extra;
+  return s;
 };

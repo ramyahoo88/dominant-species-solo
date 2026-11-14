@@ -77,7 +77,15 @@ function worker() {
   const {refs, entries, trace} = workerData;
   const player = load(PLAYER_REFERENCE, ['player']);
   const strategy = {place: player.get('playerPlacement'), choose: player.get('playerChoice')};
-  const runs = refs.map(ref => load(ref, ['game']).get('playBenchmark'));
+  const runs = refs.map((ref, i) => {
+    const runtime = load(ref, ['game']);
+    if (i === 1 && workerData.paper !== null) {
+      // Paper rivals: table-playable rules from source/paper/paper.js, with extra action pawns as the difficulty level.
+      runtime.run('var PAPER = ' + JSON.stringify({place: true, all: true, extraAP: workerData.paper}) + ';');
+      runtime.run(require('node:fs').readFileSync(require('node:path').join(__dirname, 'paper/paper.js'), 'utf8'));
+    }
+    return runtime.get('playBenchmark');
+  });
   for (const {index, scenario} of entries) {
     try {
       parentPort.postMessage({index, games: runs.map(run => run(scenario, strategy, trace))});
@@ -95,6 +103,7 @@ async function main() {
       seed: {type: 'string', default: '6200'},
       repeats: {type: 'string', default: '1'},
       workers: {type: 'string', default: String(Math.min(4, availableParallelism()))},
+      paper: {type: 'string'},
       policy: {type: 'string', multiple: true},
       length: {type: 'string', default: 'both'},
       human: {type: 'string'},
@@ -107,7 +116,7 @@ async function main() {
   if (args.help) {
     process.stdout.write([
       'node source/benchmark.cjs [--base COMMIT] [--candidate COMMIT|worktree]',
-      '  [--seed 6200] [--repeats 1] [--workers 4]',
+      '  [--seed 6200] [--repeats 1] [--workers 4] [--paper EXTRA_PAWNS]',
       '  [--policy majority|dominance|expansion] [--length both|short|full]',
       '  [--human insects] [--rivals birds,reptiles] [--detail] [--trace]',
       'Each repeat runs every selected matchup and policy on one physical setup.',
@@ -148,7 +157,7 @@ async function main() {
   entries.forEach((entry, i) => parts[i % count].push(entry));
   const games = Array(entries.length);
   await Promise.all(parts.map(part => new Promise((ok, fail) => {
-    const thread = new Worker(__filename, {workerData: {refs, entries: part, trace: args.trace}});
+    const thread = new Worker(__filename, {workerData: {refs, entries: part, trace: args.trace, paper: args.paper === undefined ? null : Number(args.paper)}});
     thread.on('message', ({index, games: pair}) => { games[index] = pair; });
     thread.once('error', fail);
     thread.once('exit', code => code === 0 ? ok() : fail(new Error('Benchmark worker exited ' + code)));

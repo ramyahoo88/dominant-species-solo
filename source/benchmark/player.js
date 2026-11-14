@@ -82,7 +82,8 @@ function playerChoice(state, step, profile) {
   const actor = step.actor;
   if (step.kind === 'pawn' && step.row === 'initiative') {
     const slot = playerPlacement(state, actor, profile, 'initiative');
-    return {slot, label: 'Move pawn to ' + slotLabel(slot) + '.'};
+    // A full action display (large tables, extra rival pawns) leaves no space to move to: just advance.
+    return slot ? {slot, label: 'Move pawn to ' + slotLabel(slot) + '.'} : {slot: null, label: 'Advance; no open space to move this pawn to.'};
   }
   if (step.kind === 'pawn' && step.row === 'domination') {
     const target = playerDomination(s, actor, policy);

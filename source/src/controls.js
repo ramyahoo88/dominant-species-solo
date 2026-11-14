@@ -224,7 +224,7 @@ document.addEventListener('click',event => {
         deckTab=btn.dataset.animal; renderModal(); modal.querySelector('[data-animal="'+deckTab+'"]')?.focus(); break;
       case 'new': openModal('new'); break;
       case 'new-confirm':
-        setup={human:game.human,bots:[...game.rivals],short:game.short,paper:!!game.paper,extra:game.paper?.extra || 0};
+        setup={human:game.human,bots:[...game.rivals],short:game.short,paper:!!game.paper,extra:game.paper ? game.paper.extra : 1};
         game=null; undo=[]; reveal=null; preview=null; draft={}; notice=''; initialError='';
         modal.close(); save(); render(false);
         main.focus();

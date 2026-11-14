@@ -1,0 +1,15 @@
+{
+  "rulebook": "2026-11-14 (pending re-measure)",
+  "standard": "About an even game at every table size",
+  "hard": "You win most Standard games; close to the app's rivals",
+  "expert": "Tougher than the app's rivals",
+  "method": "Each cell is 360 games on fresh seeds not used to tune the rules. Lower means tougher rivals. In a perfectly even game the player would win 33% against two rivals, 25% against three, 20% against four and 17% against five.",
+  "rows": [
+    {"rivals": 2, "even": 33, "easy": 46, "standard": 30, "hard": 20, "expert": 13, "app": 17},
+    {"rivals": 3, "even": 25, "easy": 41, "standard": 25, "hard": 15, "expert": 10, "app": 15},
+    {"rivals": 4, "even": 20, "easy": 33, "standard": 20, "hard": 16, "expert": 8, "app": 9},
+    {"rivals": 5, "even": 17, "easy": 39, "standard": 20, "hard": 9, "expert": 5, "app": 5}
+  ],
+  "strategy": "**Strategy balance.** pending",
+  "stalls": "pending"
+}

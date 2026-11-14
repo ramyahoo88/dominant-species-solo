@@ -26,8 +26,9 @@ const A = ids => ids.map(id => [id,nameOf(id)]);
 const cardRows = face => '<div class="card-flow">' + face.rows.map(row => '<span>' + ROW_BY_ID[row].name + '</span>').join('') + '</div>';
 let game = null;
 let undo = [];
-let setup = {human:'amphibians',bots:['birds','arachnids'],short:true,paper:false,extra:0};
-const PAPER_LEVELS = [[-1,'Easy'],[0,'Standard'],[1,'Hard'],[2,'Expert']];
+let setup = {human:'amphibians',bots:['birds','arachnids'],short:true,paper:false,extra:1};
+// Re-measured for v0.3.7 (GPT audit B1): +1 pawn is about an even game, +3 is about as tough as the app's rivals.
+const PAPER_LEVELS = [[0,'Easy'],[1,'Standard'],[2,'Hard'],[3,'Expert']];
 function paperLevel(extra) { return (PAPER_LEVELS.find(([n]) => n === extra) || [0,'Custom'])[1]; }
 const RIVAL_WORDS = ['one','two','three','four','five'];
 function seatKeys() { return ['human',...setup.bots.map((_,i) => 'bot-' + i)]; }
@@ -84,7 +85,7 @@ function readSupplyDraft(s, raw) {
 }
 function validateState(s) {
   function assert(ok) { if (!ok) throw new Error('This is not a valid Dominant Species companion save.'); }
-  if (s && ['0.1.0', '0.2.0', '0.3.0', '0.3.1', '0.3.2', '0.3.3', '0.3.4', '0.3.5'].includes(s.version)) s.version = VERSION;
+  if (s && ['0.1.0', '0.2.0', '0.3.0', '0.3.1', '0.3.2', '0.3.3', '0.3.4', '0.3.5', '0.3.6'].includes(s.version)) s.version = VERSION;
   const keys = value => value && typeof value === 'object' ? Object.keys(value) : [];
   assert(s && s.version === VERSION && ['supply','planning','execution','finished'].includes(s.phase) &&
     num(s.turn) && s.turn > 0 && num(s.rng) && s.rng <= 0xffffffff && num(s.seed) && s.seed <= 0xffffffff);
@@ -206,7 +207,7 @@ function setupPage() {
     '<fieldset><legend>Rival rules</legend><div class="segment">' +
     '<label><input name="rules" type="radio" value="app"' + (!setup.paper ? ' checked' : '') + '> App rivals · strongest</label>' +
     '<label><input name="rules" type="radio" value="paper"' + (setup.paper ? ' checked' : '') + '> Paper rules · as printed</label></div>' +
-    (setup.paper ? '<div class="segment paper-level">' + PAPER_LEVELS.map(([n,name]) => '<label><input name="extra" type="radio" value="' + n + '"' + (setup.extra === n ? ' checked' : '') + '> ' + name + ' · ' + (n < 0 ? '−1' : '+' + n) + ' pawn' + (Math.abs(n) === 1 ? '' : 's') + '</label>').join('') + '</div>' : '') +
+    (setup.paper ? '<div class="segment paper-level">' + PAPER_LEVELS.map(([n,name]) => '<label><input name="extra" type="radio" value="' + n + '"' + (setup.extra === n ? ' checked' : '') + '> ' + name + ' · ' + (n < 0 ? '−' + -n : '+' + n) + ' pawn' + (Math.abs(n) === 1 ? '' : 's') + '</label>').join('') + '</div>' : '') +
     '</fieldset>' +
     '<fieldset><legend>Dominance deck</legend><div class="segment">' +
     '<label><input name="length" type="radio" value="short"' + (setup.short ? ' checked' : '') + '> Short game · 22 cards</label>' +

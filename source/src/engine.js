@@ -316,7 +316,7 @@ function resolvePawn(s, step, choice) {
     case 'initiative': {
       const at = s.initiative.indexOf(actor);
       if (at > 0) [s.initiative[at-1],s.initiative[at]] = [s.initiative[at],s.initiative[at-1]];
-      s.pawns[choice.slot] = {actor, card:step.card, focus:step.focus};
+      if (choice.slot) s.pawns[choice.slot] = {actor, card:step.card, focus:step.focus}; // a full display leaves nowhere to move
       break;
     }
     case 'adaptation':

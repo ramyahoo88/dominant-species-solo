@@ -84,6 +84,8 @@ Each deck's `ice` card therefore always plays its Glaciation-leaning face. For I
 | v0.3.0 deck | 31% |
 | Rewrite D (kept) | 39% |
 
+Both rewrites were chosen on this same block, so these gains are biased upward; the seed 50000 block below is the unbiased estimate.
+
 **Confirmation (seed 50000, `--repeats 2`, `node source/benchmark.cjs --base feaaac0 --candidate worktree --seed 50000 --repeats 2`).**
 
 | Metric | v0.3.0 | v0.3.1 |

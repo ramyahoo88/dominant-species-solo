@@ -161,7 +161,8 @@ function paperGlaciationTile(s, actor) {
   if (!targets.length) return null;
   const opp = t => sum(s.ids.filter(id => id !== actor).map(id => s.tiles[t].cubes[id]));
   const clean = targets.filter(t => !s.tiles[t].cubes[actor]);
-  return pBy(clean.length ? clean : targets, opp, t => -s.tiles[t].cubes[actor], t => pFirstVP(s,t));
+  const tundraNear = t => NEIGHBORS[t].filter(id => s.tiles[id]?.terrain === 'tundra').length;
+  return pBy(clean.length ? clean : targets, t => opp(t) + bonus(tundraNear(t)), t => -s.tiles[t].cubes[actor], t => pFirstVP(s,t));
 }
 function paperSpeciation(s, actor, index) {
   let pool = s.animals[actor].pool;
@@ -234,6 +235,15 @@ function paperHitScore(s, tile, victim, actor) {
   if (cone(s,tile) === victim && theirs === 1) score += 6;                                // they lose dominance
   return score;
 }
+function paperHitScore(s, tile, victim, actor) {
+  const vp = pFirstVP(s,tile);
+  const mine = s.tiles[tile].cubes[actor], theirs = s.tiles[tile].cubes[victim];
+  let score = vp;
+  if (pRank(s,tile,victim) < pRank(s,tile,actor) && theirs - 1 <= mine) score += vp;       // you pass or tie them
+  if (theirs === 1) score += vp / 2;                                                       // they leave the tile
+  if (cone(s,tile) === victim && theirs === 1) score += 6;                                // they lose dominance
+  return score;
+}
 function paperCompetition(s, actor, types, one) {
   const legal = competitionChoices(s,actor,types);
   const order = pOrderOpps(s,actor);
@@ -292,10 +302,20 @@ function paperEffect(s, step) {
     case 'Aquatic': {
       const wet = land.filter(t => ['sea','wetland'].includes(s.tiles[t].terrain));
       if (!wet.length) return {skip:true,label:pLabel('no sea or wetland tile.')};
-      const tile = pBy(wet, t => VERTICES_OF[t].some(k => !s.corners[k]) && bagTypes.length ? 1 : 0, t => s.tiles[t].cubes[actor], t => pFirstVP(s,t));
-      const corner = bagTypes.length ? VERTICES_OF[tile].find(k => !s.corners[k]) || null : null;
-      const type = corner ? myType() : null;
       const n = Math.min(4,me.pool);
+      const type0 = bagTypes.length ? myType() : null;
+      const score = t => { // first-place VP you would gain by adding n species there (with your element if a corner is free)
+        const free = VERTICES_OF[t].find(k => !s.corners[k]);
+        if (free && type0) s.corners[free] = type0;
+        const ok = match(s,t,actor) > 0;
+        const before = pRank(s,t,actor);
+        s.tiles[t].cubes[actor] += n; const after = pRank(s,t,actor); s.tiles[t].cubes[actor] -= n;
+        if (free && type0) delete s.corners[free];
+        return ok ? (after === 0 && before !== 0 ? 2 : after < before || before < 0 ? 1 : 0) * pFirstVP(s,t) : -1;
+      };
+      const tile = pBy(wet, score, t => pFirstVP(s,t));
+      const corner = bagTypes.length ? VERTICES_OF[tile].find(k => !s.corners[k]) || null : null;
+      const type = corner ? type0 : null;
       return {tile,corner,type,n,label:pLabel('Aquatic at ' + tile + '.')};
     }
     case 'Biomass': {
@@ -306,28 +326,44 @@ function paperEffect(s, step) {
     case 'Blight': {
       const tiles = land.filter(t => VERTICES_OF[t].filter(k => s.corners[k]).length > 1);
       if (!tiles.length) return {skip:true,label:pLabel('no tile.')};
-      const tile = pBy(tiles, t => cone(s,t) === leader ? 1 : 0, t => s.tiles[t].cubes[actor] ? 0 : 1, t => pFirstVP(s,t));
-      const disks = VERTICES_OF[tile].filter(k => s.corners[k]);
-      const keep = disks.find(k => pTypes(s,actor).includes(s.corners[k])) || disks[0];
-      return {tile,keep,label:pLabel('Blight ' + tile + '.')};
+      const options = tiles.flatMap(t => VERTICES_OF[t].filter(k => s.corners[k]).map(keep => ({tile:t,keep})));
+      const swing = o => { // opposing species left with no match, minus twice your own
+        const removed = VERTICES_OF[o.tile].filter(k => s.corners[k] && k !== o.keep).map(k => [k,s.corners[k]]);
+        const around = unique(removed.flatMap(([k]) => CORNER_TILES[k])).filter(t => s.tiles[t]);
+        const before = Object.fromEntries(around.map(t => [t,s.ids.map(id => match(s,t,id) > 0)]));
+        for (const [k] of removed) delete s.corners[k];
+        let v = 0;
+        for (const t of around) s.ids.forEach((id,i) => { if (before[t][i] && !(match(s,t,id) > 0)) v += (id === actor ? -2 : 1) * s.tiles[t].cubes[id]; });
+        for (const [k,type] of removed) s.corners[k] = type;
+        return v;
+      };
+      const o = pBy(options, swing, o => pFirstVP(s,o.tile));
+      return {tile:o.tile,keep:o.keep,label:pLabel('Blight ' + o.tile + '.')};
     }
     case 'Catastrophe': {
-      const opp = t => sum(s.ids.filter(id => id !== actor).map(id => s.tiles[t].cubes[id]));
       const tiles = land.filter(t => s.ids.some(id => s.tiles[t].cubes[id]));
       if (!tiles.length) return {skip:true,label:pLabel('no tile.')};
-      const tile = pBy(tiles, t => opp(t) - s.tiles[t].cubes[actor] * 2, t => pFirstVP(s,t));
-      const keep = s.tiles[tile].cubes[actor] ? actor : s.ids.find(id => s.tiles[tile].cubes[id]) || null;
-      const hits = NEIGHBORS[tile].filter(t => s.tiles[t]).map(t => ({tile:t,victim:paperHitOn(s,t,actor,true)})).filter(h => h.victim);
-      return {tile,keep,hits,label:pLabel('Catastrophe at ' + tile + '.')};
+      const plan = t => {
+        const here = s.ids.filter(id => s.tiles[t].cubes[id]);
+        const keep = here.includes(actor) ? actor : [...here].sort((a,b) => s.animals[a].vp - s.animals[b].vp || rank(b) - rank(a))[0] || null;
+        const hits = NEIGHBORS[t].filter(n => s.tiles[n]).map(n => ({tile:n,victim:paperHitOn(s,n,actor,true)})).filter(h => h.victim);
+        const value = sum(s.ids.map(id => (id === actor ? -2 : 1) * (s.tiles[t].cubes[id] - (id === keep ? 1 : 0)))) + sum(hits.map(h => h.victim === actor ? -2 : 1));
+        return {tile:t,keep,hits,value};
+      };
+      const best = pBy(tiles.map(plan), p => p.value, p => pFirstVP(s,p.tile));
+      return {tile:best.tile,keep:best.keep,hits:best.hits,label:pLabel('Catastrophe at ' + best.tile + '.')};
     }
     case 'Evolution': {
       const hits = [];
       for (const victim of pOrderOpps(s,actor).slice(0,Math.min(2,me.pool))) {
         const tiles = occupied(s,victim);
         if (!tiles.length) continue;
-        const tile = pBy(tiles, t => s.tiles[t].cubes[actor] && pRank(s,t,victim) < pRank(s,t,actor) ? 1 : 0, t => match(s,t,actor) > 0 ? 1 : 0, t => pFirstVP(s,t));
-        hits.push({tile,victim});
+        const score = t => { const b = pRank(s,t,actor); s.tiles[t].cubes[victim]--; s.tiles[t].cubes[actor]++; const a = pRank(s,t,actor); const dom = cone(s,t) === actor; s.tiles[t].cubes[victim]++; s.tiles[t].cubes[actor]--;
+          return (match(s,t,actor) > 0 ? 1 : -5) * ((a === 0 && b !== 0 ? 2 : a < b || b < 0 ? 1 : 0) * pFirstVP(s,t) + (dom ? 3 : 0)); };
+        const tile = pBy(tiles, score, t => pFirstVP(s,t));
+        hits.push({tile,victim}); s.tiles[tile].cubes[victim]--; s.tiles[tile].cubes[actor]++;
       }
+      for (const h of hits) { s.tiles[h.tile].cubes[h.victim]++; s.tiles[h.tile].cubes[actor]--; }
       return {hits,label:pLabel(hits.length ? 'Evolution.' : 'Replace no cubes.')};
     }
     case 'Fecundity': {
@@ -352,7 +388,8 @@ function paperEffect(s, step) {
     case 'Hibernation': {
       const n = Math.min(5,me.dead);
       if (!n) return {tile:land[0],n:0,label:pLabel('nothing to return.')};
-      const tile = pBy(land, t => match(s,t,actor) > 0 && s.tiles[t].cubes[actor] ? 1 : 0, t => match(s,t,actor), t => pFirstVP(s,t));
+      const matched = land.filter(t => match(s,t,actor) > 0);
+      const tile = pBy(matched.length ? matched : land, t => s.tiles[t].terrain === 'tundra' ? 1 : 0, t => s.tiles[t].cubes[actor] ? 0 : 1, t => pGainsRank(s,t,actor,n) ? 1 : 0, t => pFirstVP(s,t));
       return {tile,n,label:pLabel('Hibernation at ' + tile + '.')};
     }
     case 'Ice Sheet': {

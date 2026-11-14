@@ -32,4 +32,6 @@ The 120000 runs used the rules just before the final change to the countable `el
 - **Placement:** the Domination-first rule (up to two pawns) is the strongest single rule. One or three pawns were both much worse.
 - **Rejected:** more detailed Migration and Speciation rules, Migration group jumps, larger Wanderlust arrivals, an Adaptation dominance rule, and looser Domination triggers. None improved the win rate.
 
+**A shared priority test (tested, rejected).** One test was applied to every action and card choice, looking only at the tiles each option touched, with the existing rule breaking ties. It asked about first place gained, dominance gained, and first place or dominance taken from the leader. At 6 pawns on seed 6200 (360 games), it made the rivals weaker: the scripted player went from 49% to 57%. Adding the terms into one score gave 54%, and dropping the veto on losing first place gave 57%. Judging each choice only by the tiles it touches misses what the per-action rules already capture: species kept spread out for later scoring, cards and Survival.
+
 **Limits.** The scripted player is not a person. Hard varies most between seed blocks. The rules have not been played at a real table.

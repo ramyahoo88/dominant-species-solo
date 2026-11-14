@@ -83,15 +83,16 @@ async function makePool(n) {
       const chunk = Math.ceil(job.scenarios.length / workers.length);
       for (let k = 0; k < workers.length; k++) {
         const part = job.scenarios.slice(k * chunk, (k + 1) * chunk);
-        if (part.length) tasks.push({j, weights: job.weights, part});
+        if (part.length) tasks.push({j, at: k * chunk, weights: job.weights, part});
       }
     });
-    const results = jobs.map(() => []);
+    const results = jobs.map(job => Array(job.scenarios.length));
     let t = 0;
     await Promise.all(workers.map(async w => {
       while (t < tasks.length) {
         const task = tasks[t++];
-        results[task.j].push(...await send(w, task.weights, task.part));
+        const out = await send(w, task.weights, task.part);
+        out.forEach((g, i) => { results[task.j][task.at + i] = g; });
       }
     }));
     return results;
@@ -106,7 +107,8 @@ function scenarios(seed, count, animals, cell = null) {
   return Array.from({length: count}, (_, i) => {
     const bots = cell ? cell.bots : pick(BOTS);
     const mode = cell ? cell.mode : pick(MODES);
-    const order = [...animals].sort(() => r() - .5);
+    const order = [...animals];
+    for (let k = order.length - 1; k > 0; k--) { const m = Math.floor(r() * (k + 1)); [order[k], order[m]] = [order[m], order[k]]; }
     const policy = cell?.policy ?? 'tuned';
     return {human: order[0], rivals: order.slice(1, bots + 1), seed: (seed * 7919 + i) >>> 0, short: r() < .5, policy, mode, bots};
   });

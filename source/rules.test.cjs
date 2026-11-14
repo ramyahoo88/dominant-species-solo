@@ -17,8 +17,8 @@ verify('GMT p. 4: six APs and 50 cubes include one VP marker and four starting s
   }
 `);
 
-verify('v0.1, v0.2 and v0.3.0 save migration preserves inventory, pending choices, and random state', `
-  for (const version of ['0.1.0','0.2.0','0.3.0']) {
+verify('v0.1, v0.2, v0.3.0 and v0.3.1 save migration preserves inventory, pending choices, and random state', `
+  for (const version of ['0.1.0','0.2.0','0.3.0','0.3.1']) {
     const s = newGame('insects',['mammals','birds'],true,51);
     s.version = version;
     s.phase = 'execution';

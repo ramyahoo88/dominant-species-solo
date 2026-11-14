@@ -2,12 +2,12 @@
 const P = (focus, rows) => ({ focus, rows: rows.split(' ') });
 const C = (title, check, yes, no) => ({ title, check, yes, no });
 const CHECKS = {
-  foothold: 'An occupied tile is endangered',
+  foothold: 'Two or more occupied tiles have at most one matching element',
   close: 'A single cube can improve the VP rank on a contested tile',
-  cone: 'An unscored tile is dominated by this animal and a card is available',
-  front: 'A valuable new tile could be reached from here',
-  ice: 'This animal has cubes in or next to tundra',
-  contested: 'This animal shares a tile with a rival',
+  cone: 'This animal dominates three or more unscored tiles and a card is available',
+  front: 'A face-up Sea or Wetland tile could be placed next to this animal',
+  ice: 'This animal has species on tundra and leads or ties the tundra count',
+  contested: 'A rival outranks this animal on a shared tile worth 6+ VP',
   elements: 'An element on offer improves survival or dominance',
   supply: 'At least six cubes remain in the gene pool',
   removal: 'A legal Depletion could take away a rival’s last match',

@@ -391,7 +391,7 @@ function checkCard(s, actor, test) {
   const contested = land.filter(tile => s.ids.some(id => id !== actor && s.tiles[tile].cubes[id]));
   const ctx = context(s,actor,'dominance');
   switch (test) {
-    case 'foothold': return land.some(tile => !match(s,tile,actor));
+    case 'foothold': return land.filter(tile => match(s,tile,actor) <= 1).length >= 2;
     case 'close': return contested.some(tile => {
       const t = s.tiles[tile];
       const before = tileVP(s,tile,actor);
@@ -400,10 +400,14 @@ function checkCard(s, actor, test) {
       t.cubes[actor]--;
       return higher;
     });
-    case 'cone': return availableCards(s).length > 0 && land.some(tile => !s.scored.includes(tile) && cone(s,tile) === actor);
-    case 'front': return s.stacks.some(stack => stack.face && TERRAIN[stack.face].vp[0] >= 5) && frontTiles(s).some(t => NEIGHBORS[t].some(id => land.includes(id)));
-    case 'ice': return land.some(tile => [tile,...NEIGHBORS[tile]].some(id => s.tiles[id]?.terrain === 'tundra'));
-    case 'contested': return contested.length > 0;
+    case 'cone': return availableCards(s).length > 0 && land.filter(tile => !s.scored.includes(tile) && cone(s,tile) === actor).length >= 3;
+    case 'front': return s.stacks.some(stack => stack.face && TERRAIN[stack.face].vp[0] >= 8) && frontTiles(s).some(t => NEIGHBORS[t].some(id => land.includes(id)));
+    case 'ice': {
+      const tundra = id => sum(terrainIds(s).filter(tile => s.tiles[tile].terrain === 'tundra').map(tile => s.tiles[tile].cubes[id] || 0));
+      const own = tundra(actor);
+      return own > 0 && own >= Math.max(...s.ids.filter(id => id !== actor).map(tundra));
+    }
+    case 'contested': return contested.some(tile => TERRAIN[s.tiles[tile].terrain].vp[0] >= 6 && tileScores(s,tile).findIndex(([id]) => id === actor) > 0);
     case 'elements': return indexed(s.boxes.adaptation).some(({type}) => changeElements(s,actor,[...s.animals[actor].added,type],ctx) > .75) ||
       indexed(s.boxes.abundance).some(({type}) => type === ANIMALS[actor].el);
     case 'supply': return s.animals[actor].pool >= 6;

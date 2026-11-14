@@ -445,7 +445,7 @@ dialog::backdrop{background:#132d2c88}
 <noscript>This companion needs JavaScript. Open the downloaded HTML file in a browser.</noscript>
 <script>'use strict';
 
-const VERSION = '0.3.1';
+const VERSION = '0.3.2';
 const SAVE_KEY = 'dominant-species-solo-v1';
 // GMT rules p. 4: of the 50 gathered cubes, one marks VP.
 const THREE_PLAYER_CUBES = 50;
@@ -560,12 +560,12 @@ const bonus = count => {
 const P = (focus, rows) => ({ focus, rows: rows.split(' ') });
 const C = (title, check, yes, no) => ({ title, check, yes, no });
 const CHECKS = {
-  foothold: 'An occupied tile is endangered',
+  foothold: 'Two or more occupied tiles have at most one matching element',
   close: 'A single cube can improve the VP rank on a contested tile',
-  cone: 'An unscored tile is dominated by this animal and a card is available',
-  front: 'A valuable new tile could be reached from here',
-  ice: 'This animal has cubes in or next to tundra',
-  contested: 'This animal shares a tile with a rival',
+  cone: 'This animal dominates three or more unscored tiles and a card is available',
+  front: 'A face-up Sea or Wetland tile could be placed next to this animal',
+  ice: 'This animal has species on tundra and leads or ties the tundra count',
+  contested: 'A rival outranks this animal on a shared tile worth 6+ VP',
   elements: 'An element on offer improves survival or dominance',
   supply: 'At least six cubes remain in the gene pool',
   removal: 'A legal Depletion could take away a rival’s last match',
@@ -1469,7 +1469,7 @@ function checkCard(s, actor, test) {
   const contested = land.filter(tile => s.ids.some(id => id !== actor && s.tiles[tile].cubes[id]));
   const ctx = context(s,actor,'dominance');
   switch (test) {
-    case 'foothold': return land.some(tile => !match(s,tile,actor));
+    case 'foothold': return land.filter(tile => match(s,tile,actor) <= 1).length >= 2;
     case 'close': return contested.some(tile => {
       const t = s.tiles[tile];
       const before = tileVP(s,tile,actor);
@@ -1478,10 +1478,14 @@ function checkCard(s, actor, test) {
       t.cubes[actor]--;
       return higher;
     });
-    case 'cone': return availableCards(s).length > 0 && land.some(tile => !s.scored.includes(tile) && cone(s,tile) === actor);
-    case 'front': return s.stacks.some(stack => stack.face && TERRAIN[stack.face].vp[0] >= 5) && frontTiles(s).some(t => NEIGHBORS[t].some(id => land.includes(id)));
-    case 'ice': return land.some(tile => [tile,...NEIGHBORS[tile]].some(id => s.tiles[id]?.terrain === 'tundra'));
-    case 'contested': return contested.length > 0;
+    case 'cone': return availableCards(s).length > 0 && land.filter(tile => !s.scored.includes(tile) && cone(s,tile) === actor).length >= 3;
+    case 'front': return s.stacks.some(stack => stack.face && TERRAIN[stack.face].vp[0] >= 8) && frontTiles(s).some(t => NEIGHBORS[t].some(id => land.includes(id)));
+    case 'ice': {
+      const tundra = id => sum(terrainIds(s).filter(tile => s.tiles[tile].terrain === 'tundra').map(tile => s.tiles[tile].cubes[id] || 0));
+      const own = tundra(actor);
+      return own > 0 && own >= Math.max(...s.ids.filter(id => id !== actor).map(tundra));
+    }
+    case 'contested': return contested.some(tile => TERRAIN[s.tiles[tile].terrain].vp[0] >= 6 && tileScores(s,tile).findIndex(([id]) => id === actor) > 0);
     case 'elements': return indexed(s.boxes.adaptation).some(({type}) => changeElements(s,actor,[...s.animals[actor].added,type],ctx) > .75) ||
       indexed(s.boxes.abundance).some(({type}) => type === ANIMALS[actor].el);
     case 'supply': return s.animals[actor].pool >= 6;
@@ -2147,7 +2151,7 @@ function readSupplyDraft(s, raw) {
 }
 function validateState(s) {
   function assert(ok) { if (!ok) throw new Error('This is not a valid Dominant Species companion save.'); }
-  if (s && ['0.1.0', '0.2.0', '0.3.0'].includes(s.version)) s.version = VERSION;
+  if (s && ['0.1.0', '0.2.0', '0.3.0', '0.3.1'].includes(s.version)) s.version = VERSION;
   const keys = value => value && typeof value === 'object' ? Object.keys(value) : [];
   assert(s && s.version === VERSION && ['supply','planning','execution','finished'].includes(s.phase) &&
     num(s.turn) && s.turn > 0 && num(s.rng) && s.rng <= 0xffffffff && num(s.seed) && s.seed <= 0xffffffff);

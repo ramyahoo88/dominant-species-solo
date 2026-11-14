@@ -48,3 +48,57 @@ python3 source/browser_test.py
 ```
 
 The raw report is available by redirecting the benchmark's JSON to a file. `--detail` adds game-level outcomes, and `--trace` adds choices for reproduction. See the [benchmark notes](source/benchmark/README.md) for the fixed policy, seed behavior, and classification.
+
+## v0.3.1 · weak-animal deck rewrite (Claude, November 13, 2026)
+
+**Diagnosis (seed 6200, development).** Swapping in the Reptiles' row lists lifted Insects and Amphibians as rivals by 12–20 points, while swapping only focuses or checks did little, so the rows were the lever. Card-face usage showed why some faces matter so much: several checks are nearly constant across all six decks, so each deck effectively plays about five of its sixteen faces.
+
+| Check | True rate |
+|---|---:|
+| ice | 99% |
+| contested | 98% |
+| cone | 96% |
+| front | 94% |
+| elements | 82% |
+| breadth | 79% |
+| supply | 70% |
+| close | 64% |
+| invasion | 35% |
+| removal | 27% |
+| late | 18% |
+| regression | 15% |
+| foothold | 5% |
+
+Each deck's `ice` card therefore always plays its Glaciation-leaning face. For Insects that face led with Wasteland → Glaciation about six times a game, and *First Colonist* led with Wanderlust about 5.6 times a game.
+
+**Selection (seed 40000, 240 games per variant, rule fixed in advance: adopt only with a gain of about 8 points or more).** These runs used a harness filtered to games where the target animal is a rival.
+
+| Insects rival win rate | |
+|---|---:|
+| v0.3.0 deck | 20% |
+| Rewrite C (kept, theme-preserving) | 28% |
+| Full Reptiles rows (rejected, only +4 over C) | 32% |
+
+| Amphibians rival win rate | |
+|---|---:|
+| v0.3.0 deck | 31% |
+| Rewrite D (kept) | 39% |
+
+Both rewrites were chosen on this same block, so these gains are biased upward; the seed 50000 block below is the unbiased estimate.
+
+**Confirmation (seed 50000, `--repeats 2`, `node source/benchmark.cjs --base feaaac0 --candidate worktree --seed 50000 --repeats 2`).**
+
+| Metric | v0.3.0 | v0.3.1 |
+|---|---:|---:|
+| Scripted player wins | 100/360 | 97/360 |
+| Player mean VP margin | −26.3 | −27.3 |
+| Insects rival wins | 35/120 | 36/120 |
+| Amphibians rival wins | 38/120 | 41/120 |
+| Reptiles rival wins | 63/120 | 61/120 |
+| Rival pawns with no legal target per game | 0.59 | 0.71 |
+
+Paired change in player win rate: −0.8 points (approximate 95% interval −5.6 to +3.9).
+
+**Reading.** Gains of 10–20 points on the development seeds shrank to roughly 0–8 points on fresh ones, and the full Reptiles rows fell from 41% to 32%. Best estimate: a few points for each animal, uncertain. Rewriting rows is a weaker lever than the development runs suggested, and win-rate differences measured on about 60 setups are unreliable below roughly ±8 points. Reptiles remain clearly the strongest rival.
+
+**Next lever.** Recalibrate the nearly constant checks (`ice`, `contested`, `cone`, `front`, `foothold`) so both faces of each card actually get played. This affects all six decks.

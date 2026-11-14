@@ -445,7 +445,7 @@ dialog::backdrop{background:#132d2c88}
 <noscript>This companion needs JavaScript. Open the downloaded HTML file in a browser.</noscript>
 <script>'use strict';
 
-const VERSION = '0.3.0';
+const VERSION = '0.3.1';
 const SAVE_KEY = 'dominant-species-solo-v1';
 // GMT rules p. 4: of the 50 gathered cubes, one marks VP.
 const THREE_PLAYER_CUBES = 50;
@@ -606,14 +606,14 @@ const DECKS = {
     C('Last Flight','late', P('majority','migration domination competition'), P('survival','glaciation migration speciation')),
   ],
   amphibians: [
-    C('Threefold Water','elements', P('dominance','abundance adaptation domination'), P('growth','speciation migration wanderlust')),
-    C('Seasonal Pools','foothold', P('conserve','adaptation abundance migration'), P('growth','speciation abundance domination')),
-    C('Floodplain Nursery','supply', P('growth','speciation abundance wanderlust'), P('reach','migration domination adaptation')),
-    C('Drought Refuge','regression', P('conserve','regression adaptation migration'), P('conserve','abundance wasteland adaptation')),
-    C('Wetland Tenure','cone', P('dominance','domination competition abundance'), P('dominance','abundance adaptation migration')),
-    C('Under the Ice','ice', P('survival','wasteland glaciation speciation'), P('reach','wanderlust abundance migration')),
-    C('Cut the Tributary','removal', P('pressure','depletion domination competition'), P('majority','speciation migration abundance')),
-    C('Waters Recede','late', P('majority','domination competition migration'), P('tempo','initiative abundance speciation')),
+    C('Threefold Water','elements', P('dominance','adaptation abundance domination'), P('growth','speciation migration wanderlust')),
+    C('Seasonal Pools','foothold', P('conserve','adaptation abundance migration'), P('growth','speciation domination wanderlust')),
+    C('Floodplain Nursery','supply', P('growth','speciation migration abundance'), P('reach','migration domination adaptation')),
+    C('Drought Refuge','regression', P('conserve','regression adaptation migration'), P('conserve','adaptation abundance wasteland')),
+    C('Wetland Tenure','cone', P('dominance','domination adaptation competition'), P('dominance','abundance adaptation migration')),
+    C('Under the Ice','ice', P('survival','migration domination glaciation'), P('reach','wanderlust abundance migration')),
+    C('Cut the Tributary','removal', P('pressure','depletion domination competition'), P('majority','speciation migration domination')),
+    C('Waters Recede','late', P('majority','domination competition migration'), P('tempo','initiative migration abundance')),
   ],
   arachnids: [
     C('One Cut Is Enough','contested', P('majority','speciation competition domination'), P('growth','speciation wanderlust adaptation')),
@@ -626,14 +626,14 @@ const DECKS = {
     C('Close the Trap','late', P('dominance','domination competition speciation'), P('growth','speciation abundance wanderlust')),
   ],
   insects: [
-    C('First Colonist','front', P('reach','wanderlust abundance migration'), P('reach','speciation migration adaptation')),
-    C('Over the Threshold','close', P('majority','speciation competition domination'), P('growth','speciation abundance wanderlust')),
-    C('Grassland Mosaic','elements', P('dominance','abundance adaptation domination'), P('growth','speciation migration initiative')),
-    C('A Thousand Footholds','supply', P('growth','speciation wanderlust migration'), P('conserve','adaptation migration domination')),
-    C('After the Thaw','ice', P('survival','wasteland glaciation speciation'), P('reach','wanderlust migration abundance')),
-    C('Swarm the Gap','invasion', P('dominance','migration domination speciation'), P('reach','speciation adaptation wanderlust')),
-    C('Keep the Colony','foothold', P('conserve','adaptation migration regression'), P('pressure','depletion speciation competition')),
-    C('Everywhere at Once','late', P('dominance','domination migration competition'), P('growth','speciation abundance wanderlust')),
+    C('First Colonist','front', P('reach','migration wanderlust domination'), P('reach','adaptation migration domination')),
+    C('Over the Threshold','close', P('majority','domination speciation competition'), P('growth','speciation migration abundance')),
+    C('Grassland Mosaic','elements', P('dominance','adaptation domination abundance'), P('growth','speciation domination initiative')),
+    C('A Thousand Footholds','supply', P('growth','speciation migration wanderlust'), P('conserve','adaptation migration domination')),
+    C('After the Thaw','ice', P('survival','wasteland domination glaciation'), P('reach','migration domination wanderlust')),
+    C('Swarm the Gap','invasion', P('dominance','migration domination speciation'), P('reach','adaptation speciation migration')),
+    C('Keep the Colony','foothold', P('conserve','regression adaptation migration'), P('pressure','competition domination speciation')),
+    C('Everywhere at Once','late', P('dominance','domination migration competition'), P('growth','speciation domination migration')),
   ],
 };
 const FOCUSES = {
@@ -2147,7 +2147,7 @@ function readSupplyDraft(s, raw) {
 }
 function validateState(s) {
   function assert(ok) { if (!ok) throw new Error('This is not a valid Dominant Species companion save.'); }
-  if (s && ['0.1.0', '0.2.0'].includes(s.version)) s.version = VERSION;
+  if (s && ['0.1.0', '0.2.0', '0.3.0'].includes(s.version)) s.version = VERSION;
   const keys = value => value && typeof value === 'object' ? Object.keys(value) : [];
   assert(s && s.version === VERSION && ['supply','planning','execution','finished'].includes(s.phase) &&
     num(s.turn) && s.turn > 0 && num(s.rng) && s.rng <= 0xffffffff && num(s.seed) && s.seed <= 0xffffffff);

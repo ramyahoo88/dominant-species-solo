@@ -1,5 +1,11 @@
 # Release notes
 
+## v0.3.1 · November 13, 2026
+
+- Rewrote the rows on several Insects and Amphibians rival card faces. Insects no longer lead with Glaciation or Wanderlust on their most-drawn faces and favor Domination, Migration and Adaptation; Amphibians lean less on Abundance and Glaciation. Card titles, checks and focuses are unchanged.
+- Effect is small and uncertain. On the untouched confirmation block (seed 50000, 360 games) Insect rival wins went 35 → 36 of 120 and Amphibian 38 → 41; the scripted player's win rate changed by −0.8 points (95% interval −5.6 to +3.9). An earlier fresh block (seed 40000) showed about +8 points for each animal. See [benchmark results](BENCHMARK_RESULTS.md).
+- Imports preserve v0.3.0 saves.
+
 ## v0.3.0 · November 13, 2026
 
 - Added a repeatable benchmark with fixed player strategies, paired supplies, per-animal results, score margins, and forfeit causes.

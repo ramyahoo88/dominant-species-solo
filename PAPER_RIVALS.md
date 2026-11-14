@@ -6,20 +6,20 @@ Table-playable rules for the rival animals (two to five), so Dominant Species ca
 - One version only (November 2026): flat element matching, a fixed Dominance Card list, always the card's reverse (No) face, simple Adaptation, full Speciation, Migration without rank-gain checks (it still avoids losing a rank where it leaves), Glaciation without the tundra bonus, Barren Earth, and **Block the leader** (deny the leader's Domination). The earlier detailed rules (card checks, card scoring, rank checks) were retired; `--paper-options full` restores them only to reproduce old results.
 - Benchmark: `node source/benchmark.cjs --base main --candidate worktree --paper N [--bots 2..5]` plays the app's rivals (base) against paper rivals with N extra action pawns (candidate) on the same seeds: 0 Easy, 1 Standard, 2 Hard, 3 Expert.
 
-## Difficulty (seed block 200000, 360 games per cell; scripted player's win rate, lower is tougher)
+## Difficulty (seed block 200000, 360 games per cell, v0.3.8; scripted player's win rate, lower is tougher)
 
-v0.3.7 re-measured the levels after the benchmark player learned to read flat matching (GPT audit B1). Each level now adds one more pawn than in v0.3.6: Easy +0, Standard +1, Hard +2, Expert +3 on top of the base game's pawns.
+v0.3.8 fixed the paper rules to match the printed procedures (GPT re-audit E2–E6), which made the rivals stronger. The pawn counts are unchanged (Easy +0, Standard +1, Hard +2, Expert +3); the descriptions moved instead: Easy is a little easier than an even game, Standard a little tougher, Hard about as strong as the app's rivals, Expert tougher.
 
 | Rivals (even game) | Easy +0 | Standard +1 | Hard +2 | Expert +3 | App |
 |---|---|---|---|---|---|
-| 2 (33%) | 45% | 31% | 23% | 17% | 20% |
-| 3 (25%) | 35% | 22% | 13% | 13% | 15% |
-| 4 (20%) | 36% | 20% | 14% | 8% | 10% |
-| 5 (17%) | 31% | 15% | 9% | 4% | 8% |
+| 2 (33%) | 46% | 25% | 19% | 17% | 20% |
+| 3 (25%) | 33% | 17% | 9% | 10% | 15% |
+| 4 (20%) | 26% | 15% | 11% | 7% | 9% |
+| 5 (17%) | 26% | 11% | 8% | 4% | 8% |
 
-No game stalled. If the action display fills while players still have pawns, Planning ends and those pawns wait (v0.3.7 rule).
+No game stalled. v0.3.7 numbers for comparison: Standard was 31/22/20/15%.
 
-**Strategy balance.** Chasing Dominance Cards is still the strongest scripted strategy against both paper and app rivals: at Standard it won 48%, 31%, 29% and 23% (2–5 rivals) against 8–23% for the other two. Block the leader already trims it (see History); at Expert the three strategies even out. See [the v0.3.5 audit](AUDIT_v0.3.5.md).
+**Strategy balance.** Chasing Dominance Cards is still the strongest scripted strategy: at Standard it won 43%, 28%, 17% and 13% (2–5 rivals) against 5–20% for the other two. At Hard and Expert the three even out. A self-tuned test player (branch `claude/learning-player`) suggests a stronger version of this plan: contest Initiative, take cards, use Wanderlust. That is under evaluation for the next release.
 
 ## History
 

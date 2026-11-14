@@ -1,48 +1,48 @@
 {
   "rulebook": "2026-11-14",
-  "easy": "The best starting level for learning; you win more often than in an even game",
-  "standard": "About an even game at every table size",
-  "hard": "Tougher than an even game; close to the app's rivals at two or three rivals",
-  "expert": "About as strong as the app's rivals, or a little stronger at four or five rivals",
-  "method": "Each cell is 360 games on fresh seeds (block 200000) not used to tune the rules. Lower means tougher rivals. In a perfectly even game the player would win 33% against two rivals, 25% against three, 20% against four and 17% against five.",
+  "easy": "A little easier than an even game; the best level for learning",
+  "standard": "A little tougher than an even game",
+  "hard": "About as strong as the app's rivals",
+  "expert": "Tougher than the app's rivals",
+  "method": "Each cell is 360 games on seeds (block 200000) not used to tune the rules, played with v0.3.8. Lower means tougher rivals. In a perfectly even game the player would win 33% against two rivals, 25% against three, 20% against four and 17% against five.",
   "rows": [
     {
       "rivals": 2,
       "even": 33,
-      "easy": 45,
-      "standard": 31,
-      "hard": 23,
+      "easy": 46,
+      "standard": 25,
+      "hard": 19,
       "expert": 17,
       "app": 20
     },
     {
       "rivals": 3,
       "even": 25,
-      "easy": 35,
-      "standard": 22,
-      "hard": 13,
-      "expert": 13,
+      "easy": 33,
+      "standard": 17,
+      "hard": 9,
+      "expert": 10,
       "app": 15
     },
     {
       "rivals": 4,
       "even": 20,
-      "easy": 36,
-      "standard": 20,
-      "hard": 14,
-      "expert": 8,
-      "app": 10
+      "easy": 26,
+      "standard": 15,
+      "hard": 11,
+      "expert": 7,
+      "app": 9
     },
     {
       "rivals": 5,
       "even": 17,
-      "easy": 31,
-      "standard": 15,
-      "hard": 9,
+      "easy": 26,
+      "standard": 11,
+      "hard": 8,
       "expert": 4,
       "app": 8
     }
   ],
-  "strategy": "**Strategy balance.** Chasing Domination cards is the strongest approach in testing, against both paper and app rivals: at Standard it wins 23–48% against paper rivals versus 8–23% for spreading out or chasing majorities. The gap narrows at Expert. If you want a harder game, avoid leaning on Domination cards, or move up a level.",
+  "strategy": "**Strategy balance.** Chasing Domination cards is the strongest approach in testing: at Standard it wins 13–43% against paper rivals versus 5–20% for spreading out or chasing majorities. At Hard and Expert the three approaches even out. If you want a harder game, avoid leaning on Domination cards, or move up a level.",
   "stalls": "With the Barren Earth step, no test game stalled: every game reached a normal end. If the action display fills before every rival has placed, Planning simply ends and the extra pawns wait for the next turn."
 }

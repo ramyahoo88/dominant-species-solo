@@ -27,7 +27,7 @@ const cardRows = face => '<div class="card-flow">' + face.rows.map(row => '<span
 let game = null;
 let undo = [];
 let setup = {human:'amphibians',bots:['birds','arachnids'],short:true,paper:false,extra:1};
-// Re-measured for v0.3.7 (GPT audit B1): +1 pawn is about an even game, +3 is about as tough as the app's rivals.
+// Re-measured for v0.3.8: +0 is a little easier than an even game, +1 a little tougher, +2 about as tough as the app's rivals.
 const PAPER_LEVELS = [[0,'Easy'],[1,'Standard'],[2,'Hard'],[3,'Expert']];
 function paperLevel(extra) { return (PAPER_LEVELS.find(([n]) => n === extra) || [0,'Custom'])[1]; }
 const RIVAL_WORDS = ['one','two','three','four','five'];

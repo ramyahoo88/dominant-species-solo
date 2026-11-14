@@ -1,5 +1,22 @@
 # Release notes
 
+## v0.3.8 · November 14, 2026 · fixes for the GPT v0.3.7 re-audit
+
+- **Initiative on a full action display:** the marker still advances and the pawn returns to its owner (it was forfeited). This applies to paper rivals, app rivals and the player form, which now also lets you advance without moving the pawn.
+- **Evolution:** the shared resolution rejects more than two opponents, a repeated opponent, or more replacements than the gene pool, whoever chooses. The benchmark's frozen player is capped the same way, so it no longer converts up to five opponents.
+- **Paper rules now match the printed procedures:**
+  - Rank counts every animal on a tile, even below the places that score, so Migration and arrivals no longer skip zero-VP tiles.
+  - Competition picks the space with the most shared tiles, and its rank bonus follows the food chain.
+  - Evolution only replaces species on tiles the rival matches, trying the next opponent if needed.
+  - Depletion only plans a removal it can carry out.
+  - Fertile names the whole award.
+- **Printables:**
+  - Clarified the Initiative, Evolution, Fertile, Depletion, Competition, Habitat, Birds' Migration and d8 wording.
+  - Corrected the benchmark example and the Easy description.
+  - Headings stay with their tables, and the card PDF is now 6 pages.
+- **Tests:** eight new rules tests (each fails on v0.3.7). The full-display test now requires a full display with pawns left over, and the browser game test can play the 26-card deck. See [AUDIT_RESPONSE_v0.3.7.md](AUDIT_RESPONSE_v0.3.7.md).
+- **Difficulty:** re-measured with these fixes. The paper rivals got stronger. The pawn counts stay the same, and the level descriptions changed: Easy is a little easier than an even game, Standard a little tougher (25/17/15/11% against an even 33/25/20/17%), Hard matches the app's rivals and Expert is tougher.
+
 ## v0.3.7 · November 14, 2026 · fixes for the GPT v0.3.6 audit
 
 - **Migration:** a partial Migration (fewer moves than the allowance) can now be confirmed. In v0.3.6 the empty From picker blocked submission.

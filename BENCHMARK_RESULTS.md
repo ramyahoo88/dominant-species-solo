@@ -201,3 +201,24 @@ Only 39% of single-cube claims took first place. `utility` gives each occupied t
 Neither met its criteria. C1 kept more cubes alive but made rivals weaker by over-caution. C2 halved the number of thin claims but did not improve their survival. Birds' own VP held at about 190 in all three runs while the best opponent stayed near 216, so Birds lost share rather than points.
 
 **Unconfirmed lead.** C2 made rivals tougher on development seeds only (player 21% → 17%), but Reptiles rose 47% → 57% and Birds fell. That is the same trade-off as v0.3.3. It has not been tested on fresh seeds.
+
+## Birds deck rewrite · tested, rejected (Claude, November 13, 2026)
+
+Birds played the fewest Domination actions of any rival (7.7 per game). Several frequent faces led with low-value rows: *Last Flight* (no) with Glaciation and *Early Departure* (no) with Initiative. Two rewrites moved Domination earlier and kept Migration in every face. On seed 6200, with 180 games where Birds were a rival:
+
+| Variant | Birds wins | Birds VP | Best other VP | Domination per game |
+|---|---:|---:|---:|---:|
+| v0.3.3 | 68 (38%) | 190 | 213 | 7.7 |
+| B1: six faces | 74 (41%) | 195 | 206 | 10.1 |
+| B2: three faces | 67 (37%) | 195 | 208 | 9.7 |
+
+**Confirmation of B1 (seed 100000, `--base main --repeats 3`, 540 games).** Pre-set rule: the scripted player's win rate rises by no more than about 3 points, no animal loses more than 13 of 180, and Birds' rival wins do not fall.
+
+| Rival wins of 180 | Mammals | Reptiles | Birds | Amphibians | Arachnids | Insects |
+|---|---:|---:|---:|---:|---:|---:|
+| v0.3.3 | 71 | 80 | 71 | 71 | 74 | 62 |
+| B1 | 74 | 80 | 66 | 72 | 71 | 65 |
+
+Scripted player 111 → 112 of 540 (+0.2 points, interval −2.7 to +3.0). Birds fell, so B1 was rejected.
+
+**Reading.** On this fresh block the v0.3.3 baseline shows no Birds weakness: 71 of 180, level with Mammals and Amphibians. The rivals are within about 10 wins of each other except Reptiles (80) and Insects (62). The Birds deficits seen on earlier blocks were small and inconsistent, so no further Birds-specific work is planned without new evidence. Reptiles remain the most consistently strong rival.

@@ -64,7 +64,13 @@ function paperPlacement(s, actor, cardIndex, openOverride = null) {
   const doms = pawnCount(s,actor,'domination'), dominated = paperDominated(s,actor).length;
   const domFirst = !PAPER.noDomFirst && availableCards(s).length && dominated > doms && doms < 2 ? pick(['domination'], true) : null;
   const barren = paperBarren(s) ? pick(['abundance']) : null;
-  const slot = domFirst || barren || pick(face ? face.rows : [], false, !PAPER.noWeak) || pick(PAPER_FALLBACK, false) || pick(PAPER_FALLBACK, true) || open[0];
+  // Option: deny the leader's Domination. If the leader (highest-VP opponent) dominates enough unscored tiles while a card is available,
+  // take a Domination space (at most 2) so the leader can't use it.
+  const leader = pLeader(s,actor);
+  const leaderDom = terrainIds(s).filter(t => !s.scored.includes(t) && cone(s,t) === leader).length;
+  const blockMin = PAPER.domBlock2 ? 2 : 1;
+  const block = (PAPER.domBlock || PAPER.domBlock2) && !domFirst && availableCards(s).length && doms < 2 && leaderDom >= blockMin ? pick(['domination'], true) : null;
+  const slot = domFirst || barren || block || pick(face ? face.rows : [], false, !PAPER.noWeak) || pick(PAPER_FALLBACK, false) || pick(PAPER_FALLBACK, true) || open[0];
   const {row} = splitSlot(slot);
   return {slot,row,priority:face ? face.rows.indexOf(row) : -1,focus,card:cardIndex,face:positive,opportunity:1,reason:'Paper rule: ' + ROW_BY_ID[row].name + '.'};
 }

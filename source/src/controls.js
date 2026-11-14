@@ -8,6 +8,7 @@ function hydrateFields() {
 function capture(input) {
   if (!input.name || !input.form?.classList.contains('turn-form')) return;
   draft[input.name] = input.type === 'checkbox' ? input.checked : input.value;
+  if (game?.phase === 'supply' && input.form.dataset.form === 'supply') save();
 }
 function clearDraft(prefixes) {
   for (const key of Object.keys(draft)) if (prefixes.some(prefix=>key.startsWith(prefix))) delete draft[key];
@@ -58,7 +59,7 @@ main.addEventListener('submit',event => {
       save(); render(true);
     }
     if (form.dataset.form === 'supply') {
-      const draws = Object.fromEntries(['adaptation','abundance','wanderlust'].map(row=>[row,Array.from({length:4},(_,i)=>values.get(row+'-'+i) || null)]));
+      const draws = Object.fromEntries(SUPPLY_ROWS.map(row=>[row,Array.from({length:4},(_,i)=>supplyEntries()[row]?.[i] ?? null)]));
       const stacks = game.stacks.map((x,i)=>x.face || values.get('stack-'+i) || null);
       const market = game.market.map((x,i)=>x || values.get('card-'+i) || null);
       edit(s=>enterSupply(s,{...draws,stacks,market}));
@@ -121,6 +122,24 @@ function addMove() {
   notice=''; render(false);
   main.querySelector('select[name="origin"]')?.focus({preventScroll:true});
 }
+function editSupplyDisks(button) {
+  const {row, element, index, do: action} = button.dataset;
+  if (game.phase !== 'supply' || !SUPPLY_ROWS.includes(row)) return;
+  const entries = draft.supplyDraws ??= {};
+  const disks = entries[row] ??= [];
+  if (action === 'remove-disk') disks[Number(index)] = null;
+  else if (ELEMENT_IDS.includes(element) && count(Object.values(entries).flat(),element) < bagCount(game,element)) {
+    const slot = [0,1,2,3].find(i => !disks[i]);
+    if (slot !== undefined) disks[slot] = element;
+  }
+  notice = '';
+  save();
+  render(false);
+  const same = main.querySelector('[data-row="' + row + '"][data-element="' + (element ?? '') + '"]:not(:disabled)');
+  const next = main.querySelector('[data-row="' + row + '"][data-do="add-disk"]:not(:disabled)') ??
+    main.querySelector('[data-row="' + row + '"][data-do="remove-disk"]');
+  (same ?? next)?.focus({preventScroll:true});
+}
 function openModal(kind) {
   modalKind=kind;
   renderModal();
@@ -152,7 +171,7 @@ function renderModal() {
 }
 function exportSave() {
   if (!game) return;
-  const body=JSON.stringify({format:SAVE_KEY,game},null,2);
+  const body=saveContents();
   const url=URL.createObjectURL(new Blob([body],{type:'application/json'}));
   const a=document.createElement('a');
   a.href=url; a.download='Dominant_Species_Turn_'+game.turn+'.json';
@@ -167,7 +186,7 @@ async function importSave(file) {
     if (parsed.format !== SAVE_KEY) throw new Error('Choose a save exported by this companion.');
     const loaded=validateState(parsed.game);
     if (game) undo=[copy(game)]; else undo=[];
-    game=loaded; activeTile='D3'; reveal=null; preview=null; draft={}; notice=''; initialError='';
+    game=loaded; activeTile='D3'; reveal=null; preview=null; draft=readSupplyDraft(loaded,parsed.supply); notice=''; initialError='';
     if (modal.open) modal.close();
     save(); render(true);
   } catch (err) {
@@ -234,6 +253,7 @@ document.addEventListener('click',event => {
         }
         break;
       case 'add-move': addMove(); break;
+      case 'add-disk': case 'remove-disk': editSupplyDisks(btn); break;
       case 'remove-move':
         draft.moves.splice(Number(btn.dataset.index),1); render(false); break;
     }

@@ -1,7 +1,11 @@
 'use strict';
 
-const VERSION = '0.2.0';
+const VERSION = '0.3.0';
 const SAVE_KEY = 'dominant-species-solo-v1';
+// GMT rules p. 4: of the 50 gathered cubes, one marks VP.
+const THREE_PLAYER_CUBES = 50;
+const PLAYABLE_SPECIES = THREE_PLAYER_CUBES - 1;
+const STARTING_PAWNS = 6;
 const RULEBOOK = 'https://www.gmtgames.com/living_rules/DS3_Rulebook-web_FINAL.pdf';
 const PHOTO = 'https://commons.wikimedia.org/wiki/File:Portage_Glacier_USGS.jpg';
 const ANIMALS = {

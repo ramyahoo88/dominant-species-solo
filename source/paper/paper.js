@@ -80,8 +80,10 @@ function pLeader(s, actor) { // opponent highest on the VP track; ties to food c
   return s.ids.filter(id => id !== actor).sort((a,b) => s.animals[b].vp - s.animals[a].vp || rank(a) - rank(b))[0];
 }
 function pOrderOpps(s, actor) { return s.ids.filter(id => id !== actor).sort((a,b) => s.animals[b].vp - s.animals[a].vp || rank(a) - rank(b)); }
-function pBy(list, ...keys) { // sort descending by keys, then tile label ascending; return first
-  return [...list].sort((a,b) => { for (const k of keys) { const d = k(b) - k(a); if (d) return d; } return String(a.tile ?? a).localeCompare(String(b.tile ?? b)); })[0];
+function pBy(list, ...keys) { // sort descending by keys, then the tie-break order; return first
+  return [...list].sort((a,b) => { for (const k of keys) { const d = k(b) - k(a); if (d) return d; }
+    const A = String(a.tile ?? a), B = String(b.tile ?? b);
+    return A.localeCompare(B); })[0];
 }
 function pTypes(s, actor) { return unique([ANIMALS[actor].el, ...s.animals[actor].added]); }
 function pCornersNear(s, actor, type) { // corners of this type on tiles the animal occupies
@@ -275,6 +277,12 @@ function paperCardPoints(s, actor, card, tile) {
 }
 function paperClaim(s, actor, tile) {
   const cards = availableCards(s);
+  if (PAPER.cardList) { // a printed priority list, no scoring; Ice Age only when leading or tied on VP
+    const top = Math.max(...s.ids.map(id => s.animals[id].vp));
+    const ok = cards.filter(c => c !== 'Ice Age' || s.animals[actor].vp >= top);
+    const pickd = [...(ok.length ? ok : cards)].sort((a,b) => PAPER_CARD_ORDER.indexOf(a) - PAPER_CARD_ORDER.indexOf(b))[0];
+    return {card:pickd,label:pLabel('take ' + pickd + '.')};
+  }
   const best = [...cards].sort((a,b) => paperCardPoints(s,actor,b,tile) - paperCardPoints(s,actor,a,tile) || PAPER_CARD_ORDER.indexOf(a) - PAPER_CARD_ORDER.indexOf(b))[0];
   return {card:best,label:pLabel('take ' + best + '.')};
 }
@@ -463,7 +471,10 @@ botAction = function(s, step) {
     case 'loss': return paperLoss(s,actor,step.due.threats,step.due.drops);
     case 'extinction': return _appBotAction(s,step); // already a table rule: save on the highest first-place tile
     case 'claim': return paperClaim(s,actor,step.tile);
-    case 'effect': return PAPER['effect:' + step.name] === false ? _appBotAction(s,step) : paperEffect(s,step);
+    case 'effect': {
+      if (PAPER['effect:' + step.name] === false) return _appBotAction(s,step);
+      return paperEffect(s,step);
+    }
     case 'immigrant': return paperImmigrant(s,actor);
   }
   paperNote('kind:' + kind); return _appBotAction(s,step);
@@ -475,5 +486,13 @@ newGame = function(human, rivals, short, seed) {
   const s = _appNewGame(human, rivals, short, seed);
   const extra = PAPER.extraAP ? Number(PAPER.extraAP) : 0;
   if (extra) for (const id of rivals) s.animals[id].ap += extra;
+  s.paperRivals = [...rivals];
   return s;
+};
+
+// ---------- Option: flat element matching for rivals ----------
+const _appMatch = match;
+match = function(s, tile, actor, additions = s.animals[actor].added) {
+  if (PAPER.flatMatch && s.paperRivals?.includes(actor)) return Math.min(ANIMALS[actor].affinity + additions.length, VERTICES_OF[tile].filter(k => s.corners[k]).length);
+  return _appMatch(s,tile,actor,additions);
 };

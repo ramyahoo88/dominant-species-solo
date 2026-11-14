@@ -119,7 +119,7 @@ async function main() {
   if (args.help) {
     process.stdout.write([
       'node source/benchmark.cjs [--base COMMIT] [--candidate COMMIT|worktree]',
-      '  [--seed 6200] [--repeats 1] [--workers 4] [--paper EXTRA_PAWNS] [--paper-options flatMatch,cardList]',
+      '  [--seed 6200] [--repeats 1] [--workers 4] [--paper EXTRA_PAWNS (use --paper=-1 for negatives)] [--paper-options full]',
       '  [--policy majority|dominance|expansion] [--length both|short|full]',
       '  [--human insects] [--rivals birds,reptiles] [--bots 2..5] [--detail] [--trace]',
       'Each repeat runs every selected matchup and policy on one physical setup.',

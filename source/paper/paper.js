@@ -1,9 +1,10 @@
 // Paper rival: decisions a person can make at the table by counting.
 // Loaded after the app sources. PAPER.<kind> = true switches that decision to the paper rule.
 var PAPER = typeof PAPER === 'object' ? PAPER : {};
-// Quick mode: flat matching, the card list, and five cuts that tested as free (always the "no" face, simple Adaptation,
-// full Speciation, Migration without rank checks, Glaciation without the tundra bonus).
-if (PAPER.quick) for (const k of ['flatMatch','cardList','faceNo','simpleAdapt','simpleSpec','simpleMig','simpleGlac']) PAPER[k] = true;
+// The paper rules (Nov 2026): flat matching, the card list, always the "no" face, simple Adaptation, full Speciation,
+// Migration without rank checks, Glaciation without the tundra bonus, and blocking the leader's Domination.
+// PAPER.full = true restores the earlier, detailed rules (kept only to reproduce old test results).
+if (!PAPER.full) for (const k of ['flatMatch','cardList','faceNo','simpleAdapt','simpleSpec','simpleMig','simpleGlac','domBlock']) PAPER[k] = true;
 var PAPER_FALLBACKS = PAPER_FALLBACKS || {};
 function paperNote(kind) { PAPER_FALLBACKS[kind] = (PAPER_FALLBACKS[kind] || 0) + 1; }
 function paperLegal(s, actor, row, index) {
@@ -292,7 +293,8 @@ function paperClaim(s, actor, tile) {
   const cards = availableCards(s);
   if (PAPER.cardList) { // a printed priority list, no scoring; Ice Age only when leading or tied on VP
     const top = Math.max(...s.ids.map(id => s.animals[id].vp));
-    const ok = cards.filter(c => c !== 'Ice Age' || s.animals[actor].vp >= top);
+    const pawnCards = ['Omnivore','Intelligence','Parasitism'];
+    const ok = cards.filter(c => (c !== 'Ice Age' || s.animals[actor].vp >= top) && !(pawnCards.includes(c) && s.animals[actor].ap >= 10));
     const pickd = [...(ok.length ? ok : cards)].sort((a,b) => PAPER_CARD_ORDER.indexOf(a) - PAPER_CARD_ORDER.indexOf(b))[0];
     return {card:pickd,label:pLabel('take ' + pickd + '.')};
   }

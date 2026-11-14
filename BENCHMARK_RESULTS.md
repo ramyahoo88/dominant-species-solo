@@ -164,3 +164,15 @@ Paired player change −3.3 points (interval −8.3 to +1.6). **Birds failed the
 **Follow-up.** One theory was that Birds lose Migration placements to Wanderlust, since their deck leans on Migration most. On seed 6200 Birds' Migration fell less than Insects' (8.2 → 7.3 against 8.5 → 6.4), and every animal's Wanderlust rose by about 3–5 per game, so the data did not support it. Migration's capped planning value (2.60) is still flat.
 
 **Status.** Merged by owner decision: tougher rivals with larger winning margins, at Birds' expense.
+
+## Migration planning value · tested, rejected (Claude, November 13, 2026)
+
+Migration's planning value is still capped at 2.60. Two uncapped versions were tested on seed 6200 (all animals, 360 games each) against v0.3.3:
+
+| Variant | Scripted player wins | Birds rival | Rival Migration per game |
+|---|---:|---:|---:|
+| v0.3.3 (cap kept) | 76 (21%) | 38% | 11.1 |
+| M1: full `migrationPlan` sized to each slot | 107 (30%) | 28% | 20.1 |
+| M2: best single move, uncapped | 107 (30%) | 23% | 18.2 |
+
+Both made rivals clearly weaker and Birds weaker still, with Migration placements nearly doubling. The migration evaluator overrates moves, and the cap was holding that in check, so no change was shipped. More Migration hurt Birds most, which suggests Birds' Migration-heavy deck (11.2 weighted, against 3–5 for the others) may itself be why Birds are weak.

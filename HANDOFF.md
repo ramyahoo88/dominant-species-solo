@@ -2,7 +2,7 @@
 
 Current review build is v0.3.2. See [release notes](CHANGELOG.md), [paired benchmark results](BENCHMARK_RESULTS.md), and [Claude’s v0.2.0 review](REVIEW.md). The first-build handoff below records the original v0.1.0 scope and baseline. The source now accepts v0.1, v0.2, v0.3.0 and v0.3.1 saves.
 
-For the next audit, run the targeted rules and Chromium checks in the README, then compare rival changes on fresh seeds. Open items: Birds as a rival (down on three seed blocks after v0.3.2) and the rows on card faces that v0.3.2 brought into play (see BENCHMARK_RESULTS.md, v0.3.2 section). Prioritize exact card effects, hard cases around Instinct or queued Glaciation, and which starting animals the scripts favor. Keep role-specific results separate from animal balance claims.
+For the next audit, run the targeted rules and Chromium checks in the README, then compare rival changes on fresh seeds. Open items: Birds as a rival (47 → 37 of 120 on the v0.3.2 confirmation block, at the acceptance limit) and the rows on card faces that v0.3.2 brought into play (see BENCHMARK_RESULTS.md, v0.3.2 section). Prioritize exact card effects, hard cases around Instinct or queued Glaciation, and which starting animals the scripts favor. Keep role-specific results separate from animal balance claims.
 
 ## Request for Gemini
 

@@ -109,13 +109,13 @@ Five checks were nearly constant, mostly because of the starting layout: every s
 
 | Check | Old definition | Old rate | New definition | New rate |
 |---|---|---:|---|---:|
-| `ice` | Cubes in or next to tundra | 99% | Species on tundra and leads or ties the tundra count | 37% |
-| `contested` | Shares a tile with a rival | 98% | A rival outranks it on a shared tile worth 6+ VP | 67% |
-| `cone` | Dominates an unscored tile, card available | 96% | Dominates 3+ unscored tiles, card available | 63% |
+| `ice` | Cubes in or next to tundra | 99% | Species on tundra and leads or ties the tundra count | 38% |
+| `contested` | Shares a tile with a rival | 98% | A rival outranks it on a shared tile worth 6+ VP | 66% |
+| `cone` | Dominates an unscored tile, card available | 96% | Dominates 3+ unscored tiles, card available | 64% |
 | `front` | Reachable face-up tile worth 5+ VP | 94% | Reachable face-up Sea or Wetland | 65% |
-| `foothold` | An occupied tile has no match | 5% | Two or more occupied tiles have at most one match | ~33% |
+| `foothold` | An occupied tile has no match | 5% | Two or more occupied tiles have at most one match | 31% |
 
-Rates are from seed 6200, except `foothold`, which is from the Birds games on seed 60000.
+Rates are from seed 6200 (all six animals, 180 games).
 
 **Guard 1 (seed 60000, `--repeats 2`).** Pre-set rule: the scripted player's win rate rises by no more than about 3 points, and no animal loses more than about 10 of 120 rival wins. The player rate passed (97 → 86 of 360, −3.1 points), but Birds failed (49 → 34 of 120, VP 178 → 167). A check on seed 70000 (Birds games, 180) showed 68 → 54, just under that block's pre-set "real" bar of 15, with Birds VP down again; treated as probably real. On seed 60000, restoring Birds' own checks one at a time recovered nothing. Restoring the old `foothold` for every animal recovered Birds to 40/120, so other animals' `foothold` faces caused the drop. The first new definition ("an occupied tile has at most one match", 52% true) was softened to the current one.
 
@@ -135,4 +135,4 @@ Rates are from seed 6200, except `foothold`, which is from the Birds games on se
 
 Paired change in player win rate: −3.1 points (approximate 95% interval −8.9 to +2.8). Passes the guard, with Birds exactly at the 10-win limit.
 
-**Reading.** The rivals are slightly tougher, and roughly a third of each deck's faces that were dormant are now in play. Birds have fallen on all three blocks and are now the likeliest rival to be weak. The dormant faces were never tuned, so they are the first place to look.
+**Reading.** The rivals are slightly tougher, and roughly a third of each deck's faces that were dormant are now in play. With the shipped definitions, Birds dropped 47 → 37 on the confirmation block, exactly at the limit. The larger drops on seeds 60000 (49 → 34) and 70000 (68 → 54) were with the first, discarded `foothold` definition; on seed 60000 the shipped definition gave Birds 41/120 against 49 on `main`, but that block was used for development. Birds remain the likeliest weak rival. The spread between rivals narrowed on the confirmation block (strongest 65 → 60, weakest 34 → 37). The dormant faces were never tuned, so they are the first place to look.

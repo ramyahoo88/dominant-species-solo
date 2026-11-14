@@ -1,6 +1,6 @@
 # Dominant Species — Solo Companion
 
-An unofficial, offline solo companion for Chad Jensen's *Dominant Species* (GMT Games). One human plays an animal against two card-driven bot rivals; the physical box supplies the board, tiles, elements and Dominance Cards, and the app tells you exactly what the rivals do.
+An unofficial, offline solo companion for Chad Jensen's *Dominant Species* (GMT Games). One human plays an animal against two to five card-driven bot rivals; the physical box supplies the board, tiles, elements and Dominance Cards, and the app tells you exactly what the rivals do.
 
 This is an independent fan project, not affiliated with or endorsed by GMT Games.
 
@@ -60,6 +60,7 @@ See [benchmark instructions](source/benchmark/README.md) and [results](BENCHMARK
 - **v0.3.3** — rival Planning values Wanderlust with its real evaluator.
 - **v0.3.4** — rivals block spaces the leading opponent needs.
 - **Paper rivals** — rules for running the rivals at the table without the app. See [PAPER_RIVALS.md](PAPER_RIVALS.md).
+- **v0.3.5** — two to five rivals, with the base game's pawns and cubes for each player count; seven-change quick mode for paper rivals.
 
 ## Licenses
 

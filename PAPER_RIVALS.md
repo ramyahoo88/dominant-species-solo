@@ -16,6 +16,18 @@ Table-playable rules for the two rival animals, so Dominant Species can be playe
   - a center-out clockwise tie-breaker: 57%
   - the card list with real matching: 56%
 
+## Three to five rivals
+
+Use the base game's pawns and cubes for the player count, and add difficulty pawns on top (+0 Standard, +1 Hard, +2 Expert; quick mode −1/+0/+1). Results on seed block 160000, 360 games per cell; an even game is 25%, 20% and 17%:
+
+| Rivals | App | Full +0 | Full +1 | Full +2 | Quick +0 | Quick +1 |
+|---|---|---|---|---|---|---|
+| 3 | 12% | 47% | 28% | – | 30% | 19% |
+| 4 | 9% | 41% | 29% | 18% | 27% | 21% |
+| 5 | 9% | 39% | 19% | 13% | 25% | 16% |
+
+Quick mode now includes five cuts (always the "no" face, simple Adaptation, full Speciation, Migration without rank checks, Glaciation without the tundra bonus). Single-cut results on seed 6200 (quick base 34%): 31%, 33%, 32%, 35%, 36%. Combined across 2–5 rivals they average the same as the two-change version. Cuts that weakened the rivals and were dropped: "yes" face 39%, leftmost space 38%, simple Competition 38%, simple card effects 45%, no Wanderlust element 51%, no Domination-first 67%. Every cut weakened the full rules (52–91% against 49%).
+
 ## Difficulty
 
 | Level | Action pawns per rival |

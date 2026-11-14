@@ -11,7 +11,7 @@ function paperLegal(s, actor, row, index) {
     case 'initiative': return s.initiative[0] !== actor;
     case 'adaptation': return s.animals[actor].added.length + ANIMALS[actor].affinity < 6 && s.boxes.adaptation.some(Boolean);
     case 'regression': return s.animals[actor].added.some(type => s.boxes.adaptation.includes(type) || s.boxes.regression.includes(type)) || actor === 'reptiles';
-    case 'abundance': return s.boxes.abundance.some(type => type && paperUses(s,actor,type)) && occupied(s,actor).some(t => VERTICES_OF[t].some(key => !s.corners[key]));
+    case 'abundance': return s.boxes.abundance.some(type => type && (paperBarren(s) || paperUses(s,actor,type))) && occupied(s,actor).some(t => VERTICES_OF[t].some(key => !s.corners[key]));
     case 'wasteland': return s.boxes.wasteland.some(type => type && !paperUses(s,actor,type));
     case 'depletion': return s.boxes.depletion.some(type => type && !paperUses(s,actor,type)) && placementTargets(s,row,index,actor).length > 0;
     case 'glaciation': return glazeTargets(s).some(t => !s.tiles[t].cubes[actor] && s.ids.some(id => s.tiles[t].cubes[id]));
@@ -29,6 +29,8 @@ function paperCheck(s, actor, test) { // the app's card conditions, with 'elemen
   return indexed(s.boxes.adaptation).some(({type}) => !paperUses(s,actor,type) && mine.some(t => VERTICES_OF[t].some(k => s.corners[k] === type))) ||
     indexed(s.boxes.abundance).some(({type}) => type === ANIMALS[actor].el);
 }
+// Barren Earth: no animal dominates any tile, so no one can take a card. Rivals restore elements first.
+function paperBarren(s) { return s.turn > 1 && !terrainIds(s).some(t => cone(s,t)); }
 function paperUses(s, actor, type) { return ANIMALS[actor].el === type || s.animals[actor].added.includes(type); }
 function paperDominated(s, actor) { return terrainIds(s).filter(t => !s.scored.includes(t) && cone(s,t) === actor); }
 function paperSpeciationTiles(s, actor, index) {
@@ -61,7 +63,8 @@ function paperPlacement(s, actor, cardIndex, openOverride = null) {
   };
   const doms = pawnCount(s,actor,'domination'), dominated = paperDominated(s,actor).length;
   const domFirst = !PAPER.noDomFirst && availableCards(s).length && dominated > doms && doms < 2 ? pick(['domination'], true) : null;
-  const slot = domFirst || pick(face ? face.rows : [], false, !PAPER.noWeak) || pick(PAPER_FALLBACK, false) || pick(PAPER_FALLBACK, true) || open[0];
+  const barren = paperBarren(s) ? pick(['abundance']) : null;
+  const slot = domFirst || barren || pick(face ? face.rows : [], false, !PAPER.noWeak) || pick(PAPER_FALLBACK, false) || pick(PAPER_FALLBACK, true) || open[0];
   const {row} = splitSlot(slot);
   return {slot,row,priority:face ? face.rows.indexOf(row) : -1,focus,card:cardIndex,face:positive,opportunity:1,reason:'Paper rule: ' + ROW_BY_ID[row].name + '.'};
 }

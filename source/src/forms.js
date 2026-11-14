@@ -53,7 +53,7 @@ function pawnForm(step) {
   switch (row) {
     case 'initiative':
       // GMT: Initiative advances and relocates the pawn to a vacant space. Only when none is vacant does it return to you (project ruling).
-      if (!targets.length) return noChoice('All other spaces are occupied. You still move up one place in Initiative, and the pawn returns to you.');
+      if (!targets.length) return noChoice('All other spaces are occupied. You still move up one place in Initiative, and the pawn returns to you.', true);
       body = field('Move the pawn to',select('slot',targets.map(key=>[key,slotLabel(key)])));
       break;
     case 'adaptation':

@@ -1,6 +1,6 @@
 # Dominant Species solo companion audit handoff
 
-Current review build is v0.3.8: two to five rivals, and a choice between the app's rivals and the printed Paper Rivals rules (printable copies in [`paper/`](paper/)). See [release notes](CHANGELOG.md), [the response to GPT's v0.3.7 re-audit](AUDIT_RESPONSE_v0.3.7.md), [the response to GPT's v0.3.6 audit](AUDIT_RESPONSE_v0.3.6.md), [the v0.3.5 audit](AUDIT_v0.3.5.md), [paired benchmark results](BENCHMARK_RESULTS.md), and [Claude’s v0.2.0 review](REVIEW.md). The first-build handoff below records the original v0.1.0 scope and baseline. The source accepts v0.1 through v0.3.7 saves. UI regressions: `source/browser_test.py`, `source/browser_migration_test.py`, `source/browser_game_test.py`.
+Current review build is v0.3.9: two to five rivals, and a choice between the app's rivals and the printed Paper Rivals rules (printable copies in [`paper/`](paper/)). See [release notes](CHANGELOG.md), [the response to GPT's v0.3.8 re-audit](AUDIT_RESPONSE_v0.3.8.md), [the response to GPT's v0.3.7 re-audit](AUDIT_RESPONSE_v0.3.7.md), [the response to GPT's v0.3.6 audit](AUDIT_RESPONSE_v0.3.6.md), [the v0.3.5 audit](AUDIT_v0.3.5.md), [paired benchmark results](BENCHMARK_RESULTS.md), and [Claude’s v0.2.0 review](REVIEW.md). The first-build handoff below records the original v0.1.0 scope and baseline. The source accepts v0.1 through v0.3.8 saves. UI regressions: `source/browser_test.py`, `source/browser_migration_test.py`, `source/browser_game_test.py`.
 
 For the next audit, run the targeted rules and Chromium checks in the README, then compare rival changes on fresh seeds. Open items: the paper rivals ([PAPER_RIVALS.md](PAPER_RIVALS.md)) have not been played at a real table; card-chasing remains the strongest scripted strategy against all rivals; a rare six-animal stall (1 in ~2,900 simulated games) survives the Barren Earth rule. Prioritize exact card effects, hard cases around Instinct or queued Glaciation, and which starting animals the scripts favor. Keep role-specific results separate from animal balance claims.
 
@@ -39,7 +39,7 @@ node source/smoke.cjs
 The build produces `source/dist/Dominant_Species_Solo.html`. Its expected SHA-256 is:
 
 ```text
-4a2c751c6d886b19f79d362dbe3416069c8e6d0a43e56e8284b936934401df6c
+9e9776c213a337c36e6082b61fdd04e892674ecf94ea111597703d1a080ae41c
 ```
 
 The smoke check finished all 60 matchups through Ice Age and final scoring. It used one seeded game per matchup, split evenly between short and full games, with seeds 100–159. The human seat uses a bot heuristic in the harness. Terrain reveals are sampled with replacement, and `maxTime` is an environment-dependent timing field. Treat this as reachability and state validation. Balance, rules parity in unusual situations, and human play quality still need dedicated evidence.

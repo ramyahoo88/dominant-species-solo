@@ -89,7 +89,7 @@ When a rival's pawn is reached, resolve it with the rule below. If the rule find
 | Competition | One elimination per terrain of the space (and tundra), on a tile it shares, scored below. Tie: the opponent earlier in VP order |
 | Domination | If a card is available and it dominates unscored tiles, scores the one of those where it earns the most VP. Otherwise the unscored tile no opponent dominates where it earns the most VP. If it earns VP on none of those, the unscored tile with species where it earns the most VP |
 
-**Migration, one species at a time.** Rivals never weigh rank gains when choosing a destination; they only avoid losing a rank where they leave. A species may leave a tile the rival does not match (a rescue), or a tile where it has 2+ species and losing one costs no rank. It moves to an adjacent tile the rival matches (Birds: up to two tiles away through existing terrain, as their power allows). Every move must be a rescue or reach a tile the rival is not on yet. Choose rescues first, then the destination with the higher first-place value, then the fullest origin. Species that arrived this action do not move again.
+**Migration, one species at a time.** Rivals never weigh rank gains when choosing a destination; they only avoid losing a rank where they leave. A species may leave a tile the rival does not match (a rescue), or a tile where it has 2+ species and losing one costs no rank. It moves to an adjacent tile the rival matches (Birds: up to two tiles away through existing terrain, as their power allows). Every move must be a rescue or reach a tile the rival is not on yet. Choose rescues first, then the destination with the higher first-place value, then the fullest origin. During one Migration action each tile either sends or receives species: once a tile has sent a species it can only send more, and once it has received one it can only receive more.
 
 **Competition score** for removing one opposing species from a tile:
 
@@ -110,7 +110,7 @@ When a rival's pawn is reached, resolve it with the rule below. If the rule find
 | Biomass | On each crowded tile, a species of the first opponent in VP order present there, else its own |
 | Blight | The tile and kept disk that leave the most opposing species on surrounding tiles without a match, counting its own as −2 each |
 | Catastrophe | Keeps its own species on the tile, else the lowest-VP opponent's. On each adjacent tile, removes the first opponent in VP order present, its own only if alone. Picks the tile removing the most opposing species, its own counting −2 |
-| Evolution | Replaces one species of each of two opponents (fewer if its gene pool is short), taking opponents in VP order. Only tiles it matches: skip an opponent with no species on such a tile and try the next. For each, the tile where the swap makes it first, else gains a rank (+3 if it ends dominant) |
+| Evolution | Replaces one species of each of two opponents (fewer if its gene pool is short), taking opponents in VP order. Only tiles it matches: skip an opponent with no species on such a tile and try the next. For each opponent, score every such tile: 2× its first-place value if the swap moves the rival into first place, 1× if it otherwise gains a rank or enters the ranking, 0 otherwise; add 3 if the rival ends dominant there. Take the highest score (tie: higher first-place value, then top-left) |
 | Fecundity | Tiles it matches first, then by first-place value |
 | Fertile | Its tile with the most species of all animals; it scores 1 VP for every species there, its own and everyone else's |
 | Habitat | Its printed element; if the bag has none, an element it added (earliest first); if none of those either, the first element in the bag in this order: Meat, Sun, Seed, Water, Grub, Grass. On the empty corner touching the most tiles it occupies, then the higher first-place value; if it occupies no tile with an empty corner, any empty corner (top-left first) |
@@ -131,7 +131,7 @@ When a rival's pawn is reached, resolve it with the rule below. If the rule find
 | Losing an element (Regression, Disease) | Loses the added element on the fewest corners of tiles it occupies |
 | Mammals' save in Extinction | Saves the endangered species on the tile with the highest first-place value |
 | Hibernation-protected cubes | When protected and ordinary cubes of the same animal share a tile and some must move or be removed, move or remove the ordinary cubes first |
-| Immigrants | In order: discard a duplicate added element; else, if it has at most 2 species on every tile, keep one per tile; else discard the added element on the fewest corners of its tiles; else lose a pawn (an unplaced one if it has one, otherwise its last placed) |
+| Immigrants | In order: discard a duplicate added element; else, if it has at most 2 species on every tile, keep one per tile; else discard the added element on the fewest corners of its tiles; else lose a pawn: an unplaced one if it has one, otherwise its last pawn on the action display, reading top to bottom and left to right |
 
 ## Rival decks
 

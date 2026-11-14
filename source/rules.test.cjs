@@ -17,8 +17,8 @@ verify('GMT p. 4: six APs and 50 cubes include one VP marker and four starting s
   }
 `);
 
-verify('v0.1 through v0.3.7 save migration preserves inventory, pending choices, and random state', `
-  for (const version of ['0.1.0','0.2.0','0.3.0','0.3.1','0.3.2','0.3.3','0.3.4','0.3.5','0.3.6','0.3.7']) {
+verify('v0.1 through v0.3.8 save migration preserves inventory, pending choices, and random state', `
+  for (const version of ['0.1.0','0.2.0','0.3.0','0.3.1','0.3.2','0.3.3','0.3.4','0.3.5','0.3.6','0.3.7','0.3.8']) {
     const s = newGame('insects',['mammals','birds'],true,51);
     s.version = version;
     s.phase = 'execution';
@@ -374,3 +374,73 @@ test('Re-audit E1: the frozen benchmark player is capped at two Evolution victim
   assert.ok(out.capped.length <= 2);
   assert.equal(new Set(out.capped.map(h => h.victim)).size, out.capped.length);
 });
+
+test('Re-audit v0.3.8: player Initiative needs a destination while a space is open; forfeit is separate; a full display returns the pawn', () => {
+  const r = load('worktree', ['game']);
+  r.run(require('node:fs').readFileSync(require('node:path').join(__dirname, 'src/forms.js'), 'utf8'));
+  r.get('globalThis').assert = assert;
+  r.run(`(() => {
+    game = newGame('mammals',['birds','insects'],true,314159);
+    game.phase = 'execution'; game.cursor = 0;
+    for (const k of ALL_SLOTS) game.pawns[k] = {actor:'birds', card:null, focus:null};
+    game.pawns['initiative-0'] = {actor:'mammals', card:null, focus:null};
+    game.initiative = ['birds','mammals','insects'];
+    delete game.pawns['adaptation-1'];                             // one open space
+    const step = {kind:'pawn', actor:'mammals', row:'initiative', index:0, key:'initiative-0'};
+    const open = pawnForm(step);
+    assert.match(open, /<select name="slot" required>/, 'destination must be required while a space is open');
+    assert.match(open, /value="adaptation-1"/);
+    assert.match(open, /Forfeit action/);
+    const fd = o => ({get: k => o[k] ?? null});                   // FormData returns null for absent fields
+    const chose = makePawnChoice(step, fd({slot:'adaptation-1'}));
+    assert.equal(chose.slot, 'adaptation-1');
+    game.pawns['adaptation-1'] = {actor:'birds', card:null, focus:null}; // all 41 spaces taken
+    const full = pawnForm(step);
+    assert.doesNotMatch(full, /<select name="slot"/);
+    assert.match(full, /pawn returns to you/);
+    assert.match(full, /Forfeit action/);
+    const back = makePawnChoice(step, fd({}));
+    assert.equal(back.slot, null); assert.ok(!back.pass);
+    resolvePawn(game, step, back);
+    assert.deepEqual(game.initiative, ['mammals','birds','insects']);
+  })()`);
+});
+
+verify('Re-audit v0.3.8: paper Migration lets each tile either send or receive, never both', `
+  for (let seed = 1; seed <= 40; seed++) {
+    const s = newGame('mammals',['birds','insects'],seed % 2 === 0,seed,{extra:0});
+    for (const actor of ['birds','insects']) {
+      const {moves} = paperMigration(s, actor, 7);
+      const from = new Set(moves.map(m => m.from)), to = new Set(moves.map(m => m.to));
+      for (const t of from) assert.ok(!to.has(t), 'tile ' + t + ' both sent and received (seed ' + seed + ')');
+    }
+  }
+`);
+
+verify('Re-audit v0.3.8: paper Evolution follows the printed score (2x into first, 1x rank gain, +3 dominant)', `
+  const s = newGame('mammals',['birds','insects'],true,314159,{extra:0});
+  for (const t of terrainIds(s)) for (const id of s.ids) s.tiles[t].cubes[id] = 0;
+  for (const k of Object.keys(s.corners)) delete s.corners[k];
+  s.corners[VERTICES_OF.D3.find(k => !CORNER_TILES[k].includes('D2'))] = 'grass';
+  s.corners[VERTICES_OF.D2.find(k => !CORNER_TILES[k].includes('D3'))] = 'grass';
+  // D3 Tundra (1): Mammals 1 -> the swap makes Birds first and dominant: 2x1 + 3 = 5.
+  // D2 Wetland (8): Mammals 3, Birds 1, Insects 2 -> Birds move from third to second: 1x8 = 8. The score prefers D2,
+  // although "first place, else a rank gain" would pick D3.
+  s.tiles.D3.cubes.mammals = 1;
+  s.tiles.D2.cubes.mammals = 3; s.tiles.D2.cubes.birds = 1; s.tiles.D2.cubes.insects = 2;
+  s.animals.mammals.vp = 30; s.animals.insects.vp = 0; s.animals.birds.pool = 1;   // one replacement: Mammals only
+  const evo = botAction(s,{kind:'effect',actor:'birds',name:'Evolution',tile:null});
+  assert.deepEqual(evo.hits, [{tile:'D2', victim:'mammals'}]);
+`);
+
+verify('Re-audit v0.3.8: paper Immigrants removes an unplaced pawn first, else the last pawn in display order', `
+  const s = newGame('mammals',['birds','insects'],true,314159,{extra:0});
+  s.animals.birds.added = []; for (const t of terrainIds(s)) s.tiles[t].cubes.birds = 0;
+  s.tiles.D2.cubes.birds = 3;                                   // not thin, no added element: it must lose a pawn
+  s.pawns = {}; s.pawns['domination-1'] = {actor:'birds',card:null,focus:null}; s.pawns['adaptation-0'] = {actor:'birds',card:null,focus:null};
+  s.animals.birds.ap = 2;
+  const all = paperImmigrant(s,'birds');
+  assert.equal(all.mode, 'pawn'); assert.equal(all.slot, 'domination-1');
+  s.animals.birds.ap = 3;
+  assert.equal(paperImmigrant(s,'birds').slot, null);
+`);

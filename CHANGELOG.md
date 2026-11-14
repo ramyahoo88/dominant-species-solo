@@ -1,5 +1,14 @@
 # Release notes
 
+## v0.3.9 · November 14, 2026 · fixes for the GPT v0.3.8 re-audit
+
+- **Initiative, player form:** while a space is open you must choose where the pawn goes, as printed. Forfeiting the whole action is a separate button. On a full display you still move up and the pawn returns to you.
+- **Printed rules now match the app**, which is what the difficulty table measured:
+  - Migration: each tile either sends or receives during one action.
+  - Evolution: the scoring formula is printed.
+  - Immigrants: an unplaced pawn first, otherwise the last pawn on the action display.
+- **Tests:** four new rules tests (30 in total), including both Initiative cases (an open space and the full 41-space display). The rivals' code is unchanged, so the v0.3.8 difficulty table still applies. See [AUDIT_RESPONSE_v0.3.8.md](AUDIT_RESPONSE_v0.3.8.md).
+
 ## v0.3.8 · November 14, 2026 · fixes for the GPT v0.3.7 re-audit
 
 - **Initiative on a full action display:** the marker still advances and the pawn returns to its owner (it was forfeited). This applies to paper rivals, app rivals and the player form. While a space is open, the pawn must still move there, as printed.

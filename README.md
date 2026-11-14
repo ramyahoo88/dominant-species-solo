@@ -62,6 +62,7 @@ See [benchmark instructions](source/benchmark/README.md) and [results](BENCHMARK
 - **Paper rivals** — rules for running the rivals at the table without the app. See [PAPER_RIVALS.md](PAPER_RIVALS.md).
 - **v0.3.5** — two to five rivals, with the base game's pawns and cubes for each player count; seven-change quick mode for paper rivals.
 - **v0.3.6** — the app can run the printed Paper Rivals rules (four levels); one paper version with Block the leader.
+- **v0.3.9** — fixes from GPT's v0.3.8 re-audit: the printed rules match the app (Migration, Evolution, Immigrants), and the player's Initiative form follows GMT's relocation rule.
 - **v0.3.8** — fixes from GPT's v0.3.7 re-audit: paper rules match the printed procedures, Initiative on a full display, Evolution limits everywhere; difficulty re-measured.
 - **v0.3.7** — fixes from GPT's v0.3.6 audit; printable rulebook and cards in [`paper/`](paper/).
 

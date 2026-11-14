@@ -446,7 +446,7 @@ dialog::backdrop{background:#132d2c88}
 <noscript>This companion needs JavaScript. Open the downloaded HTML file in a browser.</noscript>
 <script>'use strict';
 
-const VERSION = '0.3.8';
+const VERSION = '0.3.9';
 const SAVE_KEY = 'dominant-species-solo-v1';
 // GMT rules p. 4: of the 50 gathered cubes, one marks VP.
 const THREE_PLAYER_CUBES = 50;
@@ -2729,7 +2729,7 @@ function readSupplyDraft(s, raw) {
 }
 function validateState(s) {
   function assert(ok) { if (!ok) throw new Error('This is not a valid Dominant Species companion save.'); }
-  if (s && ['0.1.0', '0.2.0', '0.3.0', '0.3.1', '0.3.2', '0.3.3', '0.3.4', '0.3.5', '0.3.6', '0.3.7'].includes(s.version)) s.version = VERSION;
+  if (s && ['0.1.0', '0.2.0', '0.3.0', '0.3.1', '0.3.2', '0.3.3', '0.3.4', '0.3.5', '0.3.6', '0.3.7', '0.3.8'].includes(s.version)) s.version = VERSION;
   const keys = value => value && typeof value === 'object' ? Object.keys(value) : [];
   assert(s && s.version === VERSION && ['supply','planning','execution','finished'].includes(s.phase) &&
     num(s.turn) && s.turn > 0 && num(s.rng) && s.rng <= 0xffffffff && num(s.seed) && s.seed <= 0xffffffff);
@@ -3123,9 +3123,9 @@ function pawnForm(step) {
   let body = '';
   switch (row) {
     case 'initiative':
-      // GMT: Initiative always advances; moving the pawn afterwards is optional. With nowhere to go it returns to you.
-      if (!targets.length) return noChoice('All other spaces are occupied. You still move up one place in Initiative, and the pawn returns to you.');
-      body = field('Move the pawn to',select('slot',targets.map(key=>[key,slotLabel(key)]),false,"Don't move it (it returns to you)"));
+      // GMT: Initiative advances and relocates the pawn to a vacant space. Only when none is vacant does it return to you (project ruling).
+      if (!targets.length) return noChoice('All other spaces are occupied. You still move up one place in Initiative, and the pawn returns to you.', true);
+      body = field('Move the pawn to',select('slot',targets.map(key=>[key,slotLabel(key)])));
       break;
     case 'adaptation':
       if (!offer(row).length || mine.added.length + ANIMALS[actor].affinity >= 6) return noChoice('There is no available element or room for another.');

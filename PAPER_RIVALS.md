@@ -8,7 +8,7 @@ Table-playable rules for the two rival animals, so Dominant Species can be playe
 
 ## Quick mode and two-player games
 
-- **Quick mode** (optional, 6 pawns) cuts the rivals' upkeep. It uses flat element matching (printed count plus added elements, capped by the disks on the tile) and a fixed card list instead of card scoring. On seed 150000 the scripted player won 30% (107/360), against 19% (70/360) against the app's rivals on the same seeds. On the tuning seeds it was 34%. Run it with `--paper 0 --paper-options flatMatch,cardList`.
+- **Quick mode** (optional, 6 pawns) cuts the rivals' upkeep. It uses flat element matching (printed count plus added elements, capped by the disks on the tile) and a fixed card list instead of card scoring. On seed 150000 the scripted player won 30% (107/360), against 19% (70/360) against the app's rivals on the same seeds. On the tuning seeds it was 34%. Quick-mode difficulty is set by pawns: on seed 150000 the scripted player won 48% at 5 pawns (`--paper=-1`), 30% at 6 and 25% at 7 (`--paper 1`); 7 pawns is within noise of the app's rivals. Run it with `--paper 0 --paper-options flatMatch,cardList`.
 - **Two players plus a rival:** the rules work unchanged with two people and one rival, because "leader" means whichever opponent leads on VP.
 - **Rejected at 6 pawns** (seed 6200, 360 games each; Standard was 49%):
   - a fixed-position Dominance Card pick: 64%

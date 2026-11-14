@@ -35,7 +35,7 @@ def exercise(browser, uri):
     page.goto(uri)
     page.locator("form[data-form=start] button[type=submit]").click()
     expect(page.locator("#turn-focus")).to_have_text("Enter board draws")
-    expect(page.locator("#version")).to_have_text("v0.3.0")
+    expect(page.locator("#version")).to_have_text("v0.3.1")
     expect(page.locator(".score-strip")).to_contain_text("45 in pool")
     page.locator('[name="card-0"]').select_option(CARDS[0])
     for element in ["water", "meat", "seed", "grass"]:
@@ -84,7 +84,7 @@ def exercise(browser, uri):
         "name": "v0.2.0.json", "mimeType": "application/json", "buffer": json.dumps(old).encode(),
     })
     expect(page.locator("#turn-focus")).to_have_text("Enter board draws")
-    assert saved(page)["game"]["version"] == "0.3.0"
+    assert saved(page)["game"]["version"] == "0.3.1"
     assert saved(page)["game"]["animals"]["amphibians"]["pool"] == 45
     assert not errors and not network, (errors, network)
     context.close()

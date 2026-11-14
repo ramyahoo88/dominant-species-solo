@@ -1,8 +1,8 @@
 # Dominant Species solo companion audit handoff
 
-Current review build is v0.3.0. See [release notes](CHANGELOG.md), [paired benchmark results](BENCHMARK_RESULTS.md), and [Claude’s v0.2.0 review](REVIEW.md). The first-build handoff below records the original v0.1.0 scope and baseline. The source now accepts v0.1 and v0.2 saves.
+Current review build is v0.3.1. See [release notes](CHANGELOG.md), [paired benchmark results](BENCHMARK_RESULTS.md), and [Claude’s v0.2.0 review](REVIEW.md). The first-build handoff below records the original v0.1.0 scope and baseline. The source now accepts v0.1, v0.2 and v0.3.0 saves.
 
-For the next audit, run the targeted rules and Chromium checks in the README, then compare the v0.3 rival changes with v0.2 on fresh seeds. Prioritize exact card effects, hard cases around Instinct or queued Glaciation, and which starting animals the scripts favor. Keep role-specific results separate from animal balance claims.
+For the next audit, run the targeted rules and Chromium checks in the README, then compare rival changes on fresh seeds. The next open item is recalibrating the nearly constant deck checks (see BENCHMARK_RESULTS.md, v0.3.1 section). Prioritize exact card effects, hard cases around Instinct or queued Glaciation, and which starting animals the scripts favor. Keep role-specific results separate from animal balance claims.
 
 ## Request for Gemini
 

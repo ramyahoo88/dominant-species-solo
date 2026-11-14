@@ -238,7 +238,7 @@ Every rule was built in the app's simulator and judged by win rate: how often a 
 
 **How the rules got here.** The first version scored every Dominance Card, checked each card's condition and counted element types and rank gains. Lighter rules played as well or better and take roughly 15 minutes less upkeep per rival per game, so that version was retired. Ideas that tested weaker and were left out: the card's Yes face, the leftmost space instead of the best, simpler Competition targets, one generic effect for every card, no Wanderlust element, a fixed card position, a center-out tie-breaker, and dropping Domination first.
 
-**Barren Earth.** No test game stalled (every game reached a normal end). If the action display fills before every rival has placed, Planning simply ends; extra pawns wait for the next turn.
+**Stalls.** With the Barren Earth step, no test game stalled: every game reached a normal end. If the action display fills before every rival has placed, Planning simply ends and the extra pawns wait for the next turn.
 
 **Limits.** The scripted player is a fixed strategy, not a person, so expect a strong human to win more often at every level. These rules have not yet been played at a real table.
 

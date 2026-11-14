@@ -44,5 +44,5 @@
     }
   ],
   "strategy": "**Strategy balance.** Chasing Domination cards is the strongest approach in testing, against both paper and app rivals: at Standard it wins 23–48% against paper rivals versus 8–23% for spreading out or chasing majorities. The gap narrows at Expert. If you want a harder game, avoid leaning on Domination cards, or move up a level.",
-  "stalls": "No test game stalled (every game reached a normal end). If the action display fills before every rival has placed, Planning simply ends; extra pawns wait for the next turn."
+  "stalls": "With the Barren Earth step, no test game stalled: every game reached a normal end. If the action display fills before every rival has placed, Planning simply ends and the extra pawns wait for the next turn."
 }

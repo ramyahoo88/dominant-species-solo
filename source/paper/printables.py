@@ -88,7 +88,7 @@ def testing(ladder):
         "version was retired. Ideas that tested weaker and were left out: the card's Yes face, the leftmost space instead of the best, "
         "simpler Competition targets, one generic effect for every card, no Wanderlust element, a fixed card position, a center-out "
         "tie-breaker, and dropping Domination first.",
-        "**Barren Earth.** " + ladder["stalls"],
+        "**Stalls.** " + ladder["stalls"],
         "**Limits.** The scripted player is a fixed strategy, not a person, so expect a strong human to win more often at every level. "
         "These rules have not yet been played at a real table.",
         "The rules live in `source/paper/paper.js`. For example, `node source/benchmark.cjs --base main --candidate worktree --paper 1 --bots 3` "

@@ -176,3 +176,28 @@ Migration's planning value is still capped at 2.60. Two uncapped versions were t
 | M2: best single move, uncapped | 107 (30%) | 23% | 18.2 |
 
 Both made rivals clearly weaker and Birds weaker still, with Migration placements nearly doubling. The migration evaluator overrates moves, and the cap was holding that in check, so no change was shipped. More Migration hurt Birds most, which suggests Birds' Migration-heavy deck (11.2 weighted, against 3–5 for the others) may itself be why Birds are weak.
+
+## Migration move choice · tested, rejected (Claude, November 13, 2026)
+
+**Diagnosis (seed 6200, v0.3.3).** Every rival Migration move was logged and checked at the end of the turn, after Competition, Domination and Extinction.
+
+| Where the cubes went | Share of moves | Still there at turn end | Held rank |
+|---|---:|---:|---:|
+| Actor's other occupied tiles (comparison) | — | 74% | 61% |
+| Migration onto a tile already held | 48% | 87% | 57% |
+| Migration onto a new tile, 2+ cubes | 19% | 88% | 61% |
+| Migration onto a new tile, 1 cube | 34% | 63% | 52% |
+
+Only 39% of single-cube claims took first place. `utility` gives each occupied tile a flat presence bonus, counts a one-cube lead at full rank VP, and ignores Competition pawns already placed, which resolve later the same turn.
+
+**Candidates (inside `migrationPlan` only; the planning cap was kept; seed 6200, 360 games each).**
+
+| Variant | Scripted player wins | Migration moves per game | 1-cube claim survival | Birds rival |
+|---|---:|---:|---:|---:|
+| v0.3.3 | 21% | 31.1 | 63% | 38% |
+| C1: expect placed rival Competition hits on the destination | 26% | 21.5 | 79% | 28% |
+| C2: 1-cube claims on new tiles scored at 40% | 17% | 30.2 | 63% | 32% |
+
+Neither met its criteria. C1 kept more cubes alive but made rivals weaker by over-caution. C2 halved the number of thin claims but did not improve their survival. Birds' own VP held at about 190 in all three runs while the best opponent stayed near 216, so Birds lost share rather than points.
+
+**Unconfirmed lead.** C2 made rivals tougher on development seeds only (player 21% → 17%), but Reptiles rose 47% → 57% and Birds fell. That is the same trade-off as v0.3.3. It has not been tested on fresh seeds.

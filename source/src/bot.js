@@ -500,6 +500,10 @@ function dominanceSetup(s, actor) {
     return {options,committed,hasDomination:hasPlanned('domination'),openDomSlots};
   });
 }
+function denialTarget(s, actor) {
+  return s.ids.filter(id => id !== actor && s.animals[id].remaining > 0)
+    .sort((a,b) => threatScore(s,b) - threatScore(s,a) || rank(a) - rank(b))[0] || null;
+}
 function planPlacement(s, actor, cardIndex, override, duringExecution = false) {
   if (duringExecution === 'instinct') {
     const focus = override || 'dominance';
@@ -568,8 +572,7 @@ function planPlacement(s, actor, cardIndex, override, duringExecution = false) {
   });
   const fallback = choiceBest(slots);
   if (duringExecution || !fallback || !(DENIAL_WEIGHT > 0)) return fallback;
-  const rival = s.ids.filter(id => id !== actor && s.animals[id].remaining > 0)
-    .sort((a,b) => threatScore(s,b) - threatScore(s,a) || rank(a) - rank(b))[0];
+  const rival = denialTarget(s,actor);
   if (!rival) return fallback;
   const rivalCache = new Map();
   const rivalValue = Object.fromEntries(slots.map(plan => {

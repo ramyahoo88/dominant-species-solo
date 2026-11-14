@@ -223,7 +223,7 @@ Scripted player 111 → 112 of 540 (+0.2 points, interval −2.7 to +3.0). Birds
 
 **Reading.** On this fresh block the v0.3.3 baseline shows no Birds weakness: 71 of 180, level with Mammals and Amphibians. The rivals are within about 10 wins of each other except Reptiles (80) and Insects (62). The Birds deficits seen on earlier blocks were small and inconsistent, so no further Birds-specific work is planned without new evidence. Reptiles remain the most consistently strong rival.
 
-## Blocking as a per-slot denial term · failed guard narrowly, not merged (Claude, November 14, 2026)
+## Blocking as a per-slot denial term · failed guard narrowly, merged by owner decision as v0.3.4 (Claude, November 14, 2026)
 
 **Change.** The late "deny when nothing is useful" gate was replaced by a term on every open slot in Planning: `value += DENIAL_WEIGHT × marginal`. Marginal = the top-threat opponent's planning value for that slot minus its best value on another open slot in the same row, clipped to 0–5, and zero when that value is ≤ 0.12. A placement is labelled as a block only when the term changed the pick.
 

@@ -17,8 +17,8 @@ verify('GMT p. 4: six APs and 50 cubes include one VP marker and four starting s
   }
 `);
 
-verify('v0.1 through v0.3.2 save migration preserves inventory, pending choices, and random state', `
-  for (const version of ['0.1.0','0.2.0','0.3.0','0.3.1','0.3.2']) {
+verify('v0.1 through v0.3.3 save migration preserves inventory, pending choices, and random state', `
+  for (const version of ['0.1.0','0.2.0','0.3.0','0.3.1','0.3.2','0.3.3']) {
     const s = newGame('insects',['mammals','birds'],true,51);
     s.version = version;
     s.phase = 'execution';
@@ -107,13 +107,13 @@ verify('Planning denial only targets a rival who can still place a pawn', `
   s.animals.reptiles.vp = 20;
   s.animals.reptiles.remaining = 1;
   s.animals.birds.remaining = 1;
-  const plan = blockRival(s,'insects',[{slot:'speciation-1',row:'speciation'},{slot:'initiative-0',row:'initiative'}]);
-  assert.equal(plan.blockedRival,'reptiles');
-  assert.ok(plan.reason.includes('Reptiles'));
+  assert.equal(denialTarget(s,'insects'),'reptiles');
   s.animals.reptiles.remaining = 0;
-  assert.notEqual(blockRival(s,'insects',[{slot:'initiative-0',row:'initiative'}])?.blockedRival,'reptiles');
+  assert.equal(denialTarget(s,'insects'),'birds');
   s.animals.birds.remaining = 0;
-  assert.equal(blockRival(s,'insects',[{slot:'initiative-0',row:'initiative'}]),null);
+  assert.equal(denialTarget(s,'insects'),null);
+  const plan = planPlacement(s,'insects',0);
+  assert.equal(plan.blockedRival,undefined);
 `);
 
 verify('GMT pp. 12, 14–16: distinguish declines, zero-effect choices, and lack of targets', `

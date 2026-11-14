@@ -6,6 +6,16 @@ Table-playable rules for the two rival animals, so Dominant Species can be playe
 - Deck tables: `node source/paper/decktables.cjs source/src/decks.js` prints them from the app's decks, so the printed decks always match the app.
 - Benchmark: `node source/benchmark.cjs --base main --candidate worktree --paper N` plays the app's rivals (base) against paper rivals with N extra action pawns (candidate) on the same seeds.
 
+## Quick mode and two-player games
+
+- **Quick mode** (optional, 6 pawns) cuts the rivals' upkeep. It uses flat element matching (printed count plus added elements, capped by the disks on the tile) and a fixed card list instead of card scoring. On seed 150000 the scripted player won 30% (107/360), against 19% (70/360) against the app's rivals on the same seeds. On the tuning seeds it was 34%. Run it with `--paper 0 --paper-options flatMatch,cardList`.
+- **Two players plus a rival:** the rules work unchanged with two people and one rival, because "leader" means whichever opponent leads on VP.
+- **Rejected at 6 pawns** (seed 6200, 360 games each; Standard was 49%):
+  - a fixed-position Dominance Card pick: 64%
+  - one generic effect for every card: 82%
+  - a center-out clockwise tie-breaker: 57%
+  - the card list with real matching: 56%
+
 ## Difficulty
 
 | Level | Action pawns per rival |

@@ -1,5 +1,11 @@
 # Release notes
 
+## Paper rivals · quick mode · November 14, 2026
+
+- Added an optional quick mode for the paper rivals: flat element matching and a fixed card list. It plays about as tough as Expert at the normal 6 pawns (30% scripted-player wins on seed 150000, against 19% for the app's rivals).
+- Added rules for two people plus one paper rival.
+- `source/benchmark.cjs` takes `--paper-options`.
+
 ## Paper rivals · November 14, 2026
 
 - Added table-playable rival rules for playing without the app: [Paper rivals](PAPER_RIVALS.md). Rules as code in `source/paper/paper.js`, deck tables from `source/paper/decktables.cjs`, and a `--paper N` option on `source/benchmark.cjs`.

@@ -37,6 +37,7 @@ function collect(games) {
     humanWins: games.reduce((n, game) => n + won(game), 0),
     humanWinRate: round(mean(games.map(won))),
     winningVPTies: ties,
+    stalledGames: games.filter(game => game.stalled).length,
     meanHumanMargin: round(mean(games.map(game => game.humanMargin))),
     meanWinningMargin: round(mean(games.map(game => game.winningMargin))),
     meanTurns: round(mean(games.map(game => game.turns))),

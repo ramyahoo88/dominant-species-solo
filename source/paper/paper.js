@@ -1,6 +1,9 @@
 // Paper rival: decisions a person can make at the table by counting.
 // Loaded after the app sources. PAPER.<kind> = true switches that decision to the paper rule.
 var PAPER = typeof PAPER === 'object' ? PAPER : {};
+// Quick mode: flat matching, the card list, and five cuts that tested as free (always the "no" face, simple Adaptation,
+// full Speciation, Migration without rank checks, Glaciation without the tundra bonus).
+if (PAPER.quick) for (const k of ['flatMatch','cardList','faceNo','simpleAdapt','simpleSpec','simpleMig','simpleGlac']) PAPER[k] = true;
 var PAPER_FALLBACKS = PAPER_FALLBACKS || {};
 function paperNote(kind) { PAPER_FALLBACKS[kind] = (PAPER_FALLBACKS[kind] || 0) + 1; }
 function paperLegal(s, actor, row, index) {

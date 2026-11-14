@@ -54,6 +54,7 @@ small,.muted{color:var(--muted)}
 .seat-head{display:flex;gap:8px;align-items:center}
 .seat-head select{min-width:0}
 .seat p{font-size:12px;color:var(--muted);min-height:35px;margin-top:7px}
+.rival-count{margin-bottom:12px}
 .seat-hint{font-size:12px;color:var(--muted);margin-top:8px}
 .mark{--chip:#e3eae0;--chip-ink:#263333;width:29px;height:29px;flex:0 0 29px;display:inline-grid;place-items:center;border:1px solid #193c3b26;
   border-radius:8px;background:var(--chip);color:var(--chip-ink);font-size:11px;font-weight:700;line-height:1}

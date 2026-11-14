@@ -26,7 +26,11 @@ const A = ids => ids.map(id => [id,nameOf(id)]);
 const cardRows = face => '<div class="card-flow">' + face.rows.map(row => '<span>' + ROW_BY_ID[row].name + '</span>').join('') + '</div>';
 let game = null;
 let undo = [];
-let setup = {human:'amphibians',bot1:'birds',bot2:'arachnids',short:true};
+let setup = {human:'amphibians',bots:['birds','arachnids'],short:true};
+const RIVAL_WORDS = ['one','two','three','four','five'];
+function seatKeys() { return ['human',...setup.bots.map((_,i) => 'bot-' + i)]; }
+function seatGet(key) { return key === 'human' ? setup.human : setup.bots[Number(key.slice(4))]; }
+function seatSet(key, value) { if (key === 'human') setup.human = value; else setup.bots[Number(key.slice(4))] = value; }
 let activeTile = 'D3';
 let reveal = null;
 let preview = null;
@@ -78,7 +82,7 @@ function readSupplyDraft(s, raw) {
 }
 function validateState(s) {
   function assert(ok) { if (!ok) throw new Error('This is not a valid Dominant Species companion save.'); }
-  if (s && ['0.1.0', '0.2.0', '0.3.0', '0.3.1', '0.3.2', '0.3.3'].includes(s.version)) s.version = VERSION;
+  if (s && ['0.1.0', '0.2.0', '0.3.0', '0.3.1', '0.3.2', '0.3.3', '0.3.4'].includes(s.version)) s.version = VERSION;
   const keys = value => value && typeof value === 'object' ? Object.keys(value) : [];
   assert(s && s.version === VERSION && ['supply','planning','execution','finished'].includes(s.phase) &&
     num(s.turn) && s.turn > 0 && num(s.rng) && s.rng <= 0xffffffff && num(s.seed) && s.seed <= 0xffffffff);
@@ -180,18 +184,20 @@ function stepTitle(step) {
   })[step.kind];
 }
 function setupPage() {
-  const seats = [['human','You'],['bot1','Rival one'],['bot2','Rival two']];
+  const seats = seatKeys().map((key,i) => [key, i ? 'Rival ' + RIVAL_WORDS[i-1] : 'You']);
+  const [pawns, cubes] = SETUP_BY_PLAYERS[setup.bots.length + 1];
   const seat = ([key,label]) => {
-    const id = setup[key];
+    const id = seatGet(key);
     return '<div class="seat ' + key + '"><label><span class="seat-role">' + label + '</span><span class="seat-head">' + badge(id) +
       '<select name="' + key + '">' + FOOD.map(a => '<option value="' + a + '"' + (a === id ? ' selected' : '') + '>' + nameOf(a) + '</option>').join('') +
       '</select></span></label><p>' + ANIMALS[id].power + '</p></div>';
   };
   main.innerHTML = '<section class="hero" aria-labelledby="hero-title"><div class="hero-copy"><p class="eyebrow">Tabletop solo companion</p>' +
-    '<h1 id="hero-title">Dominant Species</h1><p>Take one animal into the Ice Age. Two card-driven rivals compete for the same world.</p></div></section>' +
-    '<section class="panel setup-panel"><div class="setup-title"><h2>Set up your game</h2><p>Use the three-player setup in your GMT box.</p></div>' +
+    '<h1 id="hero-title">Dominant Species</h1><p>Take one animal into the Ice Age. Card-driven rivals compete for the same world.</p></div></section>' +
+    '<section class="panel setup-panel"><div class="setup-title"><h2>Set up your game</h2><p>Use the ' + (setup.bots.length + 1) + '-player setup in your GMT box: ' + pawns + ' pawns and ' + cubes + ' cubes per animal.</p></div>' +
     '<div class="notice" role="alert" id="notice"' + (notice || initialError ? '' : ' hidden') + '>' + esc(notice || initialError) + '</div>' +
-    '<form data-form="start"><div class="seats">' + seats.map(seat).join('') + '</div><p class="seat-hint">Choosing an animal already at the table swaps the two seats.</p><div class="setup-bottom">' +
+    '<form data-form="start"><fieldset class="rival-count"><legend>Rivals</legend><div class="segment">' + [2,3,4,5].map(n => '<label><input name="count" type="radio" value="' + n + '"' +
+      (setup.bots.length === n ? ' checked' : '') + '> ' + n + '</label>').join('') + '</div></fieldset><div class="seats">' + seats.map(seat).join('') + '</div><p class="seat-hint">Choosing an animal already at the table swaps the two seats.</p><div class="setup-bottom">' +
     '<fieldset><legend>Dominance deck</legend><div class="segment">' +
     '<label><input name="length" type="radio" value="short"' + (setup.short ? ' checked' : '') + '> Short game · 22 cards</label>' +
     '<label><input name="length" type="radio" value="full"' + (!setup.short ? ' checked' : '') + '> Full game · 26 cards</label></div></fieldset>' +
@@ -286,7 +292,7 @@ function showSupply() {
   const stackList = game.stacks.flatMap((x,i) => x.left && !x.face ?
     [field('Wanderlust stack ' + (i+1),select('stack-'+i,LARGE_TERRAIN.map(t=>[t,terrainName(t)])))] : []).join('');
   const instruction = game.turn === 1 ?
-    'For each animal, set out six action pawns and 50 cubes. Use one cube to mark VP, put four on the map and leave 45 in the gene pool. Match the Earth map with Wetland at the top.' :
+    'For each animal, set out ' + ['','','','six','five','four','three'][game.ids.length] + ' action pawns and ' + SETUP_BY_PLAYERS[game.ids.length][1] + ' cubes. Use one cube to mark VP, put four on the map and leave ' + (SETUP_BY_PLAYERS[game.ids.length][1] - 5) + ' in the gene pool. Match the Earth map with Wetland at the top.' :
     'Slide the physical action display as usual. Refill the three draw rows, turn up any face-down tile stacks, and fill the open card spaces.';
   return '<div class="block-head"><h2 id="turn-focus" tabindex="-1">Enter board draws</h2><span class="phase-badge">' + (game.turn === 1 ? 'Setup' : 'Reseed') +
     '</span></div><p class="instruction">' + instruction + '</p>' +

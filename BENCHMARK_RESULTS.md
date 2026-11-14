@@ -222,3 +222,28 @@ Birds played the fewest Domination actions of any rival (7.7 per game). Several 
 Scripted player 111 → 112 of 540 (+0.2 points, interval −2.7 to +3.0). Birds fell, so B1 was rejected.
 
 **Reading.** On this fresh block the v0.3.3 baseline shows no Birds weakness: 71 of 180, level with Mammals and Amphibians. The rivals are within about 10 wins of each other except Reptiles (80) and Insects (62). The Birds deficits seen on earlier blocks were small and inconsistent, so no further Birds-specific work is planned without new evidence. Reptiles remain the most consistently strong rival.
+
+## Blocking as a per-slot denial term · failed guard narrowly, not merged (Claude, November 14, 2026)
+
+**Change.** The late "deny when nothing is useful" gate was replaced by a term on every open slot in Planning: `value += DENIAL_WEIGHT × marginal`. Marginal = the top-threat opponent's planning value for that slot minus its best value on another open slot in the same row, clipped to 0–5, and zero when that value is ≤ 0.12. A placement is labelled as a block only when the term changed the pick.
+
+**Development (seed 6200, all animals, 360 games).** Pre-set criteria: about 1 or more blocks per rival per game, and the scripted player's win rate rises by no more than about 3 points.
+
+| Weight | Blocks per rival per game | Scripted player wins | Blocks aimed at the player | Blocking pawns resolved |
+|---|---:|---:|---:|---:|
+| 0 (v0.3.3) | ~0.02 | 76 (21%) | — | — |
+| .2 | 3.3 | 81 (22%) | 40% | 97% |
+| .4 | 5.9 | 100 (28%) | 40% | 98% |
+
+Every block was also a space useful to the blocker; Speciation, Competition and Wanderlust slots were blocked most. Weight .2 was chosen.
+
+**Confirmation (seed 110000, `--base main --repeats 3`, 540 games).** Same guard as before: the player's win rate rises by no more than about 3 points, and no animal loses more than 13 of 180.
+
+| Metric | v0.3.3 | Blocking .2 |
+|---|---:|---:|
+| Scripted player wins | 115/540 | 134/540 |
+| Player mean VP margin | −43.4 | −36.6 |
+| Blocks per rival per game | ~0 | 3.2 |
+| Largest animal loss (rival wins) | — | Arachnids −6 |
+
+Paired player change **+3.5 points** (interval −0.9 to +7.9): over the 3-point limit, so the change failed its guard narrowly. Blocking happens about as often as in development, but it costs the rivals a little strength.

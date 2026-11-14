@@ -1,4 +1,5 @@
 const PASS = {pass:true, label:'Forfeit this action.'};
+var DENIAL_WEIGHT = .2;
 const FALLBACK = ['domination','speciation','adaptation','abundance','competition','wanderlust','migration','glaciation','regression','wasteland','depletion','initiative'];
 
 function threatScore(s, id) {
@@ -466,22 +467,6 @@ function fastValue(s, actor, row, index, focus, cache) {
   cache.set(key,value);
   return value;
 }
-function blockRival(s, actor, slots) {
-  const rival = s.ids.filter(id => id !== actor && s.animals[id].remaining > 0)
-    .sort((a,b) => threatScore(s,b) - threatScore(s,a) || rank(a) - rank(b))[0];
-  if (!rival) return null;
-  const cache = new Map();
-  const scored = slots.map(plan => {
-    const {row,index} = splitSlot(plan.slot);
-    return {plan,row,opportunity:fastValue(s,rival,row,index,'majority',cache)};
-  });
-  const best = choiceBest(scored.map(({plan,row,opportunity}) => {
-    const substitute = Math.max(0,...scored.filter(other => other.plan !== plan && other.row === row).map(other => other.opportunity));
-    return {plan,value:Math.min(5,opportunity) + Math.min(5,opportunity - substitute)};
-  }));
-  if (!best || best.value <= .12) return null;
-  return {...best.plan,blockedRival:rival,reason:'Deny ' + nameOf(rival) + ' this useful ' + ROW_BY_ID[best.plan.row].name + ' space.'};
-}
 function dominanceSetup(s, actor) {
   return withPostWasteland(s, () => {
     const planned = Object.entries(s.pawns).filter(([,pawn]) => pawn.actor === actor).map(([key]) => splitSlot(key));
@@ -582,11 +567,24 @@ function planPlacement(s, actor, cardIndex, override, duringExecution = false) {
         opportunity > .12 ? 'The current board favors this fallback.' : 'Place in an open space.'};
   });
   const fallback = choiceBest(slots);
-  if (!duringExecution && fallback && fallback.opportunity <= 1 && fallback.value < .25) {
-    const denial = blockRival(s,actor,slots);
-    if (denial && (fallback.opportunity <= .12 || denial.slot !== fallback.slot)) return denial;
-  }
-  return fallback;
+  if (duringExecution || !fallback || !(DENIAL_WEIGHT > 0)) return fallback;
+  const rival = s.ids.filter(id => id !== actor && s.animals[id].remaining > 0)
+    .sort((a,b) => threatScore(s,b) - threatScore(s,a) || rank(a) - rank(b))[0];
+  if (!rival) return fallback;
+  const rivalCache = new Map();
+  const rivalValue = Object.fromEntries(slots.map(plan => {
+    const {row,index} = splitSlot(plan.slot);
+    return [plan.slot,fastValue(s,rival,row,index,'majority',rivalCache)];
+  }));
+  const weighed = slots.map(plan => {
+    const own = rivalValue[plan.slot];
+    const substitute = Math.max(0,...slots.filter(other => other !== plan && other.row === plan.row).map(other => rivalValue[other.slot]));
+    const denial = own > .12 ? Math.max(0,Math.min(5,own - substitute)) : 0;
+    return {...plan,denial,value:plan.value + DENIAL_WEIGHT * denial};
+  });
+  const pick = choiceBest(weighed);
+  if (pick.slot === fallback.slot || !pick.denial) return fallback;
+  return {...pick,blockedRival:rival,reason:'Deny ' + nameOf(rival) + ' this ' + ROW_BY_ID[pick.row].name + ' space' + (pick.opportunity > .12 ? ' while using it.' : '.')};
 }
 function botPlacement(s) {
   const actor = currentPlanner(s).actor;

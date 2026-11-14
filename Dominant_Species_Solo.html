@@ -445,7 +445,7 @@ dialog::backdrop{background:#132d2c88}
 <noscript>This companion needs JavaScript. Open the downloaded HTML file in a browser.</noscript>
 <script>'use strict';
 
-const VERSION = '0.3.2';
+const VERSION = '0.3.3';
 const SAVE_KEY = 'dominant-species-solo-v1';
 // GMT rules p. 4: of the 50 gathered cubes, one marks VP.
 const THREE_PLAYER_CUBES = 50;
@@ -1505,7 +1505,9 @@ function fastValue(s, actor, row, index, focus, cache) {
   if (row === 'initiative') return s.initiative[0] === actor ? 0 : 2.0;
   if (row === 'wanderlust') {
     const stacksAvail = s.stacks.filter(a => a.face).length;
-    return stacksAvail > earlierInRow && frontTiles(s).length ? 2.5 : 0;
+    if (stacksAvail <= earlierInRow || !frontTiles(s).length) return 0;
+    if (!cache.has('wanderlust')) cache.set('wanderlust', withPostWasteland(s,() => wanderChoice(s,context(s,actor,focus))?.value || 0));
+    return Math.max(0,cache.get('wanderlust'));
   }
   if (row === 'glaciation') {
     const tundraLeft = 12 - Object.values(s.tiles).filter(t => t.terrain === 'tundra').length;
@@ -2151,7 +2153,7 @@ function readSupplyDraft(s, raw) {
 }
 function validateState(s) {
   function assert(ok) { if (!ok) throw new Error('This is not a valid Dominant Species companion save.'); }
-  if (s && ['0.1.0', '0.2.0', '0.3.0', '0.3.1'].includes(s.version)) s.version = VERSION;
+  if (s && ['0.1.0', '0.2.0', '0.3.0', '0.3.1', '0.3.2'].includes(s.version)) s.version = VERSION;
   const keys = value => value && typeof value === 'object' ? Object.keys(value) : [];
   assert(s && s.version === VERSION && ['supply','planning','execution','finished'].includes(s.phase) &&
     num(s.turn) && s.turn > 0 && num(s.rng) && s.rng <= 0xffffffff && num(s.seed) && s.seed <= 0xffffffff);

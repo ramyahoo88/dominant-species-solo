@@ -15,10 +15,13 @@ function resolveVersion(ref) {
 
 function load(ref, extra = []) {
   const context = vm.createContext({document: {getElementById: () => ({})}});
+  const read = path => ref === 'worktree' ? readFileSync(join(root, path), 'utf8') : git('show', ref + ':' + path);
+  // From v0.3.6 the shipped app includes the paper rules (inactive unless a game turns them on); load them where the build does.
+  const shipsPaper = read('source/build.py').includes('../paper/paper');
   for (const name of modules) {
-    const path = 'source/src/' + name + '.js';
-    const code = ref === 'worktree' ? readFileSync(join(root, path), 'utf8') : git('show', ref + ':' + path);
-    vm.runInContext(code, context, {filename: ref + '/' + path});
+    for (const path of ['source/src/' + name + '.js', ...(name === 'effects' && shipsPaper ? ['source/paper/paper.js'] : [])]) {
+      vm.runInContext(read(path), context, {filename: ref + '/' + path});
+    }
   }
   for (const name of ['legality', ...extra]) {
     vm.runInContext(readFileSync(join(__dirname, name + '.js'), 'utf8'), context, {filename: name + '.js'});

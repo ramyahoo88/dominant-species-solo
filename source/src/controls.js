@@ -33,6 +33,13 @@ main.addEventListener('change',event => {
   if (input.form?.dataset.form === 'start') {
     const key=input.name;
     if (key === 'length') setup.short=input.value === 'short';
+    if (key === 'rules' || key === 'extra') {
+      if (key === 'rules') setup.paper=input.value === 'paper';
+      if (key === 'extra') setup.extra=Number(input.value);
+      render(false);
+      main.querySelector('input[name="'+key+'"][value="'+input.value+'"]')?.focus({preventScroll:true});
+      return;
+    }
     if (key === 'count') {
       const n=Number(input.value);
       while (setup.bots.length < n) setup.bots.push(FOOD.find(a => a !== setup.human && !setup.bots.includes(a)));
@@ -61,7 +68,7 @@ main.addEventListener('submit',event => {
   const values=new FormData(form);
   try {
     if (form.dataset.form === 'start') {
-      game=newGame(setup.human,[...setup.bots],setup.short,randomSeed());
+      game=newGame(setup.human,[...setup.bots],setup.short,randomSeed(),setup.paper ? {extra:setup.extra} : null);
       activeTile='D3'; reveal=null; preview=null; draft={}; undo=[]; notice=''; initialError='';
       save(); render(true);
     }
@@ -162,7 +169,7 @@ function renderModal() {
     '<li>Place your own pawns. Reveal a card for each rival placement and mirror the indicated slot on your action display.</li>' +
     '<li>Apply each action to the physical board and confirm it here. The Earth map uses the starting wetland as north. Corner 1 points right, and corners 2–6 follow clockwise. The map shows a shared corner once.</li>' +
     '<li>Follow the app’s Extinction and Survival prompts. After Ice Age, complete the turn and compare the final scores.</li></ol>' +
-    '<h3>Bot cards</h3><p>Each rival shuffles its own eight-card deck, checks one condition per placement and starts on the corresponding face. The action list guides the pawn placement. The bot can take another open space when it sees a stronger opportunity. Targets are chosen when the pawn resolves.</p>' +
+    '<h3>Bot cards</h3><p>Each rival shuffles its own eight-card deck, checks one condition per placement and starts on the corresponding face. The action list guides the pawn placement. The bot can take another open space when it sees a stronger opportunity. Targets are chosen when the pawn resolves.</p><p>With <b>Paper rules</b>, the rivals follow the printed Paper Rivals rulebook exactly: always the reverse face of the card, simple counting rules, and extra pawns for difficulty. Use it to learn the printed rules, or to play them without printing anything.</p>' +
     '<h3>Board tracking</h3><p>The companion checks cones automatically. When a protected Hibernation cube shares a tile with other cubes of the same animal, the app moves or removes the ordinary cubes first. Confirm each physical move to save it. Undo is available until you close or reload the page. Export a save before switching browsers or devices.</p>' +
     '<p><a href="'+RULEBOOK+'" target="_blank" rel="noopener noreferrer">GMT rulebook</a> · <a href="'+PHOTO+'" target="_blank" rel="noopener noreferrer">Portage Glacier photo, USGS</a></p>';
   if (modalKind === 'decks') content='<div class="deck-tabs" role="group" aria-label="Animal deck">' + FOOD.map(id=>button(nameOf(id),'deck-tab','sm',
@@ -217,7 +224,7 @@ document.addEventListener('click',event => {
         deckTab=btn.dataset.animal; renderModal(); modal.querySelector('[data-animal="'+deckTab+'"]')?.focus(); break;
       case 'new': openModal('new'); break;
       case 'new-confirm':
-        setup={human:game.human,bots:[...game.rivals],short:game.short};
+        setup={human:game.human,bots:[...game.rivals],short:game.short,paper:!!game.paper,extra:game.paper?.extra || 0};
         game=null; undo=[]; reveal=null; preview=null; draft={}; notice=''; initialError='';
         modal.close(); save(); render(false);
         main.focus();

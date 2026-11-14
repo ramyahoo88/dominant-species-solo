@@ -148,3 +148,12 @@ Audited November 14, 2026, by Claude. Scope: the app at `main` b14f720 (v0.3.5),
 - The 4-rival UI run stopped at turn 8. The 4-rival engine path is covered by 1,440 simulated games.
 - The GMT living-rules PDF was not readable from this session, so player-count rules come from secondary summaries that agree with each other.
 - I didn't recheck the printed card text in this pass (see `CARD_AUDIT.md`).
+
+## Addendum · resolution in v0.3.6
+- **F1:** Block the leader is added to the paper rules. The detailed rules (no tested fix) were retired, and the former quick mode is now the only paper version. Difficulty was re-measured on block 190000.
+- **F2:** the claims were rewritten with the new measurements.
+- **F3:** the full rules were retired. With the single version, Standard is about even at 4–5 rivals.
+- **F4, F5:** the wording is fixed in the rulebook. **F6:** `HANDOFF.md` is updated. **F7:** superseded by the new table. **F9:** `--help` mentions `--paper=-1`.
+- **Ambiguities:** Migration is reworded; the card list skips pawn cards at 10 pawns.
+- **New in v0.3.6:** the rulebook now says to draw a card at every placement, matching the code.
+- **Open:** F8 (log detail), and the rare six-animal stall (1 in ~2,900 games).

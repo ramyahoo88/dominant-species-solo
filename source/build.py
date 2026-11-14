@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent
-MODULES = ("data", "decks", "engine", "bot", "effects", "ui", "forms", "controls")
+MODULES = ("data", "decks", "engine", "bot", "effects", "../paper/paper", "ui", "forms", "controls")
 ASSETS = {"FONT_DM": "dm.woff2", "FONT_SERIF": "serif.woff2", "HERO_GLACIER": "glacier.webp"}
 
 

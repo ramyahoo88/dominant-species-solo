@@ -525,7 +525,7 @@ newGame = function(human, rivals, short, seed, paper = null) {
   if (!PAPER.place && !paper) return s;
   const extra = paper ? Number(paper.extra || 0) : Number(PAPER.extraAP || 0);
   for (const id of rivals) s.animals[id].ap += extra;
-  s.paper = {extra};
+  s.paper = PAPER.flatMatch ? {extra} : {extra, detailed:true};
   s.paperRivals = [...rivals];
   return s;
 };

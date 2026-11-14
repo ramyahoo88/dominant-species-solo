@@ -45,6 +45,13 @@ function load(ref, extra = []) {
         }
         return ctx;
       };
+      // Rules adapter (GPT audit B1): the pinned player keeps its strategy but must see the rules of the game it plays.
+      // Paper rivals use flat matching, which also decides dominance (cones) through match().
+      const referenceMatch = match;
+      match = (s, tile, actor, additions = s.animals[actor].added) =>
+        s.paper && !s.paper.detailed && s.paperRivals?.includes(actor)
+          ? Math.min(ANIMALS[actor].affinity + additions.length, VERTICES_OF[tile].filter(k => s.corners[k]).length)
+          : referenceMatch(s, tile, actor, additions);
       const referenceAction = botAction;
       const referencePlan = planPlacement;
       planPlacement = (s, actor, card, focus, timing) => {

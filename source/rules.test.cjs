@@ -17,8 +17,8 @@ verify('GMT p. 4: six APs and 50 cubes include one VP marker and four starting s
   }
 `);
 
-verify('v0.1 through v0.3.4 save migration preserves inventory, pending choices, and random state', `
-  for (const version of ['0.1.0','0.2.0','0.3.0','0.3.1','0.3.2','0.3.3','0.3.4']) {
+verify('v0.1 through v0.3.5 save migration preserves inventory, pending choices, and random state', `
+  for (const version of ['0.1.0','0.2.0','0.3.0','0.3.1','0.3.2','0.3.3','0.3.4','0.3.5']) {
     const s = newGame('insects',['mammals','birds'],true,51);
     s.version = version;
     s.phase = 'execution';
@@ -177,3 +177,19 @@ test('fixed player policies use the visible board and ignore rival decks and RNG
   `);
   assert.equal(decision, true);
 });
+
+verify('v0.3.6: paper-rules games add difficulty pawns, use the printed rules, and survive validation', `
+  const app = newGame('insects',['birds','arachnids'],true,40);
+  assert.equal(app.paper, undefined);
+  const s = newGame('insects',['birds','arachnids','mammals'],true,40,{extra:1});
+  assert.deepEqual(s.paper, {extra:1});
+  for (const id of s.rivals) assert.equal(s.animals[id].ap, 6);
+  assert.equal(s.animals.insects.ap, 5);
+  validateState(JSON.parse(JSON.stringify(s)));
+  const bad = JSON.parse(JSON.stringify(s)); bad.paper.extra = 9;
+  assert.throws(() => validateState(bad));
+  s.phase = 'planning'; s.planning = 0; s.cursor = 0;
+  for (const id of s.ids) s.animals[id].remaining = s.animals[id].ap;
+  const planner = currentPlanner(s);
+  if (planner && planner.actor !== s.human) assert.match(botPlacement(s).reason, /^Paper rule, /);
+`);

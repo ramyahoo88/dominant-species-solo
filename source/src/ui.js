@@ -26,7 +26,9 @@ const A = ids => ids.map(id => [id,nameOf(id)]);
 const cardRows = face => '<div class="card-flow">' + face.rows.map(row => '<span>' + ROW_BY_ID[row].name + '</span>').join('') + '</div>';
 let game = null;
 let undo = [];
-let setup = {human:'amphibians',bots:['birds','arachnids'],short:true};
+let setup = {human:'amphibians',bots:['birds','arachnids'],short:true,paper:false,extra:0};
+const PAPER_LEVELS = [[-1,'Easy'],[0,'Standard'],[1,'Hard'],[2,'Expert']];
+function paperLevel(extra) { return (PAPER_LEVELS.find(([n]) => n === extra) || [0,'Custom'])[1]; }
 const RIVAL_WORDS = ['one','two','three','four','five'];
 function seatKeys() { return ['human',...setup.bots.map((_,i) => 'bot-' + i)]; }
 function seatGet(key) { return key === 'human' ? setup.human : setup.bots[Number(key.slice(4))]; }
@@ -82,13 +84,15 @@ function readSupplyDraft(s, raw) {
 }
 function validateState(s) {
   function assert(ok) { if (!ok) throw new Error('This is not a valid Dominant Species companion save.'); }
-  if (s && ['0.1.0', '0.2.0', '0.3.0', '0.3.1', '0.3.2', '0.3.3', '0.3.4'].includes(s.version)) s.version = VERSION;
+  if (s && ['0.1.0', '0.2.0', '0.3.0', '0.3.1', '0.3.2', '0.3.3', '0.3.4', '0.3.5'].includes(s.version)) s.version = VERSION;
   const keys = value => value && typeof value === 'object' ? Object.keys(value) : [];
   assert(s && s.version === VERSION && ['supply','planning','execution','finished'].includes(s.phase) &&
     num(s.turn) && s.turn > 0 && num(s.rng) && s.rng <= 0xffffffff && num(s.seed) && s.seed <= 0xffffffff);
   assert(Array.isArray(s.ids) && s.ids.length === s.rivals?.length + 1 && unique(s.ids).length === s.ids.length && s.ids.every(id => FOOD.includes(id)) &&
     s.ids.includes(s.human) && Array.isArray(s.rivals) && s.rivals.length >= 2 && s.rivals.length <= 5 && unique(s.rivals).length === s.rivals.length &&
     s.rivals.every(id => id !== s.human && s.ids.includes(id)) && typeof s.short === 'boolean');
+  assert(s.paper === undefined || (s.paper && Number.isInteger(s.paper.extra) && s.paper.extra >= -2 && s.paper.extra <= 4 &&
+    Array.isArray(s.paperRivals) && s.paperRivals.length === s.rivals.length && s.paperRivals.every(id => s.rivals.includes(id))));
   assert(Array.isArray(s.initiative) && s.initiative.length === s.ids.length && unique(s.initiative).length === s.ids.length && s.initiative.every(id => s.ids.includes(id)) &&
     num(s.cursor) && s.cursor <= EXECUTION.length && num(s.planning) && s.planning < s.ids.length && typeof s.ending === 'boolean');
   assert(s.tiles && s.corners && s.pawns && s.animals && s.boxes && s.decks && terrainIds(s).length >= 7 && Object.keys(INITIAL_TILES).every(id => s.tiles[id]));
@@ -194,10 +198,16 @@ function setupPage() {
   };
   main.innerHTML = '<section class="hero" aria-labelledby="hero-title"><div class="hero-copy"><p class="eyebrow">Tabletop solo companion</p>' +
     '<h1 id="hero-title">Dominant Species</h1><p>Take one animal into the Ice Age. Card-driven rivals compete for the same world.</p></div></section>' +
-    '<section class="panel setup-panel"><div class="setup-title"><h2>Set up your game</h2><p>Use the ' + (setup.bots.length + 1) + '-player setup in your GMT box: ' + pawns + ' pawns and ' + cubes + ' cubes per animal.</p></div>' +
+    '<section class="panel setup-panel"><div class="setup-title"><h2>Set up your game</h2><p>Use the ' + (setup.bots.length + 1) + '-player setup in your GMT box: ' + pawns + ' pawns and ' + cubes + ' cubes per animal' +
+      (setup.paper && setup.extra ? ', with ' + (pawns + setup.extra) + ' pawns for each rival' : '') + '.</p></div>' +
     '<div class="notice" role="alert" id="notice"' + (notice || initialError ? '' : ' hidden') + '>' + esc(notice || initialError) + '</div>' +
     '<form data-form="start"><fieldset class="rival-count"><legend>Rivals</legend><div class="segment">' + [2,3,4,5].map(n => '<label><input name="count" type="radio" value="' + n + '"' +
       (setup.bots.length === n ? ' checked' : '') + '> ' + n + '</label>').join('') + '</div></fieldset><div class="seats">' + seats.map(seat).join('') + '</div><p class="seat-hint">Choosing an animal already at the table swaps the two seats.</p><div class="setup-bottom">' +
+    '<fieldset><legend>Rival rules</legend><div class="segment">' +
+    '<label><input name="rules" type="radio" value="app"' + (!setup.paper ? ' checked' : '') + '> App rivals · strongest</label>' +
+    '<label><input name="rules" type="radio" value="paper"' + (setup.paper ? ' checked' : '') + '> Paper rules · as printed</label></div>' +
+    (setup.paper ? '<div class="segment paper-level">' + PAPER_LEVELS.map(([n,name]) => '<label><input name="extra" type="radio" value="' + n + '"' + (setup.extra === n ? ' checked' : '') + '> ' + name + ' · ' + (n < 0 ? '−1' : '+' + n) + ' pawn' + (Math.abs(n) === 1 ? '' : 's') + '</label>').join('') + '</div>' : '') +
+    '</fieldset>' +
     '<fieldset><legend>Dominance deck</legend><div class="segment">' +
     '<label><input name="length" type="radio" value="short"' + (setup.short ? ' checked' : '') + '> Short game · 22 cards</label>' +
     '<label><input name="length" type="radio" value="full"' + (!setup.short ? ' checked' : '') + '> Full game · 26 cards</label></div></fieldset>' +
@@ -292,7 +302,9 @@ function showSupply() {
   const stackList = game.stacks.flatMap((x,i) => x.left && !x.face ?
     [field('Wanderlust stack ' + (i+1),select('stack-'+i,LARGE_TERRAIN.map(t=>[t,terrainName(t)])))] : []).join('');
   const instruction = game.turn === 1 ?
-    'For each animal, set out ' + ['','','','six','five','four','three'][game.ids.length] + ' action pawns and ' + SETUP_BY_PLAYERS[game.ids.length][1] + ' cubes. Use one cube to mark VP, put four on the map and leave ' + (SETUP_BY_PLAYERS[game.ids.length][1] - 5) + ' in the gene pool. Match the Earth map with Wetland at the top.' :
+    'For each animal, set out ' + ['','','','six','five','four','three'][game.ids.length] + ' action pawns and ' + SETUP_BY_PLAYERS[game.ids.length][1] + ' cubes. Use one cube to mark VP, put four on the map and leave ' + (SETUP_BY_PLAYERS[game.ids.length][1] - 5) + ' in the gene pool.' +
+    (game.paper?.extra ? ' Each rival ' + (game.paper.extra > 0 ? 'takes ' + game.paper.extra + ' extra' : 'returns ' + -game.paper.extra) + ' action pawn' + (Math.abs(game.paper.extra) === 1 ? '' : 's') + ' (paper rules, ' + paperLevel(game.paper.extra) + ').' : '') +
+    ' Match the Earth map with Wetland at the top.' :
     'Slide the physical action display as usual. Refill the three draw rows, turn up any face-down tile stacks, and fill the open card spaces.';
   return '<div class="block-head"><h2 id="turn-focus" tabindex="-1">Enter board draws</h2><span class="phase-badge">' + (game.turn === 1 ? 'Setup' : 'Reseed') +
     '</span></div><p class="instruction">' + instruction + '</p>' +
@@ -329,7 +341,7 @@ function drawPanel() {
     return '<div class="block-head"><h2 id="turn-focus" tabindex="-1">Place the pawn</h2><span class="phase-badge">Planning</span></div>' +
       '<p class="actorline">' + badge(reveal.actor,true) + nameOf(reveal.actor) + ' · ' + (left - 1) + ' left in deck</p>' +
       '<div class="current-card"><p class="eyebrow">' + (reveal.face ? 'Primary face' : 'Reverse face') + '</p><p class="display">' + card.title +
-      '</p><p class="muted">' + CHECKS[card.check] + ' · ' + (reveal.face ? 'Yes' : 'No') + '</p>' + cardRows(face) + '</div>' +
+      '</p><p class="muted">' + (game.paper ? 'Paper rules always use this face.' : CHECKS[card.check] + ' · ' + (reveal.face ? 'Yes' : 'No')) + '</p>' + cardRows(face) + '</div>' +
       '<div class="result-box"><strong>' + slotLabel(reveal.slot) + '</strong><p>' + reveal.reason + '</p></div>' +
       button('Pawn placed · Continue','next','primary');
   }
@@ -400,7 +412,7 @@ function render(focus = false, noScroll = false) {
       ' · ' + a.pool + ' in pool</small></div><div class="score-vp"><b>' + a.vp + '</b>VP</div></div>';
   }).join('');
   const turn = game.phase === 'supply' ? showSupply() : reveal || game.phase === 'planning' ? drawPanel() : game.phase === 'execution' ? showExecution() : showFinished();
-  main.innerHTML = '<div class="game-top"><div><p class="eyebrow">' + (game.short ? '22-card game' : '26-card game') +
+  main.innerHTML = '<div class="game-top"><div><p class="eyebrow">' + (game.short ? '22-card game' : '26-card game') + (game.paper ? ' · Paper rules, ' + paperLevel(game.paper.extra) : '') +
     '</p><h1>' + roundTitle + '</h1></div><div class="toolrow">' + button('Undo','undo','sm subtle',enable(!!(undo.length || reveal || preview))) + '</div></div>' +
     '<div class="score-strip" aria-label="Scores in Initiative order">' + score + '</div><nav class="game-jump" aria-label="Jump to board section">' +
     '<a href="#turn-focus">Current step</a><a href="#action-display">Action display</a><a href="#earth-panel">Earth map</a></nav>' +

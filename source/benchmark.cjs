@@ -82,8 +82,14 @@ function worker() {
     const runtime = load(ref, ['game']);
     if (i === 1 && workerData.paper !== null) {
       // Paper rivals: table-playable rules from source/paper/paper.js, with extra action pawns as the difficulty level.
-      runtime.run('var PAPER = ' + JSON.stringify({place: true, all: true, extraAP: workerData.paper, ...Object.fromEntries(workerData.paperOptions.map(o => [o, true]))}) + ';');
-      runtime.run(require('node:fs').readFileSync(require('node:path').join(__dirname, 'paper/paper.js'), 'utf8'));
+      const options = JSON.stringify(Object.fromEntries(workerData.paperOptions.map(o => [o, true])));
+      if (runtime.run("typeof paperOn === 'function'")) {
+        // The app ships the paper rules: switch them on for every game.
+        runtime.run('Object.assign(PAPER, {place: true, all: true, extraAP: ' + workerData.paper + '}); if (' + options + '.full) for (const k of PAPER_DEFAULTS) PAPER[k] = false; Object.assign(PAPER, ' + options + ');');
+      } else {
+        runtime.run('var PAPER = ' + JSON.stringify({place: true, all: true, extraAP: workerData.paper, ...JSON.parse(options)}) + ';');
+        runtime.run(require('node:fs').readFileSync(require('node:path').join(__dirname, 'paper/paper.js'), 'utf8'));
+      }
     }
     return runtime.get('playBenchmark');
   });

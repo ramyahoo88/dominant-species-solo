@@ -4,8 +4,11 @@ var PAPER = typeof PAPER === 'object' ? PAPER : {};
 // The paper rules (Nov 2026): flat matching, the card list, always the "no" face, simple Adaptation, full Speciation,
 // Migration without rank checks, Glaciation without the tundra bonus, and blocking the leader's Domination.
 // PAPER.full = true restores the earlier, detailed rules (kept only to reproduce old test results).
-if (!PAPER.full) for (const k of ['flatMatch','cardList','faceNo','simpleAdapt','simpleSpec','simpleMig','simpleGlac','domBlock']) PAPER[k] = true;
+const PAPER_DEFAULTS = ['flatMatch','cardList','faceNo','simpleAdapt','simpleSpec','simpleMig','simpleGlac','domBlock'];
+if (!PAPER.full) for (const k of PAPER_DEFAULTS) PAPER[k] = true;
 var PAPER_FALLBACKS = PAPER_FALLBACKS || {};
+// Paper rivals run when the benchmark asks for them (PAPER.place) or when a game was started with paper rules (s.paper).
+function paperOn(s) { return !!(PAPER.place || s?.paper); }
 function paperNote(kind) { PAPER_FALLBACKS[kind] = (PAPER_FALLBACKS[kind] || 0) + 1; }
 function paperLegal(s, actor, row, index) {
   switch (row) {
@@ -71,13 +74,19 @@ function paperPlacement(s, actor, cardIndex, openOverride = null) {
   const leaderDom = terrainIds(s).filter(t => !s.scored.includes(t) && cone(s,t) === leader).length;
   const blockMin = PAPER.domBlock2 ? 2 : 1;
   const block = (PAPER.domBlock || PAPER.domBlock2) && !domFirst && availableCards(s).length && doms < 2 && leaderDom >= blockMin ? pick(['domination'], true) : null;
-  const slot = domFirst || barren || block || pick(face ? face.rows : [], false, !PAPER.noWeak) || pick(PAPER_FALLBACK, false) || pick(PAPER_FALLBACK, true) || open[0];
+  // The same order as before; also record which Planning step chose the space, for the player.
+  const steps = [['Domination first', () => domFirst], ['Barren Earth', () => barren], ['Block the leader', () => block],
+    ['Card action', () => pick(face ? face.rows : [], false, !PAPER.noWeak)], ['Fallback', () => pick(PAPER_FALLBACK, false)],
+    ['Last resort', () => pick(PAPER_FALLBACK, true) || open[0]]];
+  let slot = null, why = '';
+  for (const [name, get] of steps) { slot = get(); if (slot) { why = name; break; } }
   const {row} = splitSlot(slot);
-  return {slot,row,priority:face ? face.rows.indexOf(row) : -1,focus,card:cardIndex,face:positive,opportunity:1,reason:'Paper rule: ' + ROW_BY_ID[row].name + '.'};
+  if (why === 'Card action') why += ' ' + (face.rows.indexOf(row) + 1);
+  return {slot,row,priority:face ? face.rows.indexOf(row) : -1,focus,card:cardIndex,face:positive,opportunity:1,reason:'Paper rule, ' + why + ': ' + ROW_BY_ID[row].name + '.'};
 }
 const _appBotPlacement = botPlacement;
 botPlacement = function(s) {
-  if (!PAPER.place) return _appBotPlacement(s);
+  if (!paperOn(s)) return _appBotPlacement(s);
   const actor = currentPlanner(s).actor;
   const card = drawCard(s,actor);
   const choice = paperPlacement(s,actor,card);
@@ -469,7 +478,7 @@ function paperLoss(s, actor, options, amount) {
 const _appBotAction = botAction;
 botAction = function(s, step) {
   const {actor,kind} = step;
-  if (PAPER[kind] === false || (!PAPER[kind] && !PAPER.all)) return _appBotAction(s,step);
+  if (!paperOn(s) || PAPER[kind] === false) return _appBotAction(s,step);
   if (kind === 'regression' || kind === 'weather') return _appBotAction(s,step); // no decision to make
   switch (kind) {
     case 'pawn': return PAPER['pawn:' + step.row] === false ? _appBotAction(s,step) : paperPawn(s,step);
@@ -498,10 +507,12 @@ botAction = function(s, step) {
 
 // ---------- Difficulty: extra action pawns for paper rivals ----------
 const _appNewGame = newGame;
-newGame = function(human, rivals, short, seed) {
+newGame = function(human, rivals, short, seed, paper = null) {
   const s = _appNewGame(human, rivals, short, seed);
-  const extra = PAPER.extraAP ? Number(PAPER.extraAP) : 0;
-  if (extra) for (const id of rivals) s.animals[id].ap += extra;
+  if (!PAPER.place && !paper) return s;
+  const extra = paper ? Number(paper.extra || 0) : Number(PAPER.extraAP || 0);
+  for (const id of rivals) s.animals[id].ap += extra;
+  s.paper = {extra};
   s.paperRivals = [...rivals];
   return s;
 };

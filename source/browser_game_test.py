@@ -12,8 +12,8 @@ HTML = (Path(__file__).resolve().parent.parent / "Dominant_Species_Solo.html").a
 def saved(p): return json.loads(p.evaluate("k => localStorage.getItem(k)", KEY))
 def vis(loc): return loc.count() > 0 and loc.first.is_visible()
 
-def run(n_rivals, seed=1, max_steps=4000, shots=None, paper=None):
-    """Usage: python3 source/browser_game_test.py [paper=N] 2 5 — full games through the controls."""
+def run(n_rivals, seed=1, max_steps=4000, shots=None, paper=None, full=False):
+    """Usage: python3 source/browser_game_test.py [paper=N] [full] 2 5 — complete games through the controls (full = 26-card deck)."""
     rnd = random.Random(seed)
     out = {"rivals": n_rivals, "steps": 0, "bot_applies": 0, "mismatch": [], "undo_ok": None, "reload_ok": None, "import_ok": None, "stuck": None}
     with sync_playwright() as pw:
@@ -24,6 +24,7 @@ def run(n_rivals, seed=1, max_steps=4000, shots=None, paper=None):
         p.on("request", lambda r: net.append(r.url) if r.url.startswith(("http:", "https:")) else None)
         p.goto(HTML)
         p.locator(f'input[name=count][value="{n_rivals}"]').check()
+        if full: p.locator('input[name=length][value="full"]').check()
         if paper is not None:
             p.locator('input[name=rules][value="paper"]').check()
             p.locator(f'input[name=extra][value="{paper}"]').check()
@@ -137,7 +138,10 @@ if __name__ == "__main__":
     paper = None
     args = sys.argv[1:]
     if args and args[0].startswith("paper="): paper = int(args.pop(0)[6:])
+    full = "full" in args
+    args = [a for a in args if a != "full"]
     for n in map(int, args or ["2", "5"]):
-        r = run(n, shots=None, paper=paper)
-        print(json.dumps({k: r.get(k) for k in ["rivals","paper","steps","bot_applies","undo_ok","redo_same","reload_ok","import_ok","errors","network","stuck","final_vp"]}))
+        r = run(n, shots=None, paper=paper, full=full)
+        r["full_deck"] = full
+        print(json.dumps({k: r.get(k) for k in ["rivals","paper","full_deck","steps","bot_applies","undo_ok","redo_same","reload_ok","import_ok","errors","network","stuck","final_vp"]}))
         assert not r["errors"] and not r["network"] and r.get("final_vp") and r["undo_ok"] and r["reload_ok"] and r["import_ok"], "game test failed"

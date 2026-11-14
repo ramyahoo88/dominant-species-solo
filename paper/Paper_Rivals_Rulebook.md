@@ -6,12 +6,12 @@
 
 These rules run the rival animals at the table without the app, against two to five rivals. Each rival draws from its own eight-card deck. Every decision after that is made by counting things on the board, with no scoring or judgment calls. Extra action pawns set the difficulty.
 
-**You need:** the base game, and for each rival eight cards numbered 1–8 (or a d8). The decks are listed under Rival decks.
+**You need:** the base game, and for each rival eight cards numbered 1–8 (or a d8; rolling repeats numbers that a shuffled deck would not, which the difficulty tests did not measure). The decks are listed under Rival decks.
 
 **Terms used throughout**
 
 - **Opponents in VP order:** the rival's opponents (you and the other rivals) from highest to lowest on the VP track, ties to the animal higher in the food chain. The first one is the **leader**.
-- **Rank on a tile:** order by number of species on the tile, ties to the food chain, as in normal tile scoring.
+- **Rank on a tile:** order every animal with a species on the tile by its number of species, ties to the food chain, as in normal tile scoring. Animals rank even below the places that score VP (on tundra, second place still counts as second).
 - **Gains a rank:** after the change, the rival is ranked higher on that tile than before, or now ranks there at all.
 - **First-place value:** the leftmost number on the Tile Scoring table: Sea 9, Wetland 8, Savannah 7, Jungle 6, Forest 5, Desert 4, Mountain 3, Tundra 1.
 - **Uses an element:** the element is on the rival's animal display (printed or added).
@@ -27,7 +27,7 @@ Set up a normal game for your player count: you plus two to five rival animals, 
 
 | Level | Each rival's pawns | Use it when |
 | --- | --- | --- |
-| Easy | Base count | You'll usually win; good for learning |
+| Easy | Base count | The best starting level for learning; you win more often than in an even game |
 | Standard | Base count +1 | About an even game at every table size |
 | Hard | Base count +2 | Tougher than an even game; close to the app's rivals at two or three rivals |
 | Expert | Base count +3 | About as strong as the app's rivals, or a little stronger at four or five rivals |
@@ -69,7 +69,7 @@ When it is a rival's turn to place, first draw the top card of its deck (it is d
 | Regression | An added element's type is in the Adaptation or Regression box (Reptiles: always) |
 | Abundance | The box holds an element the rival uses (any element during Barren Earth), and a tile it occupies has an empty corner |
 | Wasteland | The box holds an element the rival uses |
-| Depletion | The box holds an element the rival does not use, and that element is on earth |
+| Depletion | A disk on Earth is of an element in the box that the rival does not use |
 | Glaciation | A legal Glaciation tile holds opposing species and none of the rival's |
 | Speciation | The gene pool is not empty and a disk of that element is on earth |
 | Wanderlust | A tile is face up and an empty spot touches a tile the rival occupies |
@@ -83,7 +83,7 @@ When a rival's pawn is reached, resolve it with the rule below. If the rule find
 
 | Action | What the rival does |
 | --- | --- |
-| Initiative | Advances, then moves this pawn to an open space later in this turn's order, chosen by Planning steps 1–3, 5 and 6 (no card) |
+| Initiative | Advances one place on the Initiative track, then moves this pawn to an open space later in this turn's order, chosen by Planning steps 1–3, 5 and 6 (no card). If no such space is open, it still advances and the pawn returns to the rival (this is also the rule for you) |
 | Adaptation | Takes its own printed element if the box offers it; otherwise the leftmost element |
 | Regression | Nothing to decide; see Losing an element under Other decisions |
 | Abundance | Takes the leftmost box element it uses (else the leftmost). Places it on the empty corner touching the most tiles it occupies |
@@ -96,12 +96,12 @@ When a rival's pawn is reached, resolve it with the rule below. If the rule find
 | Competition | One elimination per terrain of the space (and tundra), on a tile it shares, scored below. Tie: the opponent earlier in VP order |
 | Domination | If a card is available and it dominates unscored tiles, scores the one of those where it earns the most VP. Otherwise the unscored tile no opponent dominates where it earns the most VP. If it earns VP on none of those, the unscored tile with species where it earns the most VP |
 
-**Migration, one species at a time.** Rivals never weigh rank gains when choosing a destination; they only avoid losing a rank where they leave. A species may leave a tile the rival does not match (a rescue), or a tile where it has 2+ species and losing one costs no rank. It moves to an adjacent tile the rival matches. Every move must be a rescue or reach a tile the rival is not on yet. Choose rescues first, then the destination with the higher first-place value, then the fullest origin. Species that arrived this action do not move again.
+**Migration, one species at a time.** Rivals never weigh rank gains when choosing a destination; they only avoid losing a rank where they leave. A species may leave a tile the rival does not match (a rescue), or a tile where it has 2+ species and losing one costs no rank. It moves to an adjacent tile the rival matches (Birds: up to two tiles away through existing terrain, as their power allows). Every move must be a rescue or reach a tile the rival is not on yet. Choose rescues first, then the destination with the higher first-place value, then the fullest origin. Species that arrived this action do not move again.
 
 **Competition score** for removing one opposing species from a tile:
 
 - start with the tile's first-place value;
-- add it again if that opponent ranks above the rival and loses that edge;
+- add it again if that opponent ranks above the rival and no longer does afterwards (a tie goes to the food chain, so 2–2 against a higher animal is not a pass);
 - add half of it if this is that opponent's last species there;
 - add 6 more if that also takes away the opponent's dominance.
 
@@ -117,10 +117,10 @@ When a rival's pawn is reached, resolve it with the rule below. If the rule find
 | Biomass | On each crowded tile, a species of the first opponent in VP order present there, else its own |
 | Blight | The tile and kept disk that leave the most opposing species on surrounding tiles without a match, counting its own as −2 each |
 | Catastrophe | Keeps its own species on the tile, else the lowest-VP opponent's. On each adjacent tile, removes the first opponent in VP order present, its own only if alone. Picks the tile removing the most opposing species, its own counting −2 |
-| Evolution | For the two highest opponents in VP order (fewer if its gene pool is short): the tile where the swap makes it first, else gains a rank (+3 if it ends dominant). Only tiles it matches |
+| Evolution | Replaces one species of each of two opponents (fewer if its gene pool is short), taking opponents in VP order. Only tiles it matches: skip an opponent with no species on such a tile and try the next. For each, the tile where the swap makes it first, else gains a rank (+3 if it ends dominant) |
 | Fecundity | Tiles it matches first, then by first-place value |
-| Fertile | Its tile with the most species |
-| Habitat | Its printed element (else another it uses), on the empty corner touching the most tiles it occupies |
+| Fertile | Its tile with the most species of all animals; it scores 1 VP for every species there, its own and everyone else's |
+| Habitat | Its printed element; if the bag has none, an element it added (earliest first); if none of those either, the first element in the bag in this order: Meat, Sun, Seed, Water, Grub, Grass. On the empty corner touching the most tiles it occupies, then the higher first-place value; if it occupies no tile with an empty corner, any empty corner (top-left first) |
 | Hibernation | A tile it matches: tundra first, then a tile it is not on, then where the returned species gain a rank |
 | Ice Sheet | As the Glaciation action |
 | Instinct | An open space not yet resolved this turn, by Planning steps 1–3, 5 and 6. If none is open, an open space that already resolved: the pawn waits there for next turn (not on the final turn) |
@@ -242,7 +242,7 @@ Every rule was built in the app's simulator and judged by win rate: how often a 
 
 **Limits.** The scripted player is a fixed strategy, not a person, so expect a strong human to win more often at every level. These rules have not yet been played at a real table.
 
-The rules live in `source/paper/paper.js`. For example, `node source/benchmark.cjs --base main --candidate worktree --paper 1 --bots 3` repeats the Hard test against three rivals.
+The rules live in `source/paper/paper.js`. For example, `node source/benchmark.cjs --base <commit> --candidate <commit> --paper 2 --bots 3 --seed 200000 --repeats 2` repeats the Hard test against three rivals (360 games; pin both sides to the release commit).
 
 ## Appendix: printable rival cards
 

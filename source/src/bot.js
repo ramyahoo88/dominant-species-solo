@@ -294,7 +294,9 @@ function choosePawnTarget(s, step, quick = false) {
   switch (row) {
     case 'initiative': {
       const slot = planPlacement(s,actor,null,step.focus,true);
-      return slot ? {slot:slot.slot,value:1.5 + (s.initiative[0] !== actor ? .9 : 0),label:'Advance one place in Initiative if possible. Move this pawn to ' + slotLabel(slot.slot) + '.'} : PASS;
+      // GMT: Initiative always advances; with no open space the pawn returns to its owner.
+      return slot ? {slot:slot.slot,value:1.5 + (s.initiative[0] !== actor ? .9 : 0),label:'Advance one place in Initiative if possible. Move this pawn to ' + slotLabel(slot.slot) + '.'} :
+        {slot:null,value:s.initiative[0] !== actor ? .9 : 0,label:'Advance one place in Initiative if possible. No open space: the pawn returns to its owner.'};
     }
     case 'adaptation':
       if (s.animals[actor].added.length + ANIMALS[actor].affinity < 6) {

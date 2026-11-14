@@ -17,8 +17,8 @@ verify('GMT p. 4: six APs and 50 cubes include one VP marker and four starting s
   }
 `);
 
-verify('v0.1 through v0.3.6 save migration preserves inventory, pending choices, and random state', `
-  for (const version of ['0.1.0','0.2.0','0.3.0','0.3.1','0.3.2','0.3.3','0.3.4','0.3.5','0.3.6']) {
+verify('v0.1 through v0.3.7 save migration preserves inventory, pending choices, and random state', `
+  for (const version of ['0.1.0','0.2.0','0.3.0','0.3.1','0.3.2','0.3.3','0.3.4','0.3.5','0.3.6','0.3.7']) {
     const s = newGame('insects',['mammals','birds'],true,51);
     s.version = version;
     s.phase = 'execution';
@@ -250,15 +250,127 @@ verify('GPT audit P1: paper instructions name positions, elements and corners', 
   if (!hab.skip) assert.match(hab.label, /Habitat: take \\w+ from the bag and place it at the corner shared by/);
 `);
 
-verify('A full action display ends Planning even when pawns remain (extra pawns at large tables)', `
-  const s = newGame('mammals',['reptiles','birds','amphibians','arachnids','insects'],true,7,{extra:3});
+verify('Re-audit E7 + full display: the 41st pawn ends Planning with pawns still unplaced (full deck)', `
+  const s = newGame('mammals',['reptiles','birds','amphibians','arachnids','insects'],false,373041,{extra:3});
   s.phase = 'planning'; s.planning = 0;
-  for (const id of s.ids) s.animals[id].remaining = s.animals[id].ap;
+  for (const id of s.ids) s.animals[id].remaining = s.animals[id].ap + 4; // more pawns than the 41 spaces
   let guard = 0;
-  while (s.phase === 'planning' && guard++ < 100) {
+  while (s.phase === 'planning' && guard++ < 200) {
     const {actor} = currentPlanner(s);
     if (actor === s.human) place(s, ALL_SLOTS.find(k => !s.pawns[k])); else botPlacement(s);
   }
+  assert.equal(ALL_SLOTS.length, 41);
   assert.equal(s.phase, 'execution');
-  assert.ok(ALL_SLOTS.every(k => s.pawns[k]) || s.ids.every(id => s.animals[id].remaining === 0));
+  assert.ok(ALL_SLOTS.every(k => s.pawns[k]), 'display not full');
+  assert.ok(s.ids.some(id => s.animals[id].remaining > 0), 'no pawns left unplaced: the test did not reach the full-display case');
 `);
+
+verify('Re-audit E7: Initiative on a full display advances the marker and returns the pawn (paper and app rivals)', `
+  for (const paper of [{extra:0}, undefined]) {
+    const s = newGame('mammals',['birds','insects'],true,314159,paper);
+    s.phase = 'execution'; s.cursor = 0;
+    for (const k of ALL_SLOTS) s.pawns[k] = {actor:'mammals', card:null, focus:null};
+    s.pawns['initiative-0'] = {actor:'insects', card:null, focus:null};
+    s.initiative = ['birds','insects','mammals'];
+    const step = {kind:'pawn', actor:'insects', row:'initiative', index:0, key:'initiative-0', focus:'majority'};
+    const choice = botAction(s, step);
+    assert.ok(!choice.pass, (paper ? 'paper' : 'app') + ' rival forfeited Initiative');
+    assert.equal(choice.slot, null);
+    assert.match(choice.label, /returns/);
+    resolvePawn(s, step, choice);
+    assert.deepEqual(s.initiative, ['insects','birds','mammals']);
+  }
+`);
+
+verify('Re-audit E2: paper rank counts animals below the VP cutoff (Migration from a zero-VP rank)', `
+  const s = newGame('mammals',['birds','insects'],true,314159,{extra:0});
+  for (const t of terrainIds(s)) for (const id of s.ids) s.tiles[t].cubes[id] = 0;
+  for (const k of Object.keys(s.corners)) delete s.corners[k];
+  const shared = Object.keys(CORNER_TILES).find(k => CORNER_TILES[k].includes('D3') && CORNER_TILES[k].includes('D2'));
+  s.corners[shared] = 'seed';                          // Birds match D3 Tundra and D2 Wetland
+  s.tiles.D3.cubes.mammals = 3; s.tiles.D3.cubes.birds = 2;
+  assert.equal(pRank(s,'D3','birds'), 1, 'Birds rank second on D3 even though Tundra pays only first place');
+  assert.equal(pLosesRank(s,'D3','birds'), false);
+  const go = paperMigration(s,'birds',1);
+  assert.deepEqual(go.moves.map(m => m.from + '>' + m.to), ['D3>D2']);
+  // Control: Birds 2 vs Mammals 1. Moving one leaves 1-1 and Mammals win the food-chain tie: Birds would lose first place.
+  s.tiles.D3.cubes.mammals = 1;
+  assert.equal(pLosesRank(s,'D3','birds'), true);
+  assert.equal(paperMigration(s,'birds',1).moves.length, 0);
+`);
+
+verify('Re-audit E3: paper Competition counts shared tiles, and the rank bonus follows the food chain', `
+  const s = newGame('mammals',['birds','insects','reptiles','amphibians'],true,314159,{extra:0});
+  for (const t of terrainIds(s)) for (const id of s.ids) s.tiles[t].cubes[id] = 0;
+  s.tiles.D2.cubes.birds = 1; for (const id of ['mammals','insects','reptiles']) s.tiles.D2.cubes[id] = 1;  // one crowded wetland
+  for (let index = 0; index < 4; index++) {
+    const choices = competitionChoices(s,'birds',['tundra',COMPETITION_EDGES[index],COMPETITION_EDGES[index+1]]);
+    assert.equal(paperSlotScore(s,'birds','competition',index), unique(choices.map(c => c.tile)).length);
+  }
+  // C4 Forest: Mammals 3, Birds 2. Removing a Mammal gives 2-2; Mammals keep first by the food chain: no rank bonus.
+  s.tiles.C4.cubes.mammals = 3; s.tiles.C4.cubes.birds = 2;
+  const vp = TERRAIN[s.tiles.C4.terrain].vp[0];
+  assert.equal(paperHitScore(s,'C4','mammals','birds'), vp);
+  // Insects 3, Birds 2: removing an Insect gives 2-2 and Birds now rank above Insects: bonus.
+  s.tiles.C4.cubes.mammals = 0; s.tiles.C4.cubes.insects = 3;
+  assert.equal(paperHitScore(s,'C4','insects','birds'), 2 * vp);
+`);
+
+verify('Re-audit E4: paper Evolution only replaces species on tiles the rival matches', `
+  const s = newGame('mammals',['birds','insects'],true,314159,{extra:0});
+  for (const t of terrainIds(s)) for (const id of s.ids) s.tiles[t].cubes[id] = 0;
+  for (const k of Object.keys(s.corners)) delete s.corners[k];
+  s.corners[VERTICES_OF.E3[0]] = 'seed';               // E3 has a disk (Birds match it); E4 has none
+  s.tiles.E4.cubes.mammals = 1; s.tiles.E3.cubes.insects = 1; s.tiles.E3.cubes.birds = 1;
+  s.animals.mammals.vp = 20; s.animals.insects.vp = 5; s.animals.birds.pool = 10;
+  const evo = botAction(s,{kind:'effect',actor:'birds',name:'Evolution',tile:null});
+  assert.deepEqual(evo.hits, [{tile:'E3', victim:'insects'}]);
+  s.corners[VERTICES_OF.E4.find(k => !s.corners[k])] = 'grass';  // control: now Birds match E4 too
+  const both = botAction(s,{kind:'effect',actor:'birds',name:'Evolution',tile:null});
+  assert.deepEqual(both.hits.map(h => h.victim).sort(), ['insects','mammals']);
+`);
+
+verify('Re-audit E5: paper Fertile names the whole award', `
+  const s = newGame('mammals',['birds','insects'],true,314159,{extra:0});
+  for (const t of terrainIds(s)) for (const id of s.ids) s.tiles[t].cubes[id] = 0;
+  s.tiles.D2.cubes.birds = 1; s.tiles.D2.cubes.mammals = 5; s.tiles.D2.cubes.insects = 1;
+  const f = botAction(s,{kind:'effect',actor:'birds',name:'Fertile',tile:null});
+  assert.equal(f.tile, 'D2');
+  assert.match(f.label, /Birds gain 7 VP for all 7 species/);
+  assert.equal(scoreCardPoints(s,'birds','Fertile',null,'D2'), 7);
+`);
+
+verify('Re-audit E6: paper Depletion plans only a removal it can execute', `
+  const s = newGame('mammals',['birds','insects'],true,314159,{extra:0});
+  for (const k of Object.keys(s.corners)) delete s.corners[k];
+  s.corners[VERTICES_OF.D3[0]] = 'seed';               // Birds use Seed; no Sun on Earth
+  s.boxes.depletion = ['sun','seed']; s.animals.birds.added = [];
+  const step = {kind:'pawn',actor:'birds',row:'depletion',index:0};
+  assert.equal(paperLegal(s,'birds','depletion',0), false);
+  assert.ok(botAction(s,step).pass);
+  s.corners[VERTICES_OF.D3[1]] = 'sun';                // control: a Sun disk on Earth
+  assert.equal(paperLegal(s,'birds','depletion',0), true);
+  assert.equal(botAction(s,step).corner, VERTICES_OF.D3[1]);
+`);
+
+verify('Re-audit E1: every Evolution chooser and the shared resolution respect two opponents', `
+  const s = newGame('mammals',['reptiles','birds','amphibians','arachnids','insects'],true,314159);
+  s.animals.mammals.pool = 20; s.phase = 'execution';
+  const victims = ['reptiles','birds','amphibians'].map(id => ({tile:occupied(s,id)[0], victim:id}));
+  assert.throws(() => runStep(s,{kind:'effect',actor:'mammals',name:'Evolution',tile:null},{hits:victims}), /at most two different opponents/);
+  const twice = [victims[0], victims[0]];
+  assert.throws(() => runStep(s,{kind:'effect',actor:'mammals',name:'Evolution',tile:null},{hits:twice}), /at most two different opponents/);
+`);
+
+test('Re-audit E1: the frozen benchmark player is capped at two Evolution victims', () => {
+  const player = load(PLAYER_REFERENCE, ['player']);
+  const out = JSON.parse(player.run(`(() => {
+    const s = newGame('mammals',['reptiles','birds','amphibians','arachnids','insects'],true,314159);
+    s.animals.mammals.pool = 20; s.animals.mammals.added = ['sun','seed','water','grub'];
+    const step = {kind:'effect',actor:'mammals',name:'Evolution',tile:null};
+    return JSON.stringify({raw: botAction(s,step).hits.length, capped: playerChoice(s,step,'dominance').hits});
+  })()`));
+  assert.ok(out.raw > 2, 'fixture no longer exercises the cap (raw ' + out.raw + ')');
+  assert.ok(out.capped.length <= 2);
+  assert.equal(new Set(out.capped.map(h => h.victim)).size, out.capped.length);
+});

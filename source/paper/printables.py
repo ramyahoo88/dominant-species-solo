@@ -91,8 +91,8 @@ def testing(ladder):
         "**Stalls.** " + ladder["stalls"],
         "**Limits.** The scripted player is a fixed strategy, not a person, so expect a strong human to win more often at every level. "
         "These rules have not yet been played at a real table.",
-        "The rules live in `source/paper/paper.js`. For example, `node source/benchmark.cjs --base main --candidate worktree --paper 1 --bots 3` "
-        "repeats the Hard test against three rivals.",
+        "The rules live in `source/paper/paper.js`. For example, `node source/benchmark.cjs --base <commit> --candidate <commit> --paper 2 --bots 3 "
+        "--seed 200000 --repeats 2` repeats the Hard test against three rivals (360 games; pin both sides to the release commit).",
     ])
 
 
@@ -102,7 +102,7 @@ h1{font-size:24pt;margin:0 0 4px}h2{font-size:15pt;margin-top:22px;border-bottom
 h3{font-size:12pt;margin-top:16px}table{border-collapse:collapse;width:100%;margin:8px 0;font-size:9.5pt;page-break-inside:avoid}
 th,td{border:1px solid #b7c1b6;padding:4px 6px;vertical-align:top;text-align:left}th{background:#eef1ea}
 code{font-size:9pt;background:#f1f3ee;padding:0 3px}li{margin:2px 0}
-@media print{body{margin:0;max-width:none}h2{page-break-after:avoid}}
+@media print{body{margin:0;max-width:none}h2,h3{page-break-after:avoid;break-after:avoid}}
 """
 
 
@@ -113,16 +113,17 @@ def card_sheet(d, ver):
             f"<div class='card' style='--bg:{COLORS[a]};--ink:{INKS[a]}'><div class='head'><b>{a.upper()}</b><span>{i + 1}</span></div>"
             f"<div class='name'>{html.escape(c['title'])}</div><ol>" + "".join(f"<li>{title(r)}</li>" for r in c['no']['rows']) +
             "</ol><div class='foot'>Paper Rivals · try in order</div></div>" for i, c in enumerate(d[a]))
-        pages.append(f"<section class='page'><h2>{title(a)} — cut along the dashed lines</h2><div class='grid'>{cards}</div></section>")
+        note = f"<p style='font-size:8pt;color:#666;margin:4px 0 0'>Generated from source/src/decks.js for app v{ver}.</p>" if a == ANIMALS[-1] else ""
+        pages.append(f"<section class='page'><h2>{title(a)} — cut along the dashed lines</h2><div class='grid'>{cards}</div>{note}</section>")
     return ("<!doctype html><meta charset='utf-8'><title>Paper Rivals cards</title><style>"
             "@page{size:letter;margin:0.4in}body{font:11pt Georgia,serif;margin:0}"
-            ".page{page-break-after:always}.page h2{font-size:10pt;font-weight:normal;margin:0 0 6px;color:#555}"
+            ".page{page-break-after:always}.page:last-child{page-break-after:auto}.page h2{font-size:10pt;font-weight:normal;margin:0 0 6px;color:#555}"
             ".grid{display:grid;grid-template-columns:repeat(2,3.5in);grid-auto-rows:2.4in;gap:0}"
             ".card{border:1px dashed #777;padding:10px 12px;box-sizing:border-box;display:flex;flex-direction:column}"
             ".head{display:flex;justify-content:space-between;background:var(--bg);color:var(--ink);padding:4px 8px;border-radius:4px;font-size:10pt}"
             ".head span{font-size:16pt;font-weight:bold;line-height:1}.name{font-size:13pt;margin:8px 0 2px}"
             "ol{margin:4px 0 0 20px;padding:0;font-size:13pt;line-height:1.5}.foot{margin-top:auto;font-size:7.5pt;color:#666}"
-            f"</style><body>{''.join(pages)}<p style='font-size:8pt;color:#666'>Generated from source/src/decks.js for app v{ver}.</p></body>")
+            f"</style><body>{''.join(pages)}</body>")
 
 
 def main():

@@ -52,7 +52,16 @@ function load(ref, extra = []) {
         s.paper && !s.paper.detailed && s.paperRivals?.includes(actor)
           ? Math.min(ANIMALS[actor].affinity + additions.length, VERTICES_OF[tile].filter(k => s.corners[k]).length)
           : referenceMatch(s, tile, actor, additions);
-      const referenceAction = botAction;
+      // GPT re-audit E1: the frozen chooser could replace more than two opponents with Evolution. Keep its ranking,
+      // but apply the shipped limit: at most two distinct opponents, one cube each, no more than the gene pool holds.
+      const referenceAction = (s, step) => {
+        const choice = botAction(s, step);
+        if (step.kind === 'effect' && step.name === 'Evolution' && choice?.hits) {
+          const seen = new Set();
+          choice.hits = choice.hits.filter(h => !seen.has(h.victim) && seen.add(h.victim)).slice(0, Math.min(2, s.animals[step.actor].pool));
+        }
+        return choice;
+      };
       const referencePlan = planPlacement;
       planPlacement = (s, actor, card, focus, timing) => {
         if (timing !== 'instinct') return referencePlan(s, actor, card, focus, timing);

@@ -52,8 +52,9 @@ function pawnForm(step) {
   let body = '';
   switch (row) {
     case 'initiative':
-      if (!targets.length) return noChoice('All other spaces are occupied.');
-      body = field('Move the pawn to',select('slot',targets.map(key=>[key,slotLabel(key)])));
+      // GMT: Initiative always advances; moving the pawn afterwards is optional. With nowhere to go it returns to you.
+      if (!targets.length) return noChoice('All other spaces are occupied. You still move up one place in Initiative, and the pawn returns to you.');
+      body = field('Move the pawn to',select('slot',targets.map(key=>[key,slotLabel(key)]),false,"Don't move it (it returns to you)"));
       break;
     case 'adaptation':
       if (!offer(row).length || mine.added.length + ANIMALS[actor].affinity >= 6) return noChoice('There is no available element or room for another.');
@@ -325,7 +326,7 @@ function makePawnChoice(step,data) {
   const tile = val('tile'), corner = val('corner'), pick = selectedNumber(data,'pick');
   switch (row) {
     case 'initiative':
-      return val('slot') ? {slot:val('slot'),label:'Move up in Initiative if possible. Move the pawn to ' + slotLabel(val('slot')) + '.'} : PASS;
+      return val('slot') ? {slot:val('slot'),label:'Move up in Initiative if possible. Move the pawn to ' + slotLabel(val('slot')) + '.'} : {slot:null,label:'Move up one place in Initiative if possible. The pawn returns to you.'};
     case 'adaptation':
       return pick === null ? PASS : {pick,label:'Add ' + elementName(game.boxes.adaptation[pick]) + ' to your animal display.'};
     case 'regression': return {label:'Return the Regression pawn.'};

@@ -17,7 +17,7 @@ function paperLegal(s, actor, row, index) {
     case 'regression': return s.animals[actor].added.some(type => s.boxes.adaptation.includes(type) || s.boxes.regression.includes(type)) || actor === 'reptiles';
     case 'abundance': return s.boxes.abundance.some(type => type && (paperBarren(s) || paperUses(s,actor,type))) && occupied(s,actor).some(t => VERTICES_OF[t].some(key => !s.corners[key]));
     case 'wasteland': return s.boxes.wasteland.some(type => type && paperUses(s,actor,type)); // as Execution: protect an element it uses
-    case 'depletion': return s.boxes.depletion.some(type => type && !paperUses(s,actor,type)) && placementTargets(s,row,index,actor).length > 0;
+    case 'depletion': return pDepletionCorners(s,actor,index).length > 0; // same disks Execution may remove
     case 'glaciation': return glazeTargets(s).some(t => !s.tiles[t].cubes[actor] && s.ids.some(id => s.tiles[t].cubes[id]));
     case 'speciation': return s.animals[actor].pool > 0 && paperSpeciationTiles(s,actor,index).length > 0;
     case 'wanderlust': return s.stacks.some(stack => stack.face) && frontTiles(s).some(t => NEIGHBORS[t].some(id => s.tiles[id]?.cubes[actor]));
@@ -35,6 +35,8 @@ function paperCheck(s, actor, test) { // the app's card conditions, with 'elemen
 }
 // Barren Earth: no animal dominates any tile, so no one can take a card. Rivals restore elements first.
 function paperBarren(s) { return s.turn > 1 && !terrainIds(s).some(t => cone(s,t)); }
+// Depletion: disks on Earth of a box element the rival does not use (Planning and Execution share this).
+function pDepletionCorners(s, actor, index) { return placementTargets(s,'depletion',index,actor).filter(k => !paperUses(s,actor,s.corners[k])); }
 function paperUses(s, actor, type) { return ANIMALS[actor].el === type || s.animals[actor].added.includes(type); }
 function paperDominated(s, actor) { return terrainIds(s).filter(t => !s.scored.includes(t) && cone(s,t) === actor); }
 function paperSpeciationTiles(s, actor, index) {
@@ -43,7 +45,7 @@ function paperSpeciationTiles(s, actor, index) {
 }
 function paperSlotScore(s, actor, row, index) {
   if (row === 'speciation') return paperSpeciationTiles(s,actor,index).filter(t => match(s,t,actor) > 0).length;
-  if (row === 'competition') return competitionChoices(s,actor,['tundra',COMPETITION_EDGES[index],COMPETITION_EDGES[index+1]]).length;
+  if (row === 'competition') return unique(competitionChoices(s,actor,['tundra',COMPETITION_EDGES[index],COMPETITION_EDGES[index+1]]).map(c => c.tile)).length;
   return -index; // leftmost open space
 }
 const PAPER_FALLBACK = ['domination','wanderlust','speciation','adaptation','competition','migration','abundance','initiative','regression','depletion','wasteland','glaciation'];
@@ -97,7 +99,8 @@ botPlacement = function(s) {
 // ---------- Countable helpers ----------
 function pTiles(s) { return terrainIds(s); }
 function pFirstVP(s, tile) { return TERRAIN[s.tiles[tile].terrain].vp[0]; }
-function pRank(s, tile, id) { return tileScores(s,tile).findIndex(([a]) => a === id); } // -1 if absent
+function pOrder(s, tile) { const c = s.tiles[tile].cubes; return s.ids.filter(a => c[a] > 0).sort((a,b) => c[b] - c[a] || rank(a) - rank(b)); }
+function pRank(s, tile, id) { return pOrder(s,tile).indexOf(id); } // every animal present ranks, even below the VP cutoff; -1 if absent
 function pLeader(s, actor) { // opponent highest on the VP track; ties to food chain
   return s.ids.filter(id => id !== actor).sort((a,b) => s.animals[b].vp - s.animals[a].vp || rank(a) - rank(b))[0];
 }
@@ -131,7 +134,7 @@ function paperPawn(s, step) {
   switch (row) {
     case 'initiative': {
       const open = ALL_SLOTS.filter(k => !s.pawns[k] && k !== 'initiative-0' && EXECUTION.indexOf(k) > s.cursor);
-      if (!open.length) return {...PASS};
+      if (!open.length) return {slot:null,label:pLabel('advance one place on the Initiative track. No open space later this turn: the pawn returns to the rival.')};
       const plan = paperPlacement(s,actor,null,open);
       return {slot:plan.slot,label:pLabel('advance and move this pawn to ' + slotLabel(plan.slot) + '.')};
     }
@@ -160,7 +163,7 @@ function paperPawn(s, step) {
       return {pick:mine[0].pick,label:pLabel('remove ' + elementName(mine[0].type) + ' from Wasteland position ' + (mine[0].pick + 1) + '.')};
     }
     case 'depletion': {
-      const corners = placementTargets(s,row,index,actor).filter(k => !pTypes(s,actor).includes(s.corners[k]));
+      const corners = pDepletionCorners(s,actor,index);
       if (!corners.length) return {...PASS};
       const c = pBy(corners.map(k => ({corner:k,tile:k})),
         c => CORNER_TILES[c.corner].filter(t => s.tiles[t] && cone(s,t) === leader).length,
@@ -262,10 +265,15 @@ function paperMigration(s, actor, limit, destination = null) {
 }
 function paperHitScore(s, tile, victim, actor) {
   const vp = pFirstVP(s,tile);
-  const mine = s.tiles[tile].cubes[actor], theirs = s.tiles[tile].cubes[victim];
+  const theirs = s.tiles[tile].cubes[victim];
   let score = vp;
   if (PAPER.simpleHit) return score;
-  if (pRank(s,tile,victim) < pRank(s,tile,actor) && theirs - 1 <= mine) score += vp;       // you pass or tie them
+  if (pRank(s,tile,victim) < pRank(s,tile,actor)) {                                       // it ranks above you...
+    s.tiles[tile].cubes[victim]--;
+    const lost = pRank(s,tile,victim) < 0 || pRank(s,tile,victim) > pRank(s,tile,actor); // ...and loses that edge (food chain breaks ties)
+    s.tiles[tile].cubes[victim]++;
+    if (lost) score += vp;
+  }
   if (theirs === 1) score += vp / 2;                                                       // they leave the tile
   if (cone(s,tile) === victim && theirs === 1) score += 6;                                // they lose dominance
   return score;
@@ -392,9 +400,10 @@ function paperEffect(s, step) {
     }
     case 'Evolution': {
       const hits = [];
-      for (const victim of pOrderOpps(s,actor).slice(0,Math.min(2,me.pool))) {
-        const tiles = occupied(s,victim);
-        if (!tiles.length) continue;
+      for (const victim of pOrderOpps(s,actor)) {
+        if (hits.length >= Math.min(2,me.pool)) break;
+        const tiles = occupied(s,victim).filter(t => match(s,t,actor) > 0); // printed rule: only tiles it matches
+        if (!tiles.length) continue;                                          // none: try the next opponent in VP order
         const score = t => { const b = pRank(s,t,actor); s.tiles[t].cubes[victim]--; s.tiles[t].cubes[actor]++; const a = pRank(s,t,actor); const dom = cone(s,t) === actor; s.tiles[t].cubes[victim]++; s.tiles[t].cubes[actor]--;
           return (match(s,t,actor) > 0 ? 1 : -5) * ((a === 0 && b !== 0 ? 2 : a < b || b < 0 ? 1 : 0) * pFirstVP(s,t) + (dom ? 3 : 0)); };
         const tile = PAPER.simpleCards ? pBy(tiles, t => match(s,t,actor) > 0 ? 1 : 0, t => pFirstVP(s,t)) : pBy(tiles, score, t => pFirstVP(s,t));
@@ -412,7 +421,8 @@ function paperEffect(s, step) {
       const tiles = occupied(s,actor);
       if (!tiles.length) return {skip:true,label:pLabel('no tile.')};
       const tile = pBy(tiles, t => sum(Object.values(s.tiles[t].cubes)));
-      return {tile,label:pLabel('Fertile: score its cubes at ' + tileLabel(s,tile) + '.')};
+      const all = sum(Object.values(s.tiles[tile].cubes));
+      return {tile,label:pLabel('Fertile: ' + nameOf(actor) + ' gain ' + all + ' VP for all ' + all + ' species (every animal) at ' + tileLabel(s,tile) + '.')};
     }
     case 'Habitat': {
       if (!bagTypes.length) return {skip:true,label:pLabel('empty bag.')};

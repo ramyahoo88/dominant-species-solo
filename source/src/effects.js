@@ -315,8 +315,14 @@ function resolveEffect(s, step, choice) {
     case 'Disease':
       s.pending.unshift(...choice.victims.map(id => ({kind:'loss',actor:id,source:'Disease',due:{threats:unique(s.animals[id].added),drops:1}})));
       break;
-    case 'Evolution':
+    case 'Evolution': {
+      // Shared legality for every chooser (player form, app and paper rivals, simulations): at most two distinct
+      // opponents, one species each, each actually on that tile, and no more than the gene pool can replace.
+      const victims = choice.hits.map(h => h.victim);
+      if (choice.hits.length > Math.min(2, s.animals[actor].pool) || new Set(victims).size !== victims.length ||
+        choice.hits.some(h => h.victim === actor || !(s.tiles[h.tile]?.cubes[h.victim] > 0))) throw new Error('Evolution replaces one species of at most two different opponents.');
       for (const h of choice.hits) { removeCube(s,h.tile,h.victim,1); addCube(s,h.tile,actor,1); }
+    }
       break;
     case 'Fecundity':
       for (const [tile,n] of Object.entries(choice.add)) addCube(s,tile,actor,n);

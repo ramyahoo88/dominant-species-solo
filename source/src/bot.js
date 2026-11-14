@@ -427,7 +427,9 @@ function fastValue(s, actor, row, index, focus, cache) {
   if (row === 'initiative') return s.initiative[0] === actor ? 0 : 2.0;
   if (row === 'wanderlust') {
     const stacksAvail = s.stacks.filter(a => a.face).length;
-    return stacksAvail > earlierInRow && frontTiles(s).length ? 2.5 : 0;
+    if (stacksAvail <= earlierInRow || !frontTiles(s).length) return 0;
+    if (!cache.has('wanderlust')) cache.set('wanderlust', withPostWasteland(s,() => wanderChoice(s,context(s,actor,focus))?.value || 0));
+    return Math.max(0,cache.get('wanderlust'));
   }
   if (row === 'glaciation') {
     const tundraLeft = 12 - Object.values(s.tiles).filter(t => t.terrain === 'tundra').length;

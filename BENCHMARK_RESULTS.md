@@ -136,3 +136,31 @@ Rates are from seed 6200 (all six animals, 180 games).
 Paired change in player win rate: −3.1 points (approximate 95% interval −8.9 to +2.8). Passes the guard, with Birds exactly at the 10-win limit.
 
 **Reading.** The rivals are slightly tougher, and roughly a third of each deck's faces that were dormant are now in play. With the shipped definitions, Birds dropped 47 → 37 on the confirmation block, exactly at the limit. The larger drops on seeds 60000 (49 → 34) and 70000 (68 → 54) were with the first, discarded `foothold` definition; on seed 60000 the shipped definition gave Birds 41/120 against 49 on `main`, but that block was used for development. Birds remain the likeliest weak rival. The spread between rivals narrowed on the confirmation block (strongest 65 → 60, weakest 34 → 37). The dormant faces were never tuned, so they are the first place to look.
+
+## v0.3.3 · real Wanderlust value in Planning (Claude, November 13, 2026) · failed guard, merged by owner decision
+
+**Finding.** In Planning, the value a rival puts on each action ("opportunity") came from flat constants for three rows, not from the board: Wanderlust 2.50 whenever a tile was on offer, Migration capped at 2.60, Glaciation at most 1.85 and under 1 for 30% of its placements. A card's first row gets +4.6 whenever its opportunity exceeds 0.12, so Wanderlust- and Glaciation-led faces were played whenever they were legal. Measured medians of other rows: Domination about 8, Speciation 7–9, Competition 5–8.
+
+**Change.** Planning now scores Wanderlust with `wanderChoice`, cached per planning call. Measured opportunity median: 7.5.
+
+**Development (seed 6200, all animals, 360 games).** Scripted player 96 → 76 wins (27% → 21%); Insects as rival 23% → 38%; Wanderlust per game across rivals 9.0 → 16.4. Adding a Glaciation bar (opportunity ≥ 1) on top changed nothing, so it was dropped.
+
+**Guard (seed 90000, `--base main --repeats 3`, 540 games).** Pre-set rule: the scripted player's win rate rises by no more than about 3 points, and no animal loses more than about 13 of 180 rival wins.
+
+| Metric | v0.3.2 | v0.3.3 |
+|---|---:|---:|
+| Scripted player wins | 131/540 | 113/540 |
+| Player mean VP margin | −27.9 | −42.3 |
+| Rival pawns with no legal target per game | 0.67 | 0.50 |
+| Mammals rival wins | 69 | 87 |
+| Reptiles rival wins | 97 | 104 |
+| Birds rival wins | 65 | 50 |
+| Amphibians rival wins | 56 | 66 |
+| Arachnids rival wins | 66 | 64 |
+| Insects rival wins | 56 | 56 |
+
+Paired player change −3.3 points (interval −8.3 to +1.6). **Birds failed the guard** (−15 of 180), and the Insects gain from development did not repeat. Slowest single bot decision in the smoke test: 16 → 26 ms.
+
+**Follow-up.** One theory was that Birds lose Migration placements to Wanderlust, since their deck leans on Migration most. On seed 6200 Birds' Migration fell less than Insects' (8.2 → 7.3 against 8.5 → 6.4), and every animal's Wanderlust rose by about 3–5 per game, so the data did not support it. Migration's capped planning value (2.60) is still flat.
+
+**Status.** Merged by owner decision: tougher rivals with larger winning margins, at Birds' expense.

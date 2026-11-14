@@ -1,5 +1,11 @@
 # Release notes
 
+## v0.3.3 · November 13, 2026 · merged by owner decision despite a failed guard
+
+- Rival Planning now values Wanderlust with the same evaluator used to place the tile, instead of a flat 2.5 whenever a tile was on offer. Rivals play Wanderlust about 3–5 more times per game.
+- Guard (seed 90000, 540 games): scripted player wins 131 → 113 (−3.3 points, interval −8.3 to +1.6), but the player's mean margin went from −27.9 to −42.3 VP. Birds rival wins fell 65 → 50 of 180, over the 13-win limit, so the change failed its guard. Mammals gained 18 wins and Reptiles 7. See [benchmark results](BENCHMARK_RESULTS.md).
+- Imports preserve v0.3.2 saves.
+
 ## v0.3.2 · November 13, 2026
 
 - Recalibrated five rival deck checks that were almost always true or almost always false, so both faces of those cards now get played. True rates (seed 6200): `ice` 99% → 38%, `contested` 98% → 66%, `cone` 96% → 64%, `front` 94% → 65%, `foothold` 5% → 31%. Updated the check descriptions shown on the Bot decks page.

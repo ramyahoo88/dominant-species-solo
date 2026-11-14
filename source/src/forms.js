@@ -52,9 +52,9 @@ function pawnForm(step) {
   let body = '';
   switch (row) {
     case 'initiative':
-      // GMT: Initiative always advances; moving the pawn afterwards is optional. With nowhere to go it returns to you.
+      // GMT: Initiative advances and relocates the pawn to a vacant space. Only when none is vacant does it return to you (project ruling).
       if (!targets.length) return noChoice('All other spaces are occupied. You still move up one place in Initiative, and the pawn returns to you.');
-      body = field('Move the pawn to',select('slot',targets.map(key=>[key,slotLabel(key)]),false,"Don't move it (it returns to you)"));
+      body = field('Move the pawn to',select('slot',targets.map(key=>[key,slotLabel(key)])));
       break;
     case 'adaptation':
       if (!offer(row).length || mine.added.length + ANIMALS[actor].affinity >= 6) return noChoice('There is no available element or room for another.');

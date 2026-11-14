@@ -1,6 +1,9 @@
 // Paper rival: decisions a person can make at the table by counting.
 // Loaded after the app sources. PAPER.<kind> = true switches that decision to the paper rule.
 var PAPER = typeof PAPER === 'object' ? PAPER : {};
+// Quick mode: flat matching, the card list, and five cuts that tested as free (always the "no" face, simple Adaptation,
+// full Speciation, Migration without rank checks, Glaciation without the tundra bonus).
+if (PAPER.quick) for (const k of ['flatMatch','cardList','faceNo','simpleAdapt','simpleSpec','simpleMig','simpleGlac']) PAPER[k] = true;
 var PAPER_FALLBACKS = PAPER_FALLBACKS || {};
 function paperNote(kind) { PAPER_FALLBACKS[kind] = (PAPER_FALLBACKS[kind] || 0) + 1; }
 function paperLegal(s, actor, row, index) {
@@ -8,7 +11,7 @@ function paperLegal(s, actor, row, index) {
     case 'initiative': return s.initiative[0] !== actor;
     case 'adaptation': return s.animals[actor].added.length + ANIMALS[actor].affinity < 6 && s.boxes.adaptation.some(Boolean);
     case 'regression': return s.animals[actor].added.some(type => s.boxes.adaptation.includes(type) || s.boxes.regression.includes(type)) || actor === 'reptiles';
-    case 'abundance': return s.boxes.abundance.some(type => type && paperUses(s,actor,type)) && occupied(s,actor).some(t => VERTICES_OF[t].some(key => !s.corners[key]));
+    case 'abundance': return s.boxes.abundance.some(type => type && (paperBarren(s) || paperUses(s,actor,type))) && occupied(s,actor).some(t => VERTICES_OF[t].some(key => !s.corners[key]));
     case 'wasteland': return s.boxes.wasteland.some(type => type && !paperUses(s,actor,type));
     case 'depletion': return s.boxes.depletion.some(type => type && !paperUses(s,actor,type)) && placementTargets(s,row,index,actor).length > 0;
     case 'glaciation': return glazeTargets(s).some(t => !s.tiles[t].cubes[actor] && s.ids.some(id => s.tiles[t].cubes[id]));
@@ -26,6 +29,8 @@ function paperCheck(s, actor, test) { // the app's card conditions, with 'elemen
   return indexed(s.boxes.adaptation).some(({type}) => !paperUses(s,actor,type) && mine.some(t => VERTICES_OF[t].some(k => s.corners[k] === type))) ||
     indexed(s.boxes.abundance).some(({type}) => type === ANIMALS[actor].el);
 }
+// Barren Earth: no animal dominates any tile, so no one can take a card. Rivals restore elements first.
+function paperBarren(s) { return s.turn > 1 && !terrainIds(s).some(t => cone(s,t)); }
 function paperUses(s, actor, type) { return ANIMALS[actor].el === type || s.animals[actor].added.includes(type); }
 function paperDominated(s, actor) { return terrainIds(s).filter(t => !s.scored.includes(t) && cone(s,t) === actor); }
 function paperSpeciationTiles(s, actor, index) {
@@ -41,7 +46,7 @@ const PAPER_FALLBACK = ['domination','wanderlust','speciation','adaptation','com
 const PAPER_WEAK = ['abundance','glaciation','wasteland','depletion','regression','initiative'];
 function paperPlacement(s, actor, cardIndex, openOverride = null) {
   const card = cardIndex === null ? null : DECKS[actor][cardIndex];
-  const positive = card ? paperCheck(s,actor,card.check) : false;
+  const positive = card ? (PAPER.faceYes ? true : PAPER.faceNo ? false : paperCheck(s,actor,card.check)) : false;
   const face = card ? (positive ? card.yes : card.no) : null;
   const focus = face?.focus || 'majority';
   const open = openOverride || ALL_SLOTS.filter(key => !s.pawns[key]);
@@ -51,14 +56,15 @@ function paperPlacement(s, actor, cardIndex, openOverride = null) {
       if (weakFirstOnly && i > 0 && PAPER_WEAK.includes(row)) continue;
       const slots = open.map(splitSlot).filter(x => x.row === row && paperLegal(s,actor,row,x.index));
       if (!slots.length) continue;
-      const best = slots.sort((a,b) => paperSlotScore(s,actor,row,b.index) - paperSlotScore(s,actor,row,a.index) || a.index - b.index)[0];
+      const best = slots.sort((a,b) => (PAPER.leftSlot ? 0 : paperSlotScore(s,actor,row,b.index) - paperSlotScore(s,actor,row,a.index)) || a.index - b.index)[0];
       return best.row + '-' + best.index;
     }
     return null;
   };
   const doms = pawnCount(s,actor,'domination'), dominated = paperDominated(s,actor).length;
-  const domFirst = availableCards(s).length && dominated > doms && doms < 2 ? pick(['domination'], true) : null;
-  const slot = domFirst || pick(face ? face.rows : [], false, true) || pick(PAPER_FALLBACK, false) || pick(PAPER_FALLBACK, true) || open[0];
+  const domFirst = !PAPER.noDomFirst && availableCards(s).length && dominated > doms && doms < 2 ? pick(['domination'], true) : null;
+  const barren = paperBarren(s) ? pick(['abundance']) : null;
+  const slot = domFirst || barren || pick(face ? face.rows : [], false, !PAPER.noWeak) || pick(PAPER_FALLBACK, false) || pick(PAPER_FALLBACK, true) || open[0];
   const {row} = splitSlot(slot);
   return {slot,row,priority:face ? face.rows.indexOf(row) : -1,focus,card:cardIndex,face:positive,opportunity:1,reason:'Paper rule: ' + ROW_BY_ID[row].name + '.'};
 }
@@ -115,7 +121,7 @@ function paperPawn(s, step) {
       if (s.animals[actor].added.length + ANIMALS[actor].affinity >= 6) return {...PASS};
       const picks = indexed(s.boxes.adaptation);
       if (!picks.length) return {...PASS};
-      const best = pBy(picks.map(p => ({...p, tile:p.pick})), p => pCornersNear(s,actor,p.type), p => p.type === ANIMALS[actor].el ? 1 : 0, p => -p.pick);
+      const best = pBy(picks.map(p => ({...p, tile:p.pick})), p => PAPER.simpleAdapt ? 0 : pCornersNear(s,actor,p.type), p => p.type === ANIMALS[actor].el ? 1 : 0, p => -p.pick);
       return {pick:best.pick,label:pLabel('add ' + elementName(best.type) + '.')};
     }
     case 'regression': return {label:pLabel('protect an element.')};
@@ -170,7 +176,7 @@ function paperGlaciationTile(s, actor) {
   const opp = t => sum(s.ids.filter(id => id !== actor).map(id => s.tiles[t].cubes[id]));
   const clean = targets.filter(t => !s.tiles[t].cubes[actor]);
   const tundraNear = t => NEIGHBORS[t].filter(id => s.tiles[id]?.terrain === 'tundra').length;
-  return pBy(clean.length ? clean : targets, t => opp(t) + bonus(tundraNear(t)), t => -s.tiles[t].cubes[actor], t => pFirstVP(s,t));
+  return pBy(clean.length ? clean : targets, t => opp(t) + (PAPER.simpleGlac ? 0 : bonus(tundraNear(t))), t => -s.tiles[t].cubes[actor], t => pFirstVP(s,t));
 }
 function paperSpeciation(s, actor, index) {
   let pool = s.animals[actor].pool;
@@ -183,7 +189,7 @@ function paperSpeciation(s, actor, index) {
   const add = {};
   for (const t of [...fit(k.corner)].sort((a,b) => pFirstVP(s,b) - pFirstVP(s,a) || a.localeCompare(b))) {
     const leading = pRank(s,t,actor) === 0 && s.ids.some(id => id !== actor && s.tiles[t].cubes[id]) ? false : pRank(s,t,actor) === 0;
-    const n = Math.min(leading ? 1 : TERRAIN[s.tiles[t].terrain].cap, pool);
+    const n = Math.min(leading && !PAPER.simpleSpec ? 1 : TERRAIN[s.tiles[t].terrain].cap, pool);
     if (n > 0) { add[t] = n; pool -= n; }
   }
   return {corner:k.corner,add,label:pLabel(addLabel(s,add))};
@@ -196,7 +202,7 @@ function paperWanderlust(s, actor) {
   const st = [...stacks].sort((a,b) => TERRAIN[b.face].vp[0] - TERRAIN[a.face].vp[0] || a.i - b.i)[0];
   const draws = indexed(s.boxes.wanderlust);
   const mine = draws.filter(d => pTypes(s,actor).includes(d.type));
-  const d = mine[0] || null;
+  const d = PAPER.simpleWander ? null : mine[0] || null;
   const corners = d ? VERTICES_OF[tile].filter(k => !s.corners[k]) : [];
   const corner = corners.length ? pBy(corners.map(k => ({tile:k,k})), c => CORNER_TILES[c.k].filter(t => s.tiles[t]?.cubes[actor]).length).k : null;
   return {stack:st.i,tile,pick:d && corner ? d.pick : null,corner:d && corner ? corner : null,label:pLabel('place ' + terrainName(st.face) + ' at ' + tile + '.')};
@@ -221,7 +227,7 @@ function paperMigration(s, actor, limit, destination = null) {
       const tos = destination ? (legalNeighbors(s,from,actor,1).includes(destination) ? [destination] : []) : legalNeighbors(s,from,actor);
       for (const to of tos) {
         if (!match(s,to,actor) || sent.has(to)) continue;
-        const gain = pGainsRank(s,to,actor) ? 1 : 0;
+        const gain = !PAPER.simpleMig && pGainsRank(s,to,actor) ? 1 : 0;
         const fresh = s.tiles[to].cubes[actor] ? 0 : 1;
         if (!rescue && !gain && !fresh) continue;
         options.push({from,to,tile:to,rescue:rescue ? 1 : 0,gain,fresh,vp:pFirstVP(s,to),spare:s.tiles[from].cubes[actor]});
@@ -238,6 +244,7 @@ function paperHitScore(s, tile, victim, actor) {
   const vp = pFirstVP(s,tile);
   const mine = s.tiles[tile].cubes[actor], theirs = s.tiles[tile].cubes[victim];
   let score = vp;
+  if (PAPER.simpleHit) return score;
   if (pRank(s,tile,victim) < pRank(s,tile,actor) && theirs - 1 <= mine) score += vp;       // you pass or tie them
   if (theirs === 1) score += vp / 2;                                                       // they leave the tile
   if (cone(s,tile) === victim && theirs === 1) score += 6;                                // they lose dominance
@@ -318,7 +325,7 @@ function paperEffect(s, step) {
         if (free && type0) delete s.corners[free];
         return ok ? (after === 0 && before !== 0 ? 2 : after < before || before < 0 ? 1 : 0) * pFirstVP(s,t) : -1;
       };
-      const tile = pBy(wet, score, t => pFirstVP(s,t));
+      const tile = PAPER.simpleCards ? pBy(wet, t => match(s,t,actor) > 0 ? 1 : 0, t => pFirstVP(s,t)) : pBy(wet, score, t => pFirstVP(s,t));
       const corner = bagTypes.length ? VERTICES_OF[tile].find(k => !s.corners[k]) || null : null;
       const type = corner ? type0 : null;
       return {tile,corner,type,n,label:pLabel('Aquatic at ' + tile + '.')};
@@ -342,7 +349,8 @@ function paperEffect(s, step) {
         for (const [k,type] of removed) s.corners[k] = type;
         return v;
       };
-      const o = pBy(options, swing, o => pFirstVP(s,o.tile));
+      const o = PAPER.simpleCards ? pBy(options, o => s.tiles[o.tile].cubes[leader] - 2 * s.tiles[o.tile].cubes[actor], o => pTypes(s,actor).includes(s.corners[o.keep]) ? 1 : 0, o => pFirstVP(s,o.tile))
+        : pBy(options, swing, o => pFirstVP(s,o.tile));
       return {tile:o.tile,keep:o.keep,label:pLabel('Blight ' + o.tile + '.')};
     }
     case 'Catastrophe': {
@@ -365,7 +373,7 @@ function paperEffect(s, step) {
         if (!tiles.length) continue;
         const score = t => { const b = pRank(s,t,actor); s.tiles[t].cubes[victim]--; s.tiles[t].cubes[actor]++; const a = pRank(s,t,actor); const dom = cone(s,t) === actor; s.tiles[t].cubes[victim]++; s.tiles[t].cubes[actor]--;
           return (match(s,t,actor) > 0 ? 1 : -5) * ((a === 0 && b !== 0 ? 2 : a < b || b < 0 ? 1 : 0) * pFirstVP(s,t) + (dom ? 3 : 0)); };
-        const tile = pBy(tiles, score, t => pFirstVP(s,t));
+        const tile = PAPER.simpleCards ? pBy(tiles, t => match(s,t,actor) > 0 ? 1 : 0, t => pFirstVP(s,t)) : pBy(tiles, score, t => pFirstVP(s,t));
         hits.push({tile,victim}); s.tiles[tile].cubes[victim]--; s.tiles[tile].cubes[actor]++;
       }
       for (const h of hits) { s.tiles[h.tile].cubes[h.victim]++; s.tiles[h.tile].cubes[actor]--; }
@@ -394,7 +402,7 @@ function paperEffect(s, step) {
       const n = Math.min(5,me.dead);
       if (!n) return {tile:land[0],n:0,label:pLabel('nothing to return.')};
       const matched = land.filter(t => match(s,t,actor) > 0);
-      const tile = pBy(matched.length ? matched : land, t => s.tiles[t].terrain === 'tundra' ? 1 : 0, t => s.tiles[t].cubes[actor] ? 0 : 1, t => pGainsRank(s,t,actor,n) ? 1 : 0, t => pFirstVP(s,t));
+      const tile = PAPER.simpleCards ? pBy(matched.length ? matched : land, t => pFirstVP(s,t)) : pBy(matched.length ? matched : land, t => s.tiles[t].terrain === 'tundra' ? 1 : 0, t => s.tiles[t].cubes[actor] ? 0 : 1, t => pGainsRank(s,t,actor,n) ? 1 : 0, t => pFirstVP(s,t));
       return {tile,n,label:pLabel('Hibernation at ' + tile + '.')};
     }
     case 'Ice Sheet': {

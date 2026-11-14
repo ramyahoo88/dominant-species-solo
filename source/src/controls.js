@@ -33,11 +33,18 @@ main.addEventListener('change',event => {
   if (input.form?.dataset.form === 'start') {
     const key=input.name;
     if (key === 'length') setup.short=input.value === 'short';
-    if (['human','bot1','bot2'].includes(key)) {
-      const old=setup[key], value=input.value;
-      const other=['human','bot1','bot2'].find(k=>k!==key && setup[k]===value);
-      if (other) setup[other]=old;
-      setup[key]=value;
+    if (key === 'count') {
+      const n=Number(input.value);
+      while (setup.bots.length < n) setup.bots.push(FOOD.find(a => a !== setup.human && !setup.bots.includes(a)));
+      setup.bots.length=n;
+      render(false);
+      main.querySelector('input[name="count"][value="'+n+'"]')?.focus({preventScroll:true});
+    }
+    if (seatKeys().includes(key)) {
+      const old=seatGet(key), value=input.value;
+      const other=seatKeys().find(k=>k!==key && seatGet(k)===value);
+      if (other) seatSet(other,old);
+      seatSet(key,value);
       render(false);
       main.querySelector('select[name="'+key+'"]')?.focus({preventScroll:true});
     }
@@ -54,7 +61,7 @@ main.addEventListener('submit',event => {
   const values=new FormData(form);
   try {
     if (form.dataset.form === 'start') {
-      game=newGame(setup.human,[setup.bot1,setup.bot2],setup.short,randomSeed());
+      game=newGame(setup.human,[...setup.bots],setup.short,randomSeed());
       activeTile='D3'; reveal=null; preview=null; draft={}; undo=[]; notice=''; initialError='';
       save(); render(true);
     }
@@ -150,7 +157,7 @@ function renderModal() {
   const titles={help:'How to play',decks:'Bot decks',menu:'Game menu',new:'Start a new game?'};
   let content='';
   if (modalKind === 'help') content =
-    '<p>Use your physical copy of Chad Jensen’s original GMT game. Set up one animal for yourself and two rivals with the normal three-player allotment of 6 pawns and 50 cubes per animal, including its VP marker. Use the standard starting map shown in the app.</p>' +
+    '<p>Use your physical copy of Chad Jensen’s original GMT game. Set up one animal for yourself and two to five rivals with the base game’s allotment for that player count (6 pawns and 50 cubes per animal with two rivals; 5 and 45 with three; 4 and 40 with four; 3 and 35 with five), including each VP marker. Use the standard starting map shown in the app.</p>' +
     '<ol><li>Enter the actual elements, tile stack faces and Dominance Cards when the app requests them. Keep the official cards and tiles at your table.</li>' +
     '<li>Place your own pawns. Reveal a card for each rival placement and mirror the indicated slot on your action display.</li>' +
     '<li>Apply each action to the physical board and confirm it here. The Earth map uses the starting wetland as north. Corner 1 points right, and corners 2–6 follow clockwise. The map shows a shared corner once.</li>' +
@@ -210,7 +217,7 @@ document.addEventListener('click',event => {
         deckTab=btn.dataset.animal; renderModal(); modal.querySelector('[data-animal="'+deckTab+'"]')?.focus(); break;
       case 'new': openModal('new'); break;
       case 'new-confirm':
-        setup={human:game.human,bot1:game.rivals[0],bot2:game.rivals[1],short:game.short};
+        setup={human:game.human,bots:[...game.rivals],short:game.short};
         game=null; undo=[]; reveal=null; preview=null; draft={}; notice=''; initialError='';
         modal.close(); save(); render(false);
         main.focus();

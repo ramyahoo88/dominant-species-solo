@@ -31,14 +31,16 @@ function playBenchmark({human, rivals, seed, short, policy}, player, trace = fal
   let openingSupply;
   for (let stepCount = 0; stepCount < 1800; stepCount++) {
     validateState(s);
-    if (s.phase === 'finished') {
-      if (!s.usedCards.includes('Ice Age')) throw new Error('Finished without Ice Age.');
+    // A crowded table can strip Earth of elements so no one can dominate or take a card. Score such a stall as it stands.
+    const stalled = s.turn > 30;
+    if (s.phase === 'finished' || stalled) {
+      if (!stalled && !s.usedCards.includes('Ice Age')) throw new Error('Finished without Ice Age.');
       const [winner, runnerUp] = standings(s);
       for (const id of s.ids) seats[id].vp = s.animals[id].vp;
       return {human, rivals, seed, short, policy, turns: s.turn, steps: stepCount, winner,
         winningMargin: seats[winner].vp - seats[runnerUp].vp,
         humanMargin: seats[human].vp - Math.max(...rivals.map(id => seats[id].vp)),
-        openingSupply, seats, ...(trace ? {events} : {})};
+        openingSupply, seats, ...(stalled ? {stalled: true} : {}), ...(trace ? {events} : {})};
     }
     if (s.phase === 'supply') {
       const values = nextSupply(s, supply, seed);

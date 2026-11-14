@@ -8,11 +8,13 @@ function threatScore(s, id) {
 }
 function context(s, actor, focus = 'majority') {
   const order = s.ids.filter(id => id !== actor).sort((a,b) => threatScore(s,b) - threatScore(s,a) || rank(a) - rank(b));
-  const other = order[0], third = order[1];
+  const other = order[0], third = order[1], rest = order.slice(1);
   const gap = Math.max(0, threatScore(s,other) - threatScore(s,third));
+  // The leader keeps its weight; with more opponents the others share the second weight, so total denial stays the same.
+  const share = (.44 - Math.min(.22, gap / 65)) / rest.length;
   return {
     actor, focus,
-    rival: {[other]:.56 + Math.min(.26, gap / 65), [third]:.44 - Math.min(.22, gap / 65)},
+    rival: {[other]:.56 + Math.min(.26, gap / 65), ...Object.fromEntries(rest.map(id => [id, share]))},
     cardWeight:focus === 'dominance' ? 3.2 : s.market.some(Boolean) ? 2.1 : 1.25,
     vpWeight:focus === 'majority' ? .85 : .55,
     endWeight:s.ending || s.market.includes('Ice Age') ? 1.2 : .75,

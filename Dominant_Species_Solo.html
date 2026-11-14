@@ -251,6 +251,7 @@ small,.muted{color:var(--muted)}
 .seat-head{display:flex;gap:8px;align-items:center}
 .seat-head select{min-width:0}
 .seat p{font-size:12px;color:var(--muted);min-height:35px;margin-top:7px}
+.rival-count{margin-bottom:12px}
 .seat-hint{font-size:12px;color:var(--muted);margin-top:8px}
 .mark{--chip:#e3eae0;--chip-ink:#263333;width:29px;height:29px;flex:0 0 29px;display:inline-grid;place-items:center;border:1px solid #193c3b26;
   border-radius:8px;background:var(--chip);color:var(--chip-ink);font-size:11px;font-weight:700;line-height:1}
@@ -445,12 +446,14 @@ dialog::backdrop{background:#132d2c88}
 <noscript>This companion needs JavaScript. Open the downloaded HTML file in a browser.</noscript>
 <script>'use strict';
 
-const VERSION = '0.3.4';
+const VERSION = '0.3.5';
 const SAVE_KEY = 'dominant-species-solo-v1';
 // GMT rules p. 4: of the 50 gathered cubes, one marks VP.
 const THREE_PLAYER_CUBES = 50;
 const PLAYABLE_SPECIES = THREE_PLAYER_CUBES - 1;
 const STARTING_PAWNS = 6;
+// Base-game pawns and cubes by player count (the app plays 3; the benchmark can run 4-6).
+const SETUP_BY_PLAYERS = {3:[6,50], 4:[5,45], 5:[4,40], 6:[3,35]};
 const RULEBOOK = 'https://www.gmtgames.com/living_rules/DS3_Rulebook-web_FINAL.pdf';
 const PHOTO = 'https://commons.wikimedia.org/wiki/File:Portage_Glacier_USGS.jpg';
 const ANIMALS = {
@@ -680,8 +683,9 @@ function newGame(human, rivals, short, seed) {
     boxes: Object.fromEntries(elementRows.map(row => [row, []])),
     animals: {}, decks: {}, log: [],
   };
+  const [pawns, cubes] = SETUP_BY_PLAYERS[ids.length];
   for (const id of ids) {
-    s.animals[id] = { added:[], pool:PLAYABLE_SPECIES - sum(Object.values(INITIAL_CUBES[id])), dead:0, vp:0, ap:STARTING_PAWNS, remaining:0, ward:{} };
+    s.animals[id] = { added:[], pool:cubes - 1 - sum(Object.values(INITIAL_CUBES[id])), dead:0, vp:0, ap:pawns, remaining:0, ward:{} };
     if (isBot(s, id)) s.decks[id] = { queue:shuffle(s, DECKS[id].map((_, i) => i)), discards:[] };
   }
   for (const [id, terrain] of Object.entries(INITIAL_TILES)) {
@@ -1086,11 +1090,13 @@ function threatScore(s, id) {
 }
 function context(s, actor, focus = 'majority') {
   const order = s.ids.filter(id => id !== actor).sort((a,b) => threatScore(s,b) - threatScore(s,a) || rank(a) - rank(b));
-  const other = order[0], third = order[1];
+  const other = order[0], third = order[1], rest = order.slice(1);
   const gap = Math.max(0, threatScore(s,other) - threatScore(s,third));
+  // The leader keeps its weight; with more opponents the others share the second weight, so total denial stays the same.
+  const share = (.44 - Math.min(.22, gap / 65)) / rest.length;
   return {
     actor, focus,
-    rival: {[other]:.56 + Math.min(.26, gap / 65), [third]:.44 - Math.min(.22, gap / 65)},
+    rival: {[other]:.56 + Math.min(.26, gap / 65), ...Object.fromEntries(rest.map(id => [id, share]))},
     cardWeight:focus === 'dominance' ? 3.2 : s.market.some(Boolean) ? 2.1 : 1.25,
     vpWeight:focus === 'majority' ? .85 : .55,
     endWeight:s.ending || s.market.includes('Ice Age') ? 1.2 : .75,
@@ -2102,7 +2108,11 @@ const A = ids => ids.map(id => [id,nameOf(id)]);
 const cardRows = face => '<div class="card-flow">' + face.rows.map(row => '<span>' + ROW_BY_ID[row].name + '</span>').join('') + '</div>';
 let game = null;
 let undo = [];
-let setup = {human:'amphibians',bot1:'birds',bot2:'arachnids',short:true};
+let setup = {human:'amphibians',bots:['birds','arachnids'],short:true};
+const RIVAL_WORDS = ['one','two','three','four','five'];
+function seatKeys() { return ['human',...setup.bots.map((_,i) => 'bot-' + i)]; }
+function seatGet(key) { return key === 'human' ? setup.human : setup.bots[Number(key.slice(4))]; }
+function seatSet(key, value) { if (key === 'human') setup.human = value; else setup.bots[Number(key.slice(4))] = value; }
 let activeTile = 'D3';
 let reveal = null;
 let preview = null;
@@ -2154,23 +2164,23 @@ function readSupplyDraft(s, raw) {
 }
 function validateState(s) {
   function assert(ok) { if (!ok) throw new Error('This is not a valid Dominant Species companion save.'); }
-  if (s && ['0.1.0', '0.2.0', '0.3.0', '0.3.1', '0.3.2', '0.3.3'].includes(s.version)) s.version = VERSION;
+  if (s && ['0.1.0', '0.2.0', '0.3.0', '0.3.1', '0.3.2', '0.3.3', '0.3.4'].includes(s.version)) s.version = VERSION;
   const keys = value => value && typeof value === 'object' ? Object.keys(value) : [];
   assert(s && s.version === VERSION && ['supply','planning','execution','finished'].includes(s.phase) &&
     num(s.turn) && s.turn > 0 && num(s.rng) && s.rng <= 0xffffffff && num(s.seed) && s.seed <= 0xffffffff);
-  assert(Array.isArray(s.ids) && s.ids.length === 3 && unique(s.ids).length === 3 && s.ids.every(id => FOOD.includes(id)) &&
-    s.ids.includes(s.human) && Array.isArray(s.rivals) && s.rivals.length === 2 && unique(s.rivals).length === 2 &&
+  assert(Array.isArray(s.ids) && s.ids.length === s.rivals?.length + 1 && unique(s.ids).length === s.ids.length && s.ids.every(id => FOOD.includes(id)) &&
+    s.ids.includes(s.human) && Array.isArray(s.rivals) && s.rivals.length >= 2 && s.rivals.length <= 5 && unique(s.rivals).length === s.rivals.length &&
     s.rivals.every(id => id !== s.human && s.ids.includes(id)) && typeof s.short === 'boolean');
-  assert(Array.isArray(s.initiative) && s.initiative.length === 3 && unique(s.initiative).length === 3 && s.initiative.every(id => s.ids.includes(id)) &&
-    num(s.cursor) && s.cursor <= EXECUTION.length && num(s.planning) && s.planning < 3 && typeof s.ending === 'boolean');
+  assert(Array.isArray(s.initiative) && s.initiative.length === s.ids.length && unique(s.initiative).length === s.ids.length && s.initiative.every(id => s.ids.includes(id)) &&
+    num(s.cursor) && s.cursor <= EXECUTION.length && num(s.planning) && s.planning < s.ids.length && typeof s.ending === 'boolean');
   assert(s.tiles && s.corners && s.pawns && s.animals && s.boxes && s.decks && terrainIds(s).length >= 7 && Object.keys(INITIAL_TILES).every(id => s.tiles[id]));
   assert(keys(s.tiles).every(id => Object.hasOwn(HEXES,id) && Object.hasOwn(TERRAIN,s.tiles[id]?.terrain) && s.ids.every(a => num(s.tiles[id].cubes?.[a])) &&
-    keys(s.tiles[id].cubes).length === 3) && keys(s.corners).every(key => Object.hasOwn(CORNER_TILES,key) &&
+    keys(s.tiles[id].cubes).length === s.ids.length) && keys(s.corners).every(key => Object.hasOwn(CORNER_TILES,key) &&
     CORNER_TILES[key].some(id => s.tiles[id]) && ELEMENT_IDS.includes(s.corners[key])));
   assert(s.ids.every(id => {
     const a = s.animals[id];
     return a && num(a.vp) && num(a.ap) && a.ap <= 10 && num(a.remaining) && a.remaining <= 10 && num(a.pool) && num(a.dead) &&
-      a.pool + a.dead + sum(occupied(s,id).map(t => s.tiles[t].cubes[id])) === PLAYABLE_SPECIES && Array.isArray(a.added) &&
+      a.pool + a.dead + sum(occupied(s,id).map(t => s.tiles[t].cubes[id])) === SETUP_BY_PLAYERS[s.ids.length][1] - 1 && Array.isArray(a.added) &&
       a.added.length + ANIMALS[id].affinity <= 6 && a.added.every(type => ELEMENT_IDS.includes(type)) && a.ward &&
       keys(a.ward).every(tile => s.tiles[tile] && num(a.ward[tile]) && a.ward[tile] <= s.tiles[tile].cubes[id]);
   }));
@@ -2256,18 +2266,20 @@ function stepTitle(step) {
   })[step.kind];
 }
 function setupPage() {
-  const seats = [['human','You'],['bot1','Rival one'],['bot2','Rival two']];
+  const seats = seatKeys().map((key,i) => [key, i ? 'Rival ' + RIVAL_WORDS[i-1] : 'You']);
+  const [pawns, cubes] = SETUP_BY_PLAYERS[setup.bots.length + 1];
   const seat = ([key,label]) => {
-    const id = setup[key];
+    const id = seatGet(key);
     return '<div class="seat ' + key + '"><label><span class="seat-role">' + label + '</span><span class="seat-head">' + badge(id) +
       '<select name="' + key + '">' + FOOD.map(a => '<option value="' + a + '"' + (a === id ? ' selected' : '') + '>' + nameOf(a) + '</option>').join('') +
       '</select></span></label><p>' + ANIMALS[id].power + '</p></div>';
   };
   main.innerHTML = '<section class="hero" aria-labelledby="hero-title"><div class="hero-copy"><p class="eyebrow">Tabletop solo companion</p>' +
-    '<h1 id="hero-title">Dominant Species</h1><p>Take one animal into the Ice Age. Two card-driven rivals compete for the same world.</p></div></section>' +
-    '<section class="panel setup-panel"><div class="setup-title"><h2>Set up your game</h2><p>Use the three-player setup in your GMT box.</p></div>' +
+    '<h1 id="hero-title">Dominant Species</h1><p>Take one animal into the Ice Age. Card-driven rivals compete for the same world.</p></div></section>' +
+    '<section class="panel setup-panel"><div class="setup-title"><h2>Set up your game</h2><p>Use the ' + (setup.bots.length + 1) + '-player setup in your GMT box: ' + pawns + ' pawns and ' + cubes + ' cubes per animal.</p></div>' +
     '<div class="notice" role="alert" id="notice"' + (notice || initialError ? '' : ' hidden') + '>' + esc(notice || initialError) + '</div>' +
-    '<form data-form="start"><div class="seats">' + seats.map(seat).join('') + '</div><p class="seat-hint">Choosing an animal already at the table swaps the two seats.</p><div class="setup-bottom">' +
+    '<form data-form="start"><fieldset class="rival-count"><legend>Rivals</legend><div class="segment">' + [2,3,4,5].map(n => '<label><input name="count" type="radio" value="' + n + '"' +
+      (setup.bots.length === n ? ' checked' : '') + '> ' + n + '</label>').join('') + '</div></fieldset><div class="seats">' + seats.map(seat).join('') + '</div><p class="seat-hint">Choosing an animal already at the table swaps the two seats.</p><div class="setup-bottom">' +
     '<fieldset><legend>Dominance deck</legend><div class="segment">' +
     '<label><input name="length" type="radio" value="short"' + (setup.short ? ' checked' : '') + '> Short game · 22 cards</label>' +
     '<label><input name="length" type="radio" value="full"' + (!setup.short ? ' checked' : '') + '> Full game · 26 cards</label></div></fieldset>' +
@@ -2362,7 +2374,7 @@ function showSupply() {
   const stackList = game.stacks.flatMap((x,i) => x.left && !x.face ?
     [field('Wanderlust stack ' + (i+1),select('stack-'+i,LARGE_TERRAIN.map(t=>[t,terrainName(t)])))] : []).join('');
   const instruction = game.turn === 1 ?
-    'For each animal, set out six action pawns and 50 cubes. Use one cube to mark VP, put four on the map and leave 45 in the gene pool. Match the Earth map with Wetland at the top.' :
+    'For each animal, set out ' + ['','','','six','five','four','three'][game.ids.length] + ' action pawns and ' + SETUP_BY_PLAYERS[game.ids.length][1] + ' cubes. Use one cube to mark VP, put four on the map and leave ' + (SETUP_BY_PLAYERS[game.ids.length][1] - 5) + ' in the gene pool. Match the Earth map with Wetland at the top.' :
     'Slide the physical action display as usual. Refill the three draw rows, turn up any face-down tile stacks, and fill the open card spaces.';
   return '<div class="block-head"><h2 id="turn-focus" tabindex="-1">Enter board draws</h2><span class="phase-badge">' + (game.turn === 1 ? 'Setup' : 'Reseed') +
     '</span></div><p class="instruction">' + instruction + '</p>' +
@@ -2922,11 +2934,18 @@ main.addEventListener('change',event => {
   if (input.form?.dataset.form === 'start') {
     const key=input.name;
     if (key === 'length') setup.short=input.value === 'short';
-    if (['human','bot1','bot2'].includes(key)) {
-      const old=setup[key], value=input.value;
-      const other=['human','bot1','bot2'].find(k=>k!==key && setup[k]===value);
-      if (other) setup[other]=old;
-      setup[key]=value;
+    if (key === 'count') {
+      const n=Number(input.value);
+      while (setup.bots.length < n) setup.bots.push(FOOD.find(a => a !== setup.human && !setup.bots.includes(a)));
+      setup.bots.length=n;
+      render(false);
+      main.querySelector('input[name="count"][value="'+n+'"]')?.focus({preventScroll:true});
+    }
+    if (seatKeys().includes(key)) {
+      const old=seatGet(key), value=input.value;
+      const other=seatKeys().find(k=>k!==key && seatGet(k)===value);
+      if (other) seatSet(other,old);
+      seatSet(key,value);
       render(false);
       main.querySelector('select[name="'+key+'"]')?.focus({preventScroll:true});
     }
@@ -2943,7 +2962,7 @@ main.addEventListener('submit',event => {
   const values=new FormData(form);
   try {
     if (form.dataset.form === 'start') {
-      game=newGame(setup.human,[setup.bot1,setup.bot2],setup.short,randomSeed());
+      game=newGame(setup.human,[...setup.bots],setup.short,randomSeed());
       activeTile='D3'; reveal=null; preview=null; draft={}; undo=[]; notice=''; initialError='';
       save(); render(true);
     }
@@ -3039,7 +3058,7 @@ function renderModal() {
   const titles={help:'How to play',decks:'Bot decks',menu:'Game menu',new:'Start a new game?'};
   let content='';
   if (modalKind === 'help') content =
-    '<p>Use your physical copy of Chad Jensen’s original GMT game. Set up one animal for yourself and two rivals with the normal three-player allotment of 6 pawns and 50 cubes per animal, including its VP marker. Use the standard starting map shown in the app.</p>' +
+    '<p>Use your physical copy of Chad Jensen’s original GMT game. Set up one animal for yourself and two to five rivals with the base game’s allotment for that player count (6 pawns and 50 cubes per animal with two rivals; 5 and 45 with three; 4 and 40 with four; 3 and 35 with five), including each VP marker. Use the standard starting map shown in the app.</p>' +
     '<ol><li>Enter the actual elements, tile stack faces and Dominance Cards when the app requests them. Keep the official cards and tiles at your table.</li>' +
     '<li>Place your own pawns. Reveal a card for each rival placement and mirror the indicated slot on your action display.</li>' +
     '<li>Apply each action to the physical board and confirm it here. The Earth map uses the starting wetland as north. Corner 1 points right, and corners 2–6 follow clockwise. The map shows a shared corner once.</li>' +
@@ -3099,7 +3118,7 @@ document.addEventListener('click',event => {
         deckTab=btn.dataset.animal; renderModal(); modal.querySelector('[data-animal="'+deckTab+'"]')?.focus(); break;
       case 'new': openModal('new'); break;
       case 'new-confirm':
-        setup={human:game.human,bot1:game.rivals[0],bot2:game.rivals[1],short:game.short};
+        setup={human:game.human,bots:[...game.rivals],short:game.short};
         game=null; undo=[]; reveal=null; preview=null; draft={}; notice=''; initialError='';
         modal.close(); save(); render(false);
         main.focus();

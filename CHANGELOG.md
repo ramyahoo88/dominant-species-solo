@@ -1,5 +1,13 @@
 # Release notes
 
+## v0.3.5 · November 14, 2026
+
+- The app takes two to five rivals. Setup uses the base game's pawns and cubes for the player count (6/50, 5/45, 4/40, 3/35). With two rivals nothing changes: a 2-rival benchmark run is game-for-game identical to v0.3.4. Imports preserve v0.3.4 saves.
+- With more opponents, the rivals' denial weight is shared: the leader keeps its weight and the others split the second weight.
+- Benchmark: `--bots 2..5`; stalled games (turn 30+) are scored as they stand and counted as `stalledGames` instead of aborting the run. Tests on 3–5 bots (360 games per cell, seed 160000), scripted-player win rate (an even game is 25/20/17%): the app's rivals 12/9/9%; full paper at +0, +1, +2 pawns 47/41/39%, 28/29/19% and –/18/13%; quick paper at +0 and +1 30/27/25% and 19/21/16%.
+- Paper quick mode gains five tested cuts: always the "no" face, simple Adaptation, full Speciation, Migration without rank checks, Glaciation without the tundra bonus (`--paper-options quick`). Across 3,240 games they made the rivals no weaker. Every cut weakened the full rules, so those are unchanged.
+- Paper rivals gain a barren-Earth rule: when no animal dominates any tile (after turn 1), a rival places on Abundance first and may take any element. It prevents a rare six-animal stall where no one could take a card.
+
 ## Paper rivals · quick mode · November 14, 2026
 
 - Added an optional quick mode for the paper rivals: flat element matching and a fixed card list. It plays about as tough as Expert at the normal 6 pawns (30% scripted-player wins on seed 150000, against 19% for the app's rivals).

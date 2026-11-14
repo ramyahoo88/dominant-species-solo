@@ -1,11 +1,13 @@
 'use strict';
 
-const VERSION = '0.3.4';
+const VERSION = '0.3.5';
 const SAVE_KEY = 'dominant-species-solo-v1';
 // GMT rules p. 4: of the 50 gathered cubes, one marks VP.
 const THREE_PLAYER_CUBES = 50;
 const PLAYABLE_SPECIES = THREE_PLAYER_CUBES - 1;
 const STARTING_PAWNS = 6;
+// Base-game pawns and cubes by player count (the app plays 3; the benchmark can run 4-6).
+const SETUP_BY_PLAYERS = {3:[6,50], 4:[5,45], 5:[4,40], 6:[3,35]};
 const RULEBOOK = 'https://www.gmtgames.com/living_rules/DS3_Rulebook-web_FINAL.pdf';
 const PHOTO = 'https://commons.wikimedia.org/wiki/File:Portage_Glacier_USGS.jpg';
 const ANIMALS = {

@@ -37,6 +37,7 @@ function collect(games) {
     humanWins: games.reduce((n, game) => n + won(game), 0),
     humanWinRate: round(mean(games.map(won))),
     winningVPTies: ties,
+    stalledGames: games.filter(game => game.stalled).length,
     meanHumanMargin: round(mean(games.map(game => game.humanMargin))),
     meanWinningMargin: round(mean(games.map(game => game.winningMargin))),
     meanTurns: round(mean(games.map(game => game.turns))),
@@ -109,6 +110,7 @@ async function main() {
       length: {type: 'string', default: 'both'},
       human: {type: 'string'},
       rivals: {type: 'string'},
+      bots: {type: 'string', default: '2'},
       trace: {type: 'boolean'},
       detail: {type: 'boolean'},
       help: {type: 'boolean'},
@@ -119,7 +121,7 @@ async function main() {
       'node source/benchmark.cjs [--base COMMIT] [--candidate COMMIT|worktree]',
       '  [--seed 6200] [--repeats 1] [--workers 4] [--paper EXTRA_PAWNS] [--paper-options flatMatch,cardList]',
       '  [--policy majority|dominance|expansion] [--length both|short|full]',
-      '  [--human insects] [--rivals birds,reptiles] [--detail] [--trace]',
+      '  [--human insects] [--rivals birds,reptiles] [--bots 2..5] [--detail] [--trace]',
       'Each repeat runs every selected matchup and policy on one physical setup.',
     ].join('\n') + '\n');
     return;
@@ -135,17 +137,19 @@ async function main() {
   assert(policies.length && new Set(policies).size === policies.length && policies.every(id => Object.hasOwn(rules.get('POLICIES'), id)), 'Choose distinct known policies.');
   assert(!args.human || animals.includes(args.human), 'Choose a known human animal.');
   const selectedRivals = args.rivals?.split(',');
-  assert(!selectedRivals || selectedRivals.length === 2 && new Set(selectedRivals).size === 2 && selectedRivals.every(id => animals.includes(id)),
-    'Choose two distinct known rivals.');
+  const bots = Number(args.bots);
+  assert([2, 3, 4, 5].includes(bots), 'Use 2 to 5 bots.');
+  assert(!selectedRivals || selectedRivals.length === bots && new Set(selectedRivals).size === bots && selectedRivals.every(id => animals.includes(id)),
+    'Choose distinct known rivals, one per bot.');
+  const groups = (list, k) => k === 0 ? [[]] : list.flatMap((id, i) => groups(list.slice(i + 1), k - 1).map(rest => [id, ...rest]));
   const entries = [];
   let offset = 0;
   for (let repeat = 0; repeat < repeats; repeat++) {
     for (const human of animals) {
       const others = animals.filter(id => id !== human);
-      for (const [j, first] of others.entries()) for (const second of others.slice(j + 1)) {
+      for (const rivals of groups(others, bots)) {
         const trialSeed = (seed + offset++) >>> 0;
         if (args.human && args.human !== human) continue;
-        const rivals = [first, second];
         if (selectedRivals && !selectedRivals.every(id => rivals.includes(id))) continue;
         const short = args.length === 'both' ? (trialSeed + repeat) % 2 === 0 : args.length === 'short';
         for (const policy of policies) entries.push({index: entries.length, scenario: {human, rivals, seed: trialSeed, short, policy}});

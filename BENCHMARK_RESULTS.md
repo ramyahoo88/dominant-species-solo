@@ -137,7 +137,7 @@ Paired change in player win rate: −3.1 points (approximate 95% interval −8.9
 
 **Reading.** The rivals are slightly tougher, and roughly a third of each deck's faces that were dormant are now in play. With the shipped definitions, Birds dropped 47 → 37 on the confirmation block, exactly at the limit. The larger drops on seeds 60000 (49 → 34) and 70000 (68 → 54) were with the first, discarded `foothold` definition; on seed 60000 the shipped definition gave Birds 41/120 against 49 on `main`, but that block was used for development. Birds remain the likeliest weak rival. The spread between rivals narrowed on the confirmation block (strongest 65 → 60, weakest 34 → 37). The dormant faces were never tuned, so they are the first place to look.
 
-## v0.3.3 · real Wanderlust value in Planning (Claude, November 13, 2026) · failed guard, not merged
+## v0.3.3 · real Wanderlust value in Planning (Claude, November 13, 2026) · failed guard, merged by owner decision
 
 **Finding.** In Planning, the value a rival puts on each action ("opportunity") came from flat constants for three rows, not from the board: Wanderlust 2.50 whenever a tile was on offer, Migration capped at 2.60, Glaciation at most 1.85 and under 1 for 30% of its placements. A card's first row gets +4.6 whenever its opportunity exceeds 0.12, so Wanderlust- and Glaciation-led faces were played whenever they were legal. Measured medians of other rows: Domination about 8, Speciation 7–9, Competition 5–8.
 
@@ -163,4 +163,4 @@ Paired player change −3.3 points (interval −8.3 to +1.6). **Birds failed the
 
 **Follow-up.** One theory was that Birds lose Migration placements to Wanderlust, since their deck leans on Migration most. On seed 6200 Birds' Migration fell less than Insects' (8.2 → 7.3 against 8.5 → 6.4), and every animal's Wanderlust rose by about 3–5 per game, so the data did not support it. Migration's capped planning value (2.60) is still flat.
 
-**Status.** Left on branch `claude/birds` for a decision: the change makes rivals tougher and wins by much larger margins, at Birds' expense.
+**Status.** Merged by owner decision: tougher rivals with larger winning margins, at Birds' expense.

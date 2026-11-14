@@ -3,7 +3,7 @@
 //
 //   node source/benchmark.cjs --tune [--train-seed 210000] [--validate-seed 220000] [--generations 40]
 //        [--pairs 8] [--games 64] [--validate-games 400] [--focus dominance] [--weights FILE] [--out FILE]
-//   node source/benchmark.cjs --evaluate [--weights FILE] [--seed 230000] [--per-cell 90]
+//   node source/benchmark.cjs --evaluate [--weights FILE] [--seed 230000] [--per-cell 90] [--modes app,1] [--policies tuned,dominance]
 //   node source/benchmark.cjs --selftest
 //
 // The player is source/benchmark/tuned.js: the fixed 'dominance' player with every constant as a weight.
@@ -179,10 +179,12 @@ async function tune(args, pool, animals) {
 async function evaluate(args, pool, animals) {
   const file = args.weights ? JSON.parse(readFileSync(args.weights, 'utf8')) : {};
   const weights = file.best ?? (Object.keys(file).length ? file : pool.defaults);
-  const policies = ['tuned', 'majority', 'dominance', 'expansion'];
+  const policies = args.policies ? args.policies.split(',') : ['tuned', 'majority', 'dominance', 'expansion'];
+  const modes = args.modes ? args.modes.split(',').map(m => m === 'app' ? 'app' : +m) : MODES;
   const table = [];
   let cellSeed = +args.seed;
   for (const bots of BOTS) for (const mode of MODES) {
+    if (!modes.includes(mode)) { cellSeed++; continue; }   // keep each cell's seeds the same whichever cells run
     const base = scenarios(cellSeed++, +args['per-cell'], animals, {bots, mode});
     const jobs = policies.map(policy => ({weights, scenarios: base.map(s => ({...s, policy}))}));
     const res = await pool.run(jobs);
@@ -218,6 +220,7 @@ async function main(argv) {
     'validate-games': {type: 'string', default: '400'}, 'validate-every': {type: 'string', default: '4'},
     sigma: {type: 'string', default: '.5'}, lr: {type: 'string', default: '.6'},
     focus: {type: 'string', default: 'dominance'}, weights: {type: 'string'}, out: {type: 'string'},
+    modes: {type: 'string'}, policies: {type: 'string'},
   }}).values;
   assert(['majority', 'dominance', 'reach'].includes(args.focus), 'Focus is majority, dominance or reach.');
   const pool = await makePool(Math.max(1, Math.min(64, +args.workers)));

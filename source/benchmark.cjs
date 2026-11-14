@@ -129,6 +129,7 @@ async function main() {
       '  [--policy majority|dominance|expansion] [--length both|short|full]',
       '  [--human insects] [--rivals birds,reptiles] [--bots 2..5] [--detail] [--trace]',
       'Each repeat runs every selected matchup and policy on one physical setup.',
+      'Self-tuning test player: --tune, --evaluate or --selftest (see source/benchmark/tune.cjs).',
     ].join('\n') + '\n');
     return;
   }
@@ -187,5 +188,9 @@ async function main() {
   process.stdout.write(JSON.stringify(result, null, 2) + '\n');
 }
 
-if (isMainThread) main().catch(error => {console.error(error); process.exitCode = 1;});
+const TUNER = ['--tune', '--evaluate', '--selftest'];
+if (isMainThread && process.argv.some(a => TUNER.includes(a))) {
+  // Self-tuning test player (source/benchmark/tune.cjs); separate from the published benchmark.
+  require('./benchmark/tune.cjs').main(process.argv.slice(2)).catch(error => {console.error(error); process.exitCode = 1;});
+} else if (isMainThread) main().catch(error => {console.error(error); process.exitCode = 1;});
 else worker();

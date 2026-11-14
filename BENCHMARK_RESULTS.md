@@ -102,3 +102,37 @@ Paired change in player win rate: −0.8 points (approximate 95% interval −5.6
 **Reading.** Gains of 10–20 points on the development seeds shrank to roughly 0–8 points on fresh ones, and the full Reptiles rows fell from 41% to 32%. Best estimate: a few points for each animal, uncertain. Rewriting rows is a weaker lever than the development runs suggested, and win-rate differences measured on about 60 setups are unreliable below roughly ±8 points. Reptiles remain clearly the strongest rival.
 
 **Next lever.** Recalibrate the nearly constant checks (`ice`, `contested`, `cone`, `front`, `foothold`) so both faces of each card actually get played. This affects all six decks.
+
+## v0.3.2 · check recalibration (Claude, November 13, 2026)
+
+Five checks were nearly constant, mostly because of the starting layout: every starting tile borders the central tundra (`ice`), the starting placements overlap (`contested`), each animal starts dominating its home tile (`cone`), most large terrains clear 5 first-place VP (`front`), and zero matches is rare (`foothold`). Each was redefined to keep its card's meaning and land at roughly 25–75% true. Candidates were judged on true rate only; card rows were left unchanged.
+
+| Check | Old definition | Old rate | New definition | New rate |
+|---|---|---:|---|---:|
+| `ice` | Cubes in or next to tundra | 99% | Species on tundra and leads or ties the tundra count | 37% |
+| `contested` | Shares a tile with a rival | 98% | A rival outranks it on a shared tile worth 6+ VP | 67% |
+| `cone` | Dominates an unscored tile, card available | 96% | Dominates 3+ unscored tiles, card available | 63% |
+| `front` | Reachable face-up tile worth 5+ VP | 94% | Reachable face-up Sea or Wetland | 65% |
+| `foothold` | An occupied tile has no match | 5% | Two or more occupied tiles have at most one match | ~33% |
+
+Rates are from seed 6200, except `foothold`, which is from the Birds games on seed 60000.
+
+**Guard 1 (seed 60000, `--repeats 2`).** Pre-set rule: the scripted player's win rate rises by no more than about 3 points, and no animal loses more than about 10 of 120 rival wins. The player rate passed (97 → 86 of 360, −3.1 points), but Birds failed (49 → 34 of 120, VP 178 → 167). A check on seed 70000 (Birds games, 180) showed 68 → 54, just under that block's pre-set "real" bar of 15, with Birds VP down again; treated as probably real. On seed 60000, restoring Birds' own checks one at a time recovered nothing. Restoring the old `foothold` for every animal recovered Birds to 40/120, so other animals' `foothold` faces caused the drop. The first new definition ("an occupied tile has at most one match", 52% true) was softened to the current one.
+
+**Guard 2, confirmation (seed 80000, `--repeats 2`, `--base main`, i.e. v0.3.1).**
+
+| Metric | v0.3.1 | v0.3.2 |
+|---|---:|---:|
+| Scripted player wins | 90/360 | 79/360 |
+| Player mean VP margin | −30.3 | −34.3 |
+| Rival pawns with no legal target per game | 0.80 | 0.66 |
+| Mammals rival wins | 48 | 48 |
+| Reptiles rival wins | 65 | 60 |
+| Birds rival wins | 47 | 37 |
+| Amphibians rival wins | 42 | 45 |
+| Arachnids rival wins | 34 | 51 |
+| Insects rival wins | 34 | 40 |
+
+Paired change in player win rate: −3.1 points (approximate 95% interval −8.9 to +2.8). Passes the guard, with Birds exactly at the 10-win limit.
+
+**Reading.** The rivals are slightly tougher, and roughly a third of each deck's faces that were dormant are now in play. Birds have fallen on all three blocks and are now the likeliest rival to be weak. The dormant faces were never tuned, so they are the first place to look.

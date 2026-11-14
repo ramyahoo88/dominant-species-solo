@@ -1,5 +1,12 @@
 # Release notes
 
+## v0.3.2 · November 13, 2026
+
+- Recalibrated five rival deck checks that were almost always true or almost always false, so both faces of those cards now get played. True rates (seed 6200): `ice` 99% → 37%, `contested` 98% → 67%, `cone` 96% → 63%, `front` 94% → 65%, `foothold` 5% → ~33%. Updated the check descriptions shown on the Bot decks page.
+- Card rows were not changed. Faces that were nearly dormant before are now played often, and their rows have not been tuned.
+- Guard benchmark (seed 80000, 360 games): scripted player wins 90 → 79 (−3.1 points, interval −8.9 to +2.8). Birds rival wins fell 47 → 37 of 120, at the acceptance limit; Birds fell on two earlier blocks as well. See [benchmark results](BENCHMARK_RESULTS.md).
+- Imports preserve v0.3.1 saves.
+
 ## v0.3.1 · November 13, 2026
 
 - Rewrote the rows on several Insects and Amphibians rival card faces. Insects no longer lead with Glaciation or Wanderlust on their most-drawn faces and favor Domination, Migration and Adaptation; Amphibians lean less on Abundance and Glaciation. Card titles, checks and focuses are unchanged.

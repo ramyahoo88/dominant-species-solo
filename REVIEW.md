@@ -28,7 +28,7 @@ Both versions rebuild byte-identically from `source/`, and the app loads at 390 
 2. **Win rates by animal are badly lopsided** (Reptiles 49% vs Insects 17%). This more likely reflects the bot misjudging certain animals than real game balance.
 3. **Rivals never block.** `planPlacement` never values a space for denying a rival. Nearly half of the remaining bot forfeits are pawns placed where they can do nothing (Speciation with an empty gene pool; Adaptation at the six-element limit). Many are forced late in planning, where a person would place to block. The handoff asks rivals to contest useful spaces.
 4. **Bots overcommit to Speciation.** They plan a second Speciation pawn after the first will already have emptied the gene pool (`fastValue` ignores cubes committed by earlier pawns).
-5. **Gene pool looks one cube short.** `newGame` starts each animal with `pool: 45` plus 4 on the board (49 total; setup screen shows "45 in pool"). Published setup tables give 50 cubes and 6 pawns per player at three players, i.e. 46 in the pool after setup. The app may report no cubes while the player still has one. Verify against the box rulebook; `threatScore` in `bot.js` also hard-codes 49.
+5. ~~**Gene pool looks one cube short.**~~ **Withdrawn.** The 45-cube pool is correct: of the 50 cubes per animal, one marks VP and four start on Earth (GMT rulebook p. 4). v0.3.0 replaced the hard-coded 49 with named constants.
 6. **Smaller code issues**
    - `doomedWastelandCorners` assumes a Wasteland pawn saves every single-copy element type; it can only save one.
    - Gemini roughly doubled the number of hand-tuned weights with no measurement to tune them against.
@@ -50,11 +50,30 @@ Dominance Card effects were not audited against the physical cards.
 ## Recommendations, in order
 
 1. **Fix the harness first.** Lock the human seat to one fixed strategy and compare versions on paired seeds. Record win rate by animal, score margins, and forfeits split into "no legal option" vs "chose not to". Add small board fixtures for tricky rules.
-2. **Fix the gene-pool count** if the rulebook confirms 50.
+2. ~~Fix the gene-pool count.~~ Withdrawn; see problem 5.
 3. **Add blocking:** when no space is useful to the bot, pick the space most valuable to the leading rival.
 4. **Track committed cubes:** discount extra Speciation pawns by cubes already promised to earlier ones.
 5. **Investigate Insects and Amphibians** once the harness can show whether a change helps.
 6. **Cut data entry:** each turn needs ~15 dropdown picks for element draws. Tap counters for the six element colours would be much faster on a phone.
+
+## Follow-up: v0.3.0 (GPT, merged 2026-11-13)
+
+v0.3.0 addressed problems 1, 3, 4 and 6 and recommendations 1, 3, 4 and 6. Verified before merging: byte-identical rebuild, 12/12 rules tests, smoke test matches its baseline, phone-width browser test passes.
+
+Independent benchmark check on a seed block GPT did not use (`--seed 30000`, v0.2.0 vs v0.3.0):
+
+| Metric | v0.2.0 | v0.3.0 |
+| --- | --- | --- |
+| Scripted player wins | 61/180 | 45/180 |
+| Rival pawns with no legal target per game | 2.21 | 0.63 |
+| Denial placements | 0 | 8 |
+
+Across the two untuned blocks (12000 and 30000), scripted-player wins fell from 119/360 to 93/360, so the rivals probably did get tougher.
+
+Still open:
+- Denial only triggers when the bot has nothing useful to do, so it rarely happens.
+- Rival strength still varies by animal (in block 30000 as rivals: Reptiles 30/60, Insects 12/60, Amphibians 13/60).
+- Physical tabletop play, real Android hardware and a card-by-card Dominance Card audit remain untested.
 
 ## Sources
 

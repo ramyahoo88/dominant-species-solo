@@ -2,7 +2,7 @@
 
 ## v0.3.8 · November 14, 2026 · fixes for the GPT v0.3.7 re-audit
 
-- **Initiative on a full action display:** the marker still advances and the pawn returns to its owner (it was forfeited). This applies to paper rivals, app rivals and the player form, which now also lets you advance without moving the pawn.
+- **Initiative on a full action display:** the marker still advances and the pawn returns to its owner (it was forfeited). This applies to paper rivals, app rivals and the player form. While a space is open, the pawn must still move there, as printed.
 - **Evolution:** the shared resolution rejects more than two opponents, a repeated opponent, or more replacements than the gene pool, whoever chooses. The benchmark's frozen player is capped the same way, so it no longer converts up to five opponents.
 - **Paper rules now match the printed procedures:**
   - Rank counts every animal on a tile, even below the places that score, so Migration and arrivals no longer skip zero-VP tiles.

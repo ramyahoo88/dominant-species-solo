@@ -11,7 +11,7 @@ The audit is `Dominant_Species_v0.3.6_Audit.pdf` (commit 67a6214, verdict HOLD).
 | **P2** Paper Instinct ignores next-turn spaces | It prefers a space that still runs this turn; otherwise it reserves one for next turn (except on the final turn) | `rules.test.cjs` "GPT audit P2–P4" |
 | **P3** Paper Aquatic skips its element | If the bag has a disk and any sea or wetland tile has a free corner, only those tiles are candidates | same test |
 | **P4** Wasteland tests contradict | Planning now asks the Execution question: does the box hold an element the rival uses? (answers **Q2**: protect displayed types). Rulebook target table updated | same test (both types agree) |
-| **B1** Benchmark player ignores flat matching | `benchmark/load.cjs` adds a rules adapter: the pinned player keeps its strategy but uses flat matching (and so the rival's cones) for paper rivals. Checked on the audit's D4 fixture: match 2 and cone null, the same as the engine | The difficulty table was re-measured on fresh seed block 200000 (`source/paper/ladder.json`) |
+| **B1** Benchmark player ignores flat matching | `benchmark/load.cjs` adds a rules adapter: the pinned player keeps its strategy but uses flat matching (and so the rival's cones) for paper rivals. Checked on the audit's D4 fixture: match 2 and cone null, the same as the engine | Re-measured on fresh seed block 200000 (`source/paper/ladder.json`). The levels were overstated by about one pawn, so each level now adds one more: Standard (+1) gives 31/22/20/15% against an even 33/25/20/17%, and Expert (+3) gives 17/13/8/4% against the app's 20/15/10/8% |
 
 **Also fixed while reproducing:**
 - The player's Aquatic form now requires the element and corner when placement is possible.
@@ -33,3 +33,8 @@ The audit is `Dominant_Species_v0.3.6_Audit.pdf` (commit 67a6214, verdict HOLD).
 - Not done: a release manifest, and a "Clear draft move" control.
 
 **Still not verified.** No physical-table playtest, and no Android/iOS file handling.
+
+
+## Found during the re-measure
+
+- **Full action display crash.** With +3 pawns at 4–5 rivals, every action space could fill while a rival still had pawns, and placement crashed. Planning now ends when the display is full (`engine.js` `currentPlanner`, and at the start of Planning). The rulebook states the rule. Regression test: "A full action display ends Planning" in `source/rules.test.cjs`.

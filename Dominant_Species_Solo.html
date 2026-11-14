@@ -847,8 +847,11 @@ function enterSupply(s, values) {
   s.planning = 0;
   for (const id of s.ids) s.animals[id].remaining = s.animals[id].ap - pawnCount(s, id);
   note(s, 'Planning begins', 'Initiative order · ' + s.initiative.map(nameOf).join(' → '));
+  if (!currentPlanner(s)) { s.phase = 'execution'; s.cursor = 0; note(s, 'Execution begins', 'The action display is full. Resolve it from top to bottom.'); }
 }
 function currentPlanner(s) {
+  // Extra pawns (pawn cards, paper difficulty) at large tables can fill the action display; then Planning ends.
+  if (ALL_SLOTS.every(key => s.pawns[key])) return null;
   for (let offset = 0; offset < s.initiative.length; offset++) {
     const index = (s.planning + offset) % s.initiative.length;
     const actor = s.initiative[index];
@@ -964,7 +967,7 @@ function resolvePawn(s, step, choice) {
     case 'initiative': {
       const at = s.initiative.indexOf(actor);
       if (at > 0) [s.initiative[at-1],s.initiative[at]] = [s.initiative[at],s.initiative[at-1]];
-      s.pawns[choice.slot] = {actor, card:step.card, focus:step.focus};
+      if (choice.slot) s.pawns[choice.slot] = {actor, card:step.card, focus:step.focus}; // a full display leaves nowhere to move
       break;
     }
     case 'adaptation':
@@ -2649,8 +2652,9 @@ const A = ids => ids.map(id => [id,nameOf(id)]);
 const cardRows = face => '<div class="card-flow">' + face.rows.map(row => '<span>' + ROW_BY_ID[row].name + '</span>').join('') + '</div>';
 let game = null;
 let undo = [];
-let setup = {human:'amphibians',bots:['birds','arachnids'],short:true,paper:false,extra:0};
-const PAPER_LEVELS = [[-1,'Easy'],[0,'Standard'],[1,'Hard'],[2,'Expert']];
+let setup = {human:'amphibians',bots:['birds','arachnids'],short:true,paper:false,extra:1};
+// Re-measured for v0.3.7 (GPT audit B1): +1 pawn is about an even game, +3 is about as tough as the app's rivals.
+const PAPER_LEVELS = [[0,'Easy'],[1,'Standard'],[2,'Hard'],[3,'Expert']];
 function paperLevel(extra) { return (PAPER_LEVELS.find(([n]) => n === extra) || [0,'Custom'])[1]; }
 const RIVAL_WORDS = ['one','two','three','four','five'];
 function seatKeys() { return ['human',...setup.bots.map((_,i) => 'bot-' + i)]; }
@@ -2829,7 +2833,7 @@ function setupPage() {
     '<fieldset><legend>Rival rules</legend><div class="segment">' +
     '<label><input name="rules" type="radio" value="app"' + (!setup.paper ? ' checked' : '') + '> App rivals · strongest</label>' +
     '<label><input name="rules" type="radio" value="paper"' + (setup.paper ? ' checked' : '') + '> Paper rules · as printed</label></div>' +
-    (setup.paper ? '<div class="segment paper-level">' + PAPER_LEVELS.map(([n,name]) => '<label><input name="extra" type="radio" value="' + n + '"' + (setup.extra === n ? ' checked' : '') + '> ' + name + ' · ' + (n < 0 ? '−1' : '+' + n) + ' pawn' + (Math.abs(n) === 1 ? '' : 's') + '</label>').join('') + '</div>' : '') +
+    (setup.paper ? '<div class="segment paper-level">' + PAPER_LEVELS.map(([n,name]) => '<label><input name="extra" type="radio" value="' + n + '"' + (setup.extra === n ? ' checked' : '') + '> ' + name + ' · ' + (n < 0 ? '−' + -n : '+' + n) + ' pawn' + (Math.abs(n) === 1 ? '' : 's') + '</label>').join('') + '</div>' : '') +
     '</fieldset>' +
     '<fieldset><legend>Dominance deck</legend><div class="segment">' +
     '<label><input name="length" type="radio" value="short"' + (setup.short ? ' checked' : '') + '> Short game · 22 cards</label>' +
@@ -3680,7 +3684,7 @@ document.addEventListener('click',event => {
         deckTab=btn.dataset.animal; renderModal(); modal.querySelector('[data-animal="'+deckTab+'"]')?.focus(); break;
       case 'new': openModal('new'); break;
       case 'new-confirm':
-        setup={human:game.human,bots:[...game.rivals],short:game.short,paper:!!game.paper,extra:game.paper?.extra || 0};
+        setup={human:game.human,bots:[...game.rivals],short:game.short,paper:!!game.paper,extra:game.paper ? game.paper.extra : 1};
         game=null; undo=[]; reveal=null; preview=null; draft={}; notice=''; initialError='';
         modal.close(); save(); render(false);
         main.focus();

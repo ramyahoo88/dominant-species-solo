@@ -199,8 +199,11 @@ function enterSupply(s, values) {
   s.planning = 0;
   for (const id of s.ids) s.animals[id].remaining = s.animals[id].ap - pawnCount(s, id);
   note(s, 'Planning begins', 'Initiative order · ' + s.initiative.map(nameOf).join(' → '));
+  if (!currentPlanner(s)) { s.phase = 'execution'; s.cursor = 0; note(s, 'Execution begins', 'The action display is full. Resolve it from top to bottom.'); }
 }
 function currentPlanner(s) {
+  // Extra pawns (pawn cards, paper difficulty) at large tables can fill the action display; then Planning ends.
+  if (ALL_SLOTS.every(key => s.pawns[key])) return null;
   for (let offset = 0; offset < s.initiative.length; offset++) {
     const index = (s.planning + offset) % s.initiative.length;
     const actor = s.initiative[index];

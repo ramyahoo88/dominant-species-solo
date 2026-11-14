@@ -51,6 +51,8 @@ When it is a rival's turn to place, first draw the top card of its deck (it is d
 5. **Fallback.** Try this order with the same tests, except the weak-action test: Domination, Wanderlust, Speciation, Adaptation, Competition, Migration, Abundance, Initiative, Regression, Depletion, Wasteland, Glaciation.
 6. **Last resort.** Repeat step 5, now allowing rows where the rival already has a pawn. If nothing qualifies, take the first open space.
 
+**Full display.** If every action space is taken, Planning ends at once, even if some players still have pawns. Those pawns wait for the next turn.
+
 **Which space in the row:** for Speciation, the element whose disks touch the most tiles the rival matches. For Competition, the space whose terrains (plus tundra) hold the most tiles the rival shares with an opponent. For any other row, the leftmost open space.
 
 | Action | Has a target when |

@@ -249,3 +249,16 @@ verify('GPT audit P1: paper instructions name positions, elements and corners', 
   const hab = botAction(s,{kind:'effect',actor:'birds',name:'Habitat',tile:null});
   if (!hab.skip) assert.match(hab.label, /Habitat: take \\w+ from the bag and place it at the corner shared by/);
 `);
+
+verify('A full action display ends Planning even when pawns remain (extra pawns at large tables)', `
+  const s = newGame('mammals',['reptiles','birds','amphibians','arachnids','insects'],true,7,{extra:3});
+  s.phase = 'planning'; s.planning = 0;
+  for (const id of s.ids) s.animals[id].remaining = s.animals[id].ap;
+  let guard = 0;
+  while (s.phase === 'planning' && guard++ < 100) {
+    const {actor} = currentPlanner(s);
+    if (actor === s.human) place(s, ALL_SLOTS.find(k => !s.pawns[k])); else botPlacement(s);
+  }
+  assert.equal(s.phase, 'execution');
+  assert.ok(ALL_SLOTS.every(k => s.pawns[k]) || s.ids.every(id => s.animals[id].remaining === 0));
+`);

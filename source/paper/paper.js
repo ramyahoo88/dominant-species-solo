@@ -57,7 +57,7 @@ function paperPlacement(s, actor, cardIndex, openOverride = null) {
     return null;
   };
   const doms = pawnCount(s,actor,'domination'), dominated = paperDominated(s,actor).length;
-  const domFirst = availableCards(s).length && dominated > doms && doms < (PAPER.dom3 ? 3 : 2) ? pick(['domination'], true) : null;
+  const domFirst = availableCards(s).length && dominated > doms && doms < 2 ? pick(['domination'], true) : null;
   const slot = domFirst || pick(face ? face.rows : [], false, true) || pick(PAPER_FALLBACK, false) || pick(PAPER_FALLBACK, true) || open[0];
   const {row} = splitSlot(slot);
   return {slot,row,priority:face ? face.rows.indexOf(row) : -1,focus,card:cardIndex,face:positive,opportunity:1,reason:'Paper rule: ' + ROW_BY_ID[row].name + '.'};
@@ -113,10 +113,7 @@ function paperPawn(s, step) {
       if (s.animals[actor].added.length + ANIMALS[actor].affinity >= 6) return {...PASS};
       const picks = indexed(s.boxes.adaptation);
       if (!picks.length) return {...PASS};
-      const notDom = t => cone(s,t) !== actor;
-      const nearNotDom = type => occupied(s,actor).filter(notDom).reduce((n,t) => n + VERTICES_OF[t].filter(k => s.corners[k] === type).length, 0);
-      const best = PAPER.adaptDom ? pBy(picks.map(p => ({...p, tile:p.pick})), p => nearNotDom(p.type), p => pCornersNear(s,actor,p.type), p => -p.pick)
-        : pBy(picks.map(p => ({...p, tile:p.pick})), p => pCornersNear(s,actor,p.type), p => p.type === ANIMALS[actor].el ? 1 : 0, p => -p.pick);
+      const best = pBy(picks.map(p => ({...p, tile:p.pick})), p => pCornersNear(s,actor,p.type), p => p.type === ANIMALS[actor].el ? 1 : 0, p => -p.pick);
       return {pick:best.pick,label:pLabel('add ' + elementName(best.type) + '.')};
     }
     case 'regression': return {label:pLabel('protect an element.')};

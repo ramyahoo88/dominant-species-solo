@@ -57,6 +57,8 @@ See [benchmark instructions](source/benchmark/README.md) and [results](BENCHMARK
 - **v0.3.0** — benchmark and rules fixtures, better forecasts for scarce cubes and display capacity, fallback denial, and tap entry for physical disks. See [release notes](CHANGELOG.md).
 - **v0.3.1** — Insects and Amphibians rival deck rows rewritten (small, uncertain gain). See [benchmark results](BENCHMARK_RESULTS.md).
 - **v0.3.2** — five near-constant rival deck checks recalibrated so both card faces get played. See [benchmark results](BENCHMARK_RESULTS.md).
+- **v0.3.3** — rival Planning values Wanderlust with its real evaluator.
+- **v0.3.4** — rivals block spaces the leading opponent needs.
 
 ## Licenses
 

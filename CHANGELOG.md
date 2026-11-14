@@ -1,5 +1,11 @@
 # Release notes
 
+## v0.3.4 · November 14, 2026 · merged by owner decision despite a narrowly failed guard
+
+- Rivals now block. Every open space in Planning gets a small bonus for how much it would cost the leading opponent to lose it, counted only when that opponent has no equally good space left in the same row. Blocks went from almost none to about 3.2 per rival per game; each block is also a space the blocker can use, and 40% of them target the player.
+- Guard (seed 110000, 540 games): scripted player wins 115 → 134 (+3.5 points, interval −0.9 to +7.9), just over the 3-point limit. The player's mean margin eased from −43.4 to −36.6 VP. No animal lost more than 6 of 180 rival wins. See [benchmark results](BENCHMARK_RESULTS.md).
+- Imports preserve v0.3.3 saves.
+
 ## v0.3.3 · November 13, 2026 · merged by owner decision despite a failed guard
 
 - Rival Planning now values Wanderlust with the same evaluator used to place the tile, instead of a flat 2.5 whenever a tile was on offer. Rivals play Wanderlust about 3–5 more times per game.

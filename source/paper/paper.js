@@ -88,8 +88,12 @@ function paperPlacement(s, actor, cardIndex, openOverride = null) {
   const you = s.human && s.human !== actor ? s.human : null;
   const youBehind = you && s.initiative.indexOf(you) > s.initiative.indexOf(actor);
   const holdYou = initOpen && youBehind && (PAPER.holdYou || PAPER.holdYouVP && s.animals[you].vp >= s.animals[actor].vp) ? 'initiative-0' : null;
+  // Candidate (testing, off by default): race for Domination space 1, which scores first. leadDom: when you dominate an unscored
+  // tile and a card is available. leadDomAny: whenever a card is available.
+  const youDominate = you && terrainIds(s).some(t => !s.scored.includes(t) && cone(s,t) === you);
+  const leadDom = open.includes('domination-0') && availableCards(s).length && (PAPER.leadDomAny || PAPER.leadDom && youDominate) ? 'domination-0' : null;
   // The same order as before; also record which Planning step chose the space, for the player.
-  const steps = [['Hold Initiative against you', () => holdYou], ['Domination first', () => domFirst], ['Barren Earth', () => barren], ['Block the leader', () => block], ['Hold Initiative', () => holdInit],
+  const steps = [['Lead Domination', () => leadDom], ['Hold Initiative against you', () => holdYou], ['Domination first', () => domFirst], ['Barren Earth', () => barren], ['Block the leader', () => block], ['Hold Initiative', () => holdInit],
     ['Card action', () => pick(face ? face.rows : [], false, !PAPER.noWeak)], ['Fallback', () => pick(PAPER_FALLBACK, false)],
     ['Last resort', () => pick(PAPER_FALLBACK, true) || open[0]]];
   let slot = null, why = '';
@@ -100,7 +104,8 @@ function paperPlacement(s, actor, cardIndex, openOverride = null) {
 }
 const _appBotPlacement = botPlacement;
 botPlacement = function(s) {
-  if (!paperOn(s)) return _appBotPlacement(s);
+  // Testing switch (off by default): appPlace = the app's Planning with paper Execution.
+  if (!paperOn(s) || PAPER.appPlace) return _appBotPlacement(s);
   const actor = currentPlanner(s).actor;
   const card = drawCard(s,actor);
   const choice = paperPlacement(s,actor,card);
@@ -512,7 +517,8 @@ function paperLoss(s, actor, options, amount) {
 const _appBotAction = botAction;
 botAction = function(s, step) {
   const {actor,kind} = step;
-  if (!paperOn(s) || PAPER[kind] === false) return _appBotAction(s,step);
+  // Testing switch (off by default): appExec = paper Planning with the app's Execution decisions.
+  if (!paperOn(s) || PAPER.appExec || PAPER[kind] === false) return _appBotAction(s,step);
   if (kind === 'regression' || kind === 'weather') return _appBotAction(s,step); // no decision to make
   switch (kind) {
     case 'pawn': return PAPER['pawn:' + step.row] === false ? _appBotAction(s,step) : paperPawn(s,step);

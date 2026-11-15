@@ -3,7 +3,7 @@
 //
 //   node source/benchmark.cjs --tune [--train-seed 210000] [--validate-seed 220000] [--generations 40]
 //        [--pairs 8] [--games 64] [--validate-games 400] [--focus dominance] [--weights FILE] [--out FILE]
-//        [--features base,phase,cards,cubes,elements,denial | all] [--resume CHECKPOINT]
+//        [--features base,phase,cards,cubes,elements,denial | all] [--resume CHECKPOINT] [--train-modes=app,-1,0,1,2]
 //   node source/benchmark.cjs --evaluate [--weights FILE] [--seed 230000] [--per-cell 90] [--modes app,1] [--policies tuned,dominance]
 //        [--compare v1=FILE,...] [--ablate phase,cards,...] [--net NET.json for the 'nn' policy]
 //   node source/benchmark.cjs --nn-data --weights FILE [--net NET.json] --seed S --out PREFIX [--k 4 --m 2 --rate .07 --minutes 17]
@@ -26,8 +26,13 @@ const {readFileSync, writeFileSync} = require('node:fs');
 const {Worker, isMainThread, parentPort, workerData} = require('node:worker_threads');
 const {load, PLAYER_REFERENCE} = require('./load.cjs');
 
-const MODES = ['app', 0, 1, 2, 3];           // app rivals, or paper rivals with that many extra pawns
-const MODE_NAME = {app: 'App', 0: 'Easy', 1: 'Standard', 2: 'Hard', 3: 'Expert'};
+// Rival tables: the app's rivals, or paper rivals with that many extra pawns. From v0.4.0 the levels are
+// Easy -1, Standard 0, Hard +1, Expert +2; +3 is beyond Expert. Before v0.4.0 they were Easy 0 .. Expert 3.
+const MODES = ['app', -1, 0, 1, 2];                 // default for tuning, data and evaluation
+const ALL_MODES = ['app', 0, 1, 2, 3, -1];          // evaluation cell order: the first five keep their earlier seeds
+const MODE_NAME = {app: 'App', '-1': 'Easy', 0: 'Standard', 1: 'Hard', 2: 'Expert', 3: 'Beyond Expert (+3)'};
+// '--modes=app,-1,0' or 'app,m1,0' (m1 = -1, for job files).
+const parseModes = list => list.split(',').filter(Boolean).map(m => m === 'app' ? 'app' : +m.replace(/^m/, '-'));
 const BOTS = [2, 3, 4, 5];
 const EVEN = {2: 1 / 3, 3: 1 / 4, 4: 1 / 5, 5: 1 / 6};
 
@@ -151,12 +156,12 @@ async function makePool(n, paperOptions = [], netFile = null) {
 }
 
 // ---------------------------------------------------------------- scenarios
-function scenarios(seed, count, animals, cell = null) {
+function scenarios(seed, count, animals, cell = null, modes = MODES) {
   const r = rng(seed);
   const pick = list => list[Math.floor(r() * list.length)];
   return Array.from({length: count}, (_, i) => {
     const bots = cell ? cell.bots : pick(BOTS);
-    const mode = cell ? cell.mode : pick(MODES);
+    const mode = cell ? cell.mode : pick(modes);
     const order = [...animals];
     for (let k = order.length - 1; k > 0; k--) { const m = Math.floor(r() * (k + 1)); [order[k], order[m]] = [order[m], order[k]]; }
     const policy = cell?.policy ?? 'tuned';
@@ -198,13 +203,15 @@ async function tune(args, pool, animals) {
   let z = encode(fixed);
   const origin = resumed?.startWeights ? complete(pool.defaults, resumed.startWeights) : fixed;
   const P = +args.pairs, G = +args.games, sigma = +args.sigma, lr = +args.lr;
-  const valSet = scenarios(+args['validate-seed'], +args['validate-games'], animals);
+  const trainModes = args['train-modes'] || resumed?.settings?.trainModes || (resumed ? 'app,0,1,2,3' : MODES.join(','));
+  const modes = parseModes(trainModes);
+  const valSet = scenarios(+args['validate-seed'], +args['validate-games'], animals, null, modes);
   const history = resumed ? resumed.history : [];
   const validate = async w => { const [g] = await pool.run([{weights: w, scenarios: valSet}]); return {fit: fitness(g, valSet), win: winRate(g), errors: g.filter(x => x.error).slice(0, 3)}; };
   const initial = resumed ? {fit: resumed.start.fit, win: resumed.start.win} : await validate(decode(z, focus));
   let best = resumed ? {gen: resumed.bestGen, weights: resumed.best, fit: resumed.bestValFit, win: resumed.bestValWin} : {gen: 0, weights: decode(z, focus), ...initial};
   const first = history.length ? history[history.length - 1].gen + 1 : 1;
-  const settings = {features, trainSeed: +args['train-seed'], validateSeed: +args['validate-seed'], validateGames: +args['validate-games'],
+  const settings = {features, trainModes, trainSeed: +args['train-seed'], validateSeed: +args['validate-seed'], validateGames: +args['validate-games'],
     pairs: P, games: G, sigma, lr, start: resumed?.settings?.start ?? args.weights ?? 'defaults'};
   const t0 = Date.now();
   // moved: tuned keys that have moved at least half a step (in scale units) from the starting weights, best weights.
@@ -216,7 +223,7 @@ async function tune(args, pool, animals) {
       startWeights: origin, history};
   };
   for (let gen = first; gen < first + +args.generations; gen++) {
-    const scs = scenarios(+args['train-seed'] + gen, G, animals);
+    const scs = scenarios(+args['train-seed'] + gen, G, animals, null, modes);
     const r = rng(+args['train-seed'] * 31 + gen);
     const gauss = () => Math.sqrt(-2 * Math.log(1 - r())) * Math.cos(2 * Math.PI * r());
     const eps = Array.from({length: P}, () => keys.map(gauss));
@@ -264,7 +271,7 @@ async function evaluate(args, pool, animals) {
   const file = args.weights ? read(args.weights) : {};
   const weights = file.best ?? (Object.keys(file).length ? file : pool.defaults);
   const policies = args.policies ? args.policies.split(',') : ['tuned', 'majority', 'dominance', 'expansion'];
-  const modes = args.modes ? args.modes.split(',').map(m => m === 'app' ? 'app' : +m) : MODES;
+  const modes = args.modes ? parseModes(args.modes) : MODES;
   // Extra tuned columns: other weight files (--compare label=file) and ablations (--ablate group: that group off).
   const columns = policies.map(p => ({label: p, policy: p, weights}));
   for (const spec of (args.compare || '').split(',').filter(Boolean)) {
@@ -279,13 +286,18 @@ async function evaluate(args, pool, animals) {
   }
   const table = [];
   const games = Object.fromEntries(columns.map(c => [c.label, {}]));
-  let cellSeed = +args.seed;
-  for (const bots of BOTS) for (const mode of MODES) {
-    if (!modes.includes(mode)) { cellSeed++; continue; }   // keep each cell's seeds the same whichever cells run
-    const base = scenarios(cellSeed++, +args['per-cell'], animals, {bots, mode});
+  // Each cell's seeds stay the same whichever cells run. Cells of the earlier five tables (App, 0..3) keep their
+  // earlier seeds; -1 cells come after them.
+  const cellSeed = (bots, mode) => {
+    const b = BOTS.indexOf(bots), m = ALL_MODES.indexOf(mode);
+    return +args.seed + (m < 5 ? b * 5 + m : BOTS.length * 5 + b * (ALL_MODES.length - 5) + (m - 5));
+  };
+  for (const bots of BOTS) for (const mode of modes) {
+    assert(ALL_MODES.includes(mode), 'Unknown rival table ' + mode + '; use app or -1..3.');
+    const base = scenarios(cellSeed(bots, mode), +args['per-cell'], animals, {bots, mode});
     const jobs = columns.map(c => ({weights: c.weights, scenarios: base.map(s => ({...s, policy: c.policy}))}));
     const res = await pool.run(jobs);
-    const row = {rivals: bots, rivalsAre: MODE_NAME[mode], even: Math.round(100 * EVEN[bots])};
+    const row = {rivals: bots, rivalsAre: MODE_NAME[mode], extraPawns: mode === 'app' ? null : mode, even: Math.round(100 * EVEN[bots])};
     columns.forEach((c, i) => {
       row[c.label] = Math.round(100 * winRate(res[i]));
       (games[c.label][MODE_NAME[mode]] ??= []).push(...res[i]);
@@ -331,7 +343,7 @@ async function nnData(args, pool, animals) {
   let start = +args.seed, games = 0, wins = 0, samples = 0, errors = [], stalled = 0;
   const t0 = Date.now();
   while (Date.now() < limit && games < +args['max-games']) {
-    const scs = scenarios(start++, batch, animals).map(sc => ({...sc, policy: 'nn'}));
+    const scs = scenarios(start++, batch, animals, null, parseModes(args['train-modes'] || MODES.join(','))).map(sc => ({...sc, policy: 'nn'}));
     const [res] = await pool.run([{weights, scenarios: scs, nn: opts}]);
     for (let i = 0; i < res.length; i++) {
       const g = res[i];
@@ -366,7 +378,7 @@ async function main(argv) {
   const args = parseArgs({args: argv, options: {
     tune: {type: 'boolean'}, evaluate: {type: 'boolean'}, selftest: {type: 'boolean'}, 'nn-data': {type: 'boolean'},
     net: {type: 'string'}, k: {type: 'string', default: '4'}, m: {type: 'string', default: '2'}, rate: {type: 'string', default: '.07'},
-    minutes: {type: 'string', default: '17'}, 'max-games': {type: 'string', default: '1000000'},
+    minutes: {type: 'string', default: '17'}, 'train-modes': {type: 'string'}, 'max-games': {type: 'string', default: '1000000'},
     workers: {type: 'string', default: String(availableParallelism())},
     'train-seed': {type: 'string', default: '210000'}, 'validate-seed': {type: 'string', default: '220000'},
     seed: {type: 'string', default: '230000'}, 'per-cell': {type: 'string', default: '90'},

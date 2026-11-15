@@ -74,6 +74,8 @@ function worker() {
   const game = load('worktree', ['game']);
   // Paper rule candidates under test (e.g. initLeader), applied to every paper game.
   const options = Object.fromEntries((workerData?.paperOptions || []).map(o => [o, true]));
+  // paper.js switches its simplified rules on when it loads; 'full' must switch them off again, as benchmark.cjs does.
+  if (options.full) game.run('for (const k of PAPER_DEFAULTS) PAPER[k] = false;');
   const play = game.get('playBenchmark');
   const strategy = {place: player.get('playerPlacement'), choose: player.get('playerChoice')};
   const setTuned = player.get('setTuned');

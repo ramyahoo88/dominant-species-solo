@@ -34,6 +34,8 @@ const MODE_NAME = {app: 'App', '-1': 'Easy', 0: 'Standard', 1: 'Hard', 2: 'Exper
 // '--modes=app,-1,0' or 'app,m1,0' (m1 = -1, for job files).
 const parseModes = list => list.split(',').filter(Boolean).map(m => m === 'app' ? 'app' : +m.replace(/^m/, '-'));
 const BOTS = [2, 3, 4, 5];
+// --bots 2,3 limits which rival counts run (cell seeds stay as with all four); the paper rules are for 2-3 rivals.
+let RUN_BOTS = BOTS;
 const EVEN = {2: 1 / 3, 3: 1 / 4, 4: 1 / 5, 5: 1 / 6};
 
 // Tuned numbers and how far a typical step moves each one.
@@ -160,7 +162,7 @@ function scenarios(seed, count, animals, cell = null, modes = MODES) {
   const r = rng(seed);
   const pick = list => list[Math.floor(r() * list.length)];
   return Array.from({length: count}, (_, i) => {
-    const bots = cell ? cell.bots : pick(BOTS);
+    const bots = cell ? cell.bots : pick(RUN_BOTS);
     const mode = cell ? cell.mode : pick(modes);
     const order = [...animals];
     for (let k = order.length - 1; k > 0; k--) { const m = Math.floor(r() * (k + 1)); [order[k], order[m]] = [order[m], order[k]]; }
@@ -301,7 +303,7 @@ async function evaluate(args, pool, animals) {
     const b = BOTS.indexOf(bots), m = ALL_MODES.indexOf(mode);
     return +args.seed + (m < 5 ? b * 5 + m : BOTS.length * 5 + b * (ALL_MODES.length - 5) + (m - 5));
   };
-  for (const bots of BOTS) for (const mode of modes) {
+  for (const bots of RUN_BOTS) for (const mode of modes) {
     assert(ALL_MODES.includes(mode), 'Unknown rival table ' + mode + '; use app or -1..3.');
     const base = scenarios(cellSeed(bots, mode), +args['per-cell'], animals, {bots, mode});
     const jobs = columns.map(c => ({weights: c.weights, scenarios: base.map(s => ({...s, policy: c.policy}))}));
@@ -397,9 +399,10 @@ async function main(argv) {
     sigma: {type: 'string', default: '.5'}, lr: {type: 'string', default: '.6'},
     focus: {type: 'string', default: 'dominance'}, weights: {type: 'string'}, out: {type: 'string'},
     modes: {type: 'string'}, policies: {type: 'string'}, 'paper-options': {type: 'string', default: ''},
-    features: {type: 'string'}, resume: {type: 'string'}, compare: {type: 'string'}, ablate: {type: 'string'},
+    features: {type: 'string'}, resume: {type: 'string'}, compare: {type: 'string'}, ablate: {type: 'string'}, bots: {type: 'string'},
   }}).values;
   assert(['majority', 'dominance', 'reach'].includes(args.focus), 'Focus is majority, dominance or reach.');
+  if (args.bots) { RUN_BOTS = args.bots.split(',').map(Number); assert(RUN_BOTS.length && RUN_BOTS.every(b => BOTS.includes(b)), 'Rival counts are 2, 3, 4 or 5.'); }
   const pool = await makePool(Math.max(1, Math.min(64, +args.workers)), args['paper-options'].split(',').filter(Boolean), args.net || null);
   const animals = [...load(PLAYER_REFERENCE, ['player']).get('FOOD')];
   try {

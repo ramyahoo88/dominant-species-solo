@@ -434,3 +434,12 @@ Sources: `ba67`, `ba34`, `pb_c1`–`c3`, `pb_e1`, `pb_e2`.
   - 490000: −0.67 / −0.43 / −0.24 / −0.07.
   - All inside +0.20. Hard at 470000 is the closest; its 5-rival cell alone is +0.31.
 - **GPT's fresh v0.5.1 Hard:** −0.51 (−0.76 to −0.20).
+
+### 12:10 — v0.5.2 best-against-best check (pb5 added)
+
+- The player-bot agent's re-tuned player (pb5) was run on v0.5.2 with the same seed blocks (`bd40` 470000, `bd41` 490000, paper levels; its App rows from `pb_e2`/`pb_e1`, since App rivals are unchanged).
+- **Best against best** = the strongest paper edge of v4, v3 and pb5, minus the strongest App edge of the three. X35, Easy / Standard / Hard / Expert:
+  - 470000: −0.20 / −0.15 / +0.06 / 0.00;
+  - 490000: −0.03 / −0.17 / −0.09 / +0.10.
+- **No level is above +0.20.** Single cells vary more: Hard with 5 rivals at 470000 is +0.31, and Easy with 5 rivals at 490000 is +0.94 (Easy sits near the ceiling, at 93% for pb5, where log-odds are noisy).
+- pb5's pooled paper win %, Easy / Standard / Hard / Expert: 92.5 / 69.6 / 45.1 / 29.4 at 470000 and 93.0 / 71.8 / 47.7 / 29.0 at 490000.

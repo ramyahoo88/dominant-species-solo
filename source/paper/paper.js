@@ -75,7 +75,8 @@ function paperPlacement(s, actor, cardIndex, openOverride = null) {
   const leader = pLeader(s,actor);
   const leaderDom = terrainIds(s).filter(t => !s.scored.includes(t) && cone(s,t) === leader).length;
   const blockMin = PAPER.domBlock2 ? 2 : 1;
-  const block = (PAPER.domBlock || PAPER.domBlock2) && !domFirst && availableCards(s).length && doms < 2 && leaderDom >= blockMin ? pick(['domination'], true) : null;
+  const blockMax = PAPER.domBlock3 ? 3 : 2; // candidate (testing, off by default): block with up to three Domination pawns
+  const block = (PAPER.domBlock || PAPER.domBlock2) && !domFirst && availableCards(s).length && doms < blockMax && leaderDom >= blockMin ? pick(['domination'], true) : null;
   // Candidate (testing, off by default): contest Initiative. initLeader: take the open Initiative space when the VP leader is behind
   // this rival on the Initiative track (stops the leader climbing). initAlways: take it whenever it is open.
   const initOpen = open.includes('initiative-0') && !pawnCount(s,actor,'initiative');

@@ -78,3 +78,27 @@ Also: in Planning the extra difficulty pawn is placed last, after everyone else 
 - ba09 tieToRival · ba10 extraFirst+leadDom · ba11 tieToRival+initClimb
 
 Also done on this branch: GPT's R1 (Help notice for legacy saves) and R2 (−1/+3 recovered; rules test 37, mutation-checked). R3 is the worker's `tune.cjs` 6104ce5, already taken here.
+
+### Results, batch 1 (23:25–23:50)
+
+The anchor reproduces v4 exactly (Hard 745/1440 v3, 269/1440 dominance).
+
+**Metric change.**
+- The excess is not Hard-specific. At matched difficulty, paper rivals are more exploitable than App rivals at *every* level, with 3–5 rivals; with 2 rivals there's no excess.
+- The main metric is now **edgeX**: v3's log-odds edge over dominance (logit v3 − logit dominance) at a paper level, minus the same edge against App rivals at the same rival count. The edge is roughly constant across difficulty, so it needs no interpolation.
+- Target about ≤ +0.2 (≈ 5 points near 30–50%).
+- `matchedExcess` (pp, interpolated) is shown too, but it's unreliable when App's difficulty lies outside the paper levels.
+
+| Run | Std v3/dom | Hard v3/dom | Exp v3/dom | edgeX Std/Hard/Exp (3–5 rivals) |
+|---|---|---|---|---|
+| ba01 anchor | 65.8/28.1 | 51.7/18.7 | 44.0/12.4 | +0.75 / +0.72 / +0.93 |
+| ba02 extraFirst | (=) | 27.3/10.6 | 11.0/6.5 | – / +0.39 / −0.20 (much harder; floor effects) |
+| ba03 initClimb | 59.4/31.3 | 45.4/19.7 | 37.8/16.0 | +0.33 / +0.42 / +0.63 (2 rivals −0.4 to −0.8) |
+| ba04 holdYou | 62.5/32.6 | 49.5/24.5 | 38.1/18.5 | +0.36 / +0.24 / +0.28 (2 rivals −0.3 to −0.8) |
+| ba05 leadDom | 66.2/27.9 | 51.1/18.8 | 44.0/11.6 | +0.78 / +0.73 / +1.05 (no effect) |
+| ba06 blockHuman | 68.1/28.5 | 52.2/18.8 | 44.1/11.6 | +0.80 / +0.75 / +1.15 (no effect) |
+
+**Reading.**
+- Domination-side Planning rules do nothing on their own: rivals place after a player who is first.
+- Turn-order rules cut the excess by half or more. They also make the game easier for the dominance player (rivals spend pawns), so the levels would need re-measuring.
+- Batch 2: holdYou variants (Direct, VP), climbPast, holdYou + tieToRival, holdYou + extraFirst; also an App baseline at seed 460000 for confirmation.

@@ -1,30 +1,33 @@
 # Neural-network placement player: design and result
 
-## Result (15 Nov 2026): stopped, no realisable gain over tuned v3
+## Result (15 Nov 2026): paused; small real headroom over tuned v3
 
 The player was built as below (`nn/features.js`, `nn/nnplayer.js`, `nn/driver.js`, `nn/train.py`) and
 trained on 8,704 samples against v0.4.1 rivals (v3 making every later choice, 2 playouts per candidate).
 It never beat v3: on held-back samples its picks scored 0.693 utility against v3's 0.695.
 
-A headroom check then asked whether any player could beat v3 this way. At 180 Planning decisions
-(seeds 349500–349900, App and −1..+2, 2–5 rivals), each of v3's top 4 spaces was played out 16 times on
-the same re-dealt futures (`--nn-data --raw --k 4 --m 16`; analysis `nn/headroom.py`):
+A headroom check then asked whether any player could beat v3 this way. At sampled Planning decisions
+(App and −1..+2 under v0.4.1, 2–5 rivals), each of v3's top 4 spaces was played out 16 times on the same
+re-dealt futures (`--nn-data --raw --k 4 --m 16`; analysis `nn/headroom.py`, averaged over 50 half-splits).
 
-| Measure (per decision) | Utility (win + margin/100) | Win probability |
-|---|---|---|
-| Best of 4 chosen on 8 playouts, scored on the other 8 | −0.010 (95% ±0.029) | −0.015 (±0.020) |
-| v3's 2nd choice minus its 1st | −0.012 (±0.026) | −0.009 (±0.016) |
-| v3's 4th choice minus its 1st | −0.049 (±0.035) | −0.032 (±0.023) |
-| Best of 4 on all 16 playouts (biased upward by selection) | +0.096 | +0.056 |
-| A perfect chooser among the 4 (rough empirical-Bayes estimate) | +0.035 | +0.017 |
+**Correction.** At 01:25 I stopped the work on the first 180 decisions (sandbox, seeds 349500–349900),
+which showed no gain. The PC's run of 468 more decisions (`pb_n4_data`, seed 349000) does show one, and the
+pooled 648 decisions clear the bar I had set (gain above 0.01 with the 95% range excluding zero):
 
-- v3's ordering is right on average: every lower-ranked space does worse than its pick.
-- The candidates do differ in some positions (a perfect chooser would gain up to about 2 points of win
-  probability per decision), but 8 playouts per candidate cannot find those positions, and a net trained
-  on 2-playout labels has far noisier evidence still.
-- Finding the gain would need far more playouts per decision (a search player, too slow for benchmarks)
-  or far more data. Both are poor value, and the paper rivals are about to change (`rivalsFirst`), which
-  would make data against v0.4.1 rivals stale anyway. Tuned v3 stays the strong test player.
+| Per decision, win probability | First 180 | PC 468 | Pooled 648 |
+|---|---|---|---|
+| Best of 4 chosen on 8 playouts, scored on the other 8 | −0.002 (95% ±0.013) | +0.018 (±0.010) | **+0.013 (±0.008)** |
+| Same, choosing on win + margin/100 | −0.003 (±0.013) | +0.020 (±0.010) | +0.014 (±0.008) |
+| v3's 2nd choice minus its 1st | | | −0.007 (±0.009) |
+| v3's 4th choice minus its 1st | | | −0.020 (±0.012) |
+| Perfect chooser among the 4 (rough empirical-Bayes estimate) | | | +0.020 |
+
+- v3's ordering is right on average, but in some positions a lower-ranked space is better, and 8 playouts
+  per space are enough to find a useful share of them: about 1.3 points of win probability per decision.
+- The 2-playout net found none of it. Labels with about 8 playouts per space should, at 4 times the cost
+  per sample.
+- The rules changed in v0.5.0 (rivals plan first) and the reference player is now v4, so any new attempt
+  needs new data against v0.5.0 rivals with v4. Paused; whether to reopen is the director's call.
 
 The original proposal follows.
 

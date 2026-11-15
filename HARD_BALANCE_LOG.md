@@ -333,7 +333,7 @@ Checklist item 5 is resolved: there is no excess at +1 with 4–5 rivals.
 
 ### 03:20 — Release checks on the shipped code (advisor's blocking list)
 
-1. **Errors and stalls:** no errors in ba28, ba29y1, ba33, ba34, ba55 or ba67. One stalled game in ba67 (5 rivals) and one in the ladder (ba62, 5 rivals, Standard); both are noted in the rulebook.
+1. **Errors and stalls:** no errors in ba28, ba29y1, ba33, ba34, ba55 or ba67. One stalled game in ba67 (5 rivals, Easy) and one in the ladder (ba62, 5 rivals, Standard). The ladder stall is in the rulebook; both are in PAPER_RIVALS.md.
 2. **Shipped `paper.js` benchmarked:**
    - **ba66** (`noPlanFirst`, Hard at 450000): 745/269, the same as v4_hardapp.
    - **ba67** (default rules, seed 470000, levels −2..+1): the −1/0/+1 cells reproduce ba33 exactly. The one exception is 5 rivals at −1 (re-tuned 57% vs 56%), which comes from the opening-round change for a rival with no pawn to place.

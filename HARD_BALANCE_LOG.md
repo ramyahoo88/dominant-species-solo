@@ -135,3 +135,32 @@ The anchor reproduces v4 exactly (Hard 745/1440 v3, 269/1440 dominance).
 1. Confirm holdYou on fresh seeds: ba23 anchor at 460000, ba24 holdYou at 460000, ba17 App at 460000.
 2. Re-tune from v3 against holdYou: ba25–27 (`results/ba_hy.ckpt.json`; train seed 370000, validate 380000).
 3. Still queued: ba16 holdYou+extraFirst, ba18 holdYou ablations, ba19 App ablations, ba20 cardVP, ba21 holdYou+cardVP, ba22 holdYou+initClimb.
+
+### 00:30 — Second App seed and Domination diagnosis
+
+**App baseline at seed 460000 (ba17).**
+- Edges by rival count: 1.24 / 1.06 / 0.84 / 1.00 (seed 450000: 1.58 / 1.08 / 0.92 / 1.20).
+- Summaries now use App pooled over both seeds (`app_pooled.json`). On that basis:
+  - anchor X35 = +0.85;
+  - holdYou = +0.35;
+  - holdYou + extraFirst = +0.09 (with floor effects).
+
+**Ablations under holdYou (ba18), v3 win %, Std / Hard / Exp:**
+- v3: 62.5 / 49.5 / 38.1
+- no_initiative: 62.4 / 49.1 / 37.9 (Initiative is neutralised)
+- **no_domination: 56.4 / 40.3 / 29.8 (−6 to −9; at App it was −1.1)**
+- no_cards: 58.7 / 44.7 / 35.0
+- no_cubes: 56.7 / 47.2 / 37.0
+
+**Local diagnosis, v3, 3 rivals, seed 454000:**
+
+| | App | Paper Hard + holdYou |
+|---|---|---|
+| v3's Domination pawns per game | 12.2 | 4.9 |
+| VP from its own Domination | 70.7 | 34.7 |
+| VP fed to v3 by rivals' Domination | **9.6** | **21.3** |
+| Cards v3 claims | 11.1 | 4.6 |
+
+- Paper rivals choose the tile to score by their own VP only. So they often score tiles where you collect a lot (second place on big tiles).
+- **New candidate `domNet`:** a rival scores the tile with the most (its VP − your VP). Locally, with holdYou, the VP fed to v3 drops from 21.3 to 10.2 (App's level).
+- Queued: ba29x1 domNet, ba29x2 holdYou + domNet. These run before the re-tune; the re-tune's candidate is chosen from them.

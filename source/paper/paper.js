@@ -336,6 +336,12 @@ function paperClaim(s, actor, tile) {
     const top = Math.max(...s.ids.map(id => s.animals[id].vp));
     const pawnCards = ['Omnivore','Intelligence','Parasitism'];
     const ok = cards.filter(c => (c !== 'Ice Age' || s.animals[actor].vp >= top) && !(pawnCards.includes(c) && s.animals[actor].ap >= 10));
+    // Candidate (testing, off by default): cardVP. Before the list, a VP card worth 5+ VP to the rival is taken (the most VP;
+    // ties in list order). Counting: Biodiversity tiles shared, Ecodiversity matching disks, Fertile cubes on its fullest tile,
+    // Niche Biomes first-place VP x animals ahead on VP.
+    const vpCards = PAPER.cardVP ? ok.filter(c => ['Biodiversity','Ecodiversity','Fertile','Niche Biomes'].includes(c))
+      .map(c => [c, scoreCardPoints(s,actor,c,tile)]).filter(([,v]) => v >= 5).sort((a,b) => b[1] - a[1] || PAPER_CARD_ORDER.indexOf(a[0]) - PAPER_CARD_ORDER.indexOf(b[0])) : [];
+    if (vpCards.length) return {card:vpCards[0][0],label:pLabel('take ' + vpCards[0][0] + ' (' + vpCards[0][1] + ' VP).')};
     const pickd = [...(ok.length ? ok : cards)].sort((a,b) => PAPER_CARD_ORDER.indexOf(a) - PAPER_CARD_ORDER.indexOf(b))[0];
     return {card:pickd,label:pLabel('take ' + pickd + '.')};
   }

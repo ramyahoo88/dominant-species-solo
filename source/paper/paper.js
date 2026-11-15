@@ -83,8 +83,13 @@ function paperPlacement(s, actor, cardIndex, openOverride = null) {
   // this rival on the Initiative track (stops the leader climbing). initAlways: take it whenever it is open.
   const initOpen = open.includes('initiative-0') && !pawnCount(s,actor,'initiative');
   const holdInit = initOpen && (PAPER.initAlways || PAPER.initLeader && s.initiative.indexOf(leader) > s.initiative.indexOf(actor)) ? 'initiative-0' : null;
+  // Candidate (testing, off by default): hold Initiative against you, before any other step. holdYou: you are behind this rival
+  // on the Initiative track. holdYouVP: ...and ahead of it (or tied) on VP. Keeps a human from climbing to first place.
+  const you = s.human && s.human !== actor ? s.human : null;
+  const youBehind = you && s.initiative.indexOf(you) > s.initiative.indexOf(actor);
+  const holdYou = initOpen && youBehind && (PAPER.holdYou || PAPER.holdYouVP && s.animals[you].vp >= s.animals[actor].vp) ? 'initiative-0' : null;
   // The same order as before; also record which Planning step chose the space, for the player.
-  const steps = [['Domination first', () => domFirst], ['Barren Earth', () => barren], ['Block the leader', () => block], ['Hold Initiative', () => holdInit],
+  const steps = [['Hold Initiative against you', () => holdYou], ['Domination first', () => domFirst], ['Barren Earth', () => barren], ['Block the leader', () => block], ['Hold Initiative', () => holdInit],
     ['Card action', () => pick(face ? face.rows : [], false, !PAPER.noWeak)], ['Fallback', () => pick(PAPER_FALLBACK, false)],
     ['Last resort', () => pick(PAPER_FALLBACK, true) || open[0]]];
   let slot = null, why = '';

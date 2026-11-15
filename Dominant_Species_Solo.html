@@ -2646,26 +2646,29 @@ newGame = function(human, rivals, short, seed, paper = null) {
 // normal Planning steps. Then Planning continues as usual from the top of the Initiative order. Without it a strong
 // player who held first place on the Initiative track also took the first pick of the action display every turn, which
 // paper rivals (unlike the app's) never contested; measured in HARD_BALANCE_LOG.md.
-// s.paper.pre counts the rival placements still to come in this opening round (saved, so a game can stop mid-round).
+// s.paper.pre lists the rivals still to place in this opening round, in Initiative order (saved, so a game can stop
+// mid-round). A rival with no pawn left to place (all its pawns already on the display) skips the round.
 const _appEnterSupply = enterSupply;
 enterSupply = function(s, values) {
   _appEnterSupply(s, values);
-  if (s.paper?.planFirst && s.phase === 'planning') { s.paper.pre = s.paperRivals.length; s.paper.preTotal = s.paper.pre; }
+  if (!s.paper?.planFirst || s.phase !== 'planning') return;
+  const pre = s.initiative.filter(id => s.paperRivals.includes(id) && s.animals[id].remaining > 0);
+  if (pre.length) s.paper.pre = pre;
 };
 const _appCurrentPlanner = currentPlanner;
 currentPlanner = function(s) {
-  if (!(s.paper?.pre > 0) || s.phase !== 'planning' || ALL_SLOTS.every(key => s.pawns[key])) return _appCurrentPlanner(s);
-  const order = s.initiative.filter(id => s.paperRivals.includes(id));
-  const actor = order[(s.paper.preTotal - s.paper.pre) % order.length];
-  return s.animals[actor].remaining > 0 ? {actor, index: s.initiative.indexOf(actor)} : _appCurrentPlanner(s);
+  if (!s.paper?.pre?.length || s.phase !== 'planning' || ALL_SLOTS.every(key => s.pawns[key])) return _appCurrentPlanner(s);
+  const actor = s.paper.pre[0];
+  return {actor, index: s.initiative.indexOf(actor)};
 };
 const _appPlace = place;
 place = function(s, key, bot = null) {
-  const pre = s.paper?.pre > 0 && s.phase === 'planning';
+  const pre = s.paper?.pre?.length && s.phase === 'planning';
   _appPlace(s, key, bot);
   if (!pre) return;
-  if (--s.paper.pre > 0 && s.phase === 'planning') return;
-  delete s.paper.pre; delete s.paper.preTotal;
+  s.paper.pre.shift();
+  if (s.paper.pre.length && s.phase === 'planning') return;
+  delete s.paper.pre;
   if (s.phase === 'planning') { s.planning = 0; if (!_appCurrentPlanner(s)) { s.phase = 'execution'; s.cursor = 0; } }
 };
 
@@ -2816,8 +2819,8 @@ function validateState(s) {
     (s.paper.level === undefined || s.paper.level === null || PAPER_LEVEL_NAMES.includes(s.paper.level)) &&
     Array.isArray(s.paperRivals) && s.paperRivals.length === s.rivals.length && s.paperRivals.every(id => s.rivals.includes(id)) &&
     (s.paper.planFirst === undefined || s.paper.planFirst === true && s.paper.rivalTie === true) &&
-    (s.paper.pre === undefined && s.paper.preTotal === undefined || s.phase === 'planning' && Number.isInteger(s.paper.pre) && Number.isInteger(s.paper.preTotal) &&
-      s.paper.pre > 0 && s.paper.pre <= s.paper.preTotal && s.paper.preTotal <= 4 * s.rivals.length)));
+    (s.paper.pre === undefined || s.phase === 'planning' && s.paper.planFirst === true && Array.isArray(s.paper.pre) && s.paper.pre.length > 0 &&
+      unique(s.paper.pre).length === s.paper.pre.length && s.paper.pre.every(id => s.paperRivals.includes(id) && s.animals[id].remaining > 0))));
   assert(Array.isArray(s.initiative) && s.initiative.length === s.ids.length && unique(s.initiative).length === s.ids.length && s.initiative.every(id => s.ids.includes(id)) &&
     num(s.cursor) && s.cursor <= EXECUTION.length && num(s.planning) && s.planning < s.ids.length && typeof s.ending === 'boolean');
   assert(s.tiles && s.corners && s.pawns && s.animals && s.boxes && s.decks && terrainIds(s).length >= 7 && Object.keys(INITIAL_TILES).every(id => s.tiles[id]));
@@ -3786,7 +3789,7 @@ document.addEventListener('click',event => {
       case 'new': openModal('new'); break;
       case 'new-confirm':
         // Keep the level by name on the current pawn scale. If an older save's level can't be recovered, the player chooses.
-        setup={human:game.human,bots:[...game.rivals],short:game.short,paper:!!game.paper,extra:game.paper ? paperExtraFor(paperLevel(game.paper.extra, game.paper)) : 0};
+        setup={human:game.human,bots:[...game.rivals],short:game.short,paper:!!game.paper,extra:game.paper ? paperExtraFor(paperLevel(game.paper.extra, game.paper)) : paperExtraFor('Standard')};
         game=null; undo=[]; reveal=null; preview=null; draft={}; notice=''; initialError='';
         modal.close(); save(); render(false);
         main.focus();

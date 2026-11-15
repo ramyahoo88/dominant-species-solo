@@ -41,7 +41,7 @@ Two people can add one paper rival as the third animal to get a full three-playe
 
 ## Planning: placing a pawn
 
-**Rivals plan first.** At the start of each Planning, before anyone else places, each rival places one pawn, in Initiative order. Then Planning goes around the Initiative order as usual, starting from the top, until everyone has placed all their pawns. (Without this, a player who stays first on the Initiative track gets first pick of the action display every turn, which these rivals never contest.)
+**Rivals plan first.** At the start of each Planning, before anyone else places, each rival places one pawn, in Initiative order (a rival whose pawns are all already on the action display skips this). Then Planning goes around the Initiative order as usual, starting from the top, until everyone has placed all their pawns. (Without this, a player who stays first on the Initiative track gets first pick of the action display every turn, which these rivals never contest.)
 
 When it is a rival's turn to place, first draw the top card of its deck (it is discarded after this placement even if an earlier step decides). Then take the first step below that gives a space.
 

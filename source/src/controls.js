@@ -227,7 +227,7 @@ document.addEventListener('click',event => {
       case 'new': openModal('new'); break;
       case 'new-confirm':
         // Keep the level by name on the current pawn scale. If an older save's level can't be recovered, the player chooses.
-        setup={human:game.human,bots:[...game.rivals],short:game.short,paper:!!game.paper,extra:game.paper ? paperExtraFor(paperLevel(game.paper.extra, game.paper)) : 0};
+        setup={human:game.human,bots:[...game.rivals],short:game.short,paper:!!game.paper,extra:game.paper ? paperExtraFor(paperLevel(game.paper.extra, game.paper)) : paperExtraFor('Standard')};
         game=null; undo=[]; reveal=null; preview=null; draft={}; notice=''; initialError='';
         modal.close(); save(); render(false);
         main.focus();

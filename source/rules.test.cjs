@@ -17,8 +17,8 @@ verify('GMT p. 4: six APs and 50 cubes include one VP marker and four starting s
   }
 `);
 
-verify('v0.1 through v0.4.0 save migration preserves inventory, pending choices, and random state', `
-  for (const version of ['0.1.0','0.2.0','0.3.0','0.3.1','0.3.2','0.3.3','0.3.4','0.3.5','0.3.6','0.3.7','0.3.8','0.3.9','0.4.0']) {
+verify('v0.1 through v0.4.1 save migration preserves inventory, pending choices, and random state', `
+  for (const version of ['0.1.0','0.2.0','0.3.0','0.3.1','0.3.2','0.3.3','0.3.4','0.3.5','0.3.6','0.3.7','0.3.8','0.3.9','0.4.0','0.4.1']) {
     const s = newGame('insects',['mammals','birds'],true,51);
     s.version = version;
     s.phase = 'execution';
@@ -600,7 +600,23 @@ verify('v0.5.0 candidate: rivals plan first; the rule is in the save and survive
   delete old.paper.planFirst;
   enterSupply(old, nextSupply(old, makeSupplies(old, 11), 11));
   assert.equal(currentPlanner(old).actor, human);
-  // A bad pre-round count is rejected.
-  const bad = JSON.parse(JSON.stringify(s)); bad.paper.pre = 9; bad.paper.preTotal = 3;
+  // A bad opening-round list is rejected.
+  const bad = JSON.parse(JSON.stringify(s)); bad.phase = 'planning'; bad.paper.pre = [human];
   assert.throws(() => validateState(bad));
+  // A rival whose pawns are all on the display already (Instinct can park one) skips the opening round.
+  const park = newGame(human, rivals, true, 11, {extra:-2});
+  const sp = makeSupplies(park, 11);
+  const first = park.initiative.find(id => rivals.includes(id));
+  park.pawns['wanderlust-0'] = {actor:first, card:null, focus:null};
+  enterSupply(park, nextSupply(park, sp, 11));
+  assert.equal(park.animals[first].remaining, park.animals[first].ap - 1);
+  if (park.animals[first].remaining === 0) assert.ok(!park.paper.pre.includes(first));
+  const tight = newGame(human, ['mammals','birds','reptiles','amphibians','arachnids'], true, 12, {extra:-2});
+  const r1 = tight.initiative.find(id => tight.rivals.includes(id));
+  assert.equal(tight.animals[r1].ap, 1, 'five rivals at Easy have one pawn each');
+  tight.pawns['wanderlust-0'] = {actor:r1, card:null, focus:null};
+  enterSupply(tight, nextSupply(tight, makeSupplies(tight, 12), 12));
+  assert.equal(tight.animals[r1].remaining, 0);
+  assert.ok(!tight.paper.pre.includes(r1), 'a rival with no pawn to place is not in the opening round');
+  assert.notEqual(currentPlanner(tight).actor, r1);
 `);

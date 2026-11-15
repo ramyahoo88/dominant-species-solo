@@ -39,7 +39,7 @@ node source/smoke.cjs
 The build produces `source/dist/Dominant_Species_Solo.html`. Its expected SHA-256 is:
 
 ```text
-92964ec315794e07cd845d2883a82f5597df935ca060ac9a7642e0406814bd34
+fe36f6c664cc3763ae68c79a6736d43c6fb63c65c8b56a2b4b4531d368817364
 ```
 
 The smoke check finished all 60 matchups through Ice Age and final scoring. It used one seeded game per matchup, split evenly between short and full games, with seeds 100–159. The human seat uses a bot heuristic in the harness. Terrain reveals are sampled with replacement, and `maxTime` is an environment-dependent timing field. Treat this as reachability and state validation. Balance, rules parity in unusual situations, and human play quality still need dedicated evidence.

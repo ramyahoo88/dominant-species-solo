@@ -552,26 +552,29 @@ newGame = function(human, rivals, short, seed, paper = null) {
 // normal Planning steps. Then Planning continues as usual from the top of the Initiative order. Without it a strong
 // player who held first place on the Initiative track also took the first pick of the action display every turn, which
 // paper rivals (unlike the app's) never contested; measured in HARD_BALANCE_LOG.md.
-// s.paper.pre counts the rival placements still to come in this opening round (saved, so a game can stop mid-round).
+// s.paper.pre lists the rivals still to place in this opening round, in Initiative order (saved, so a game can stop
+// mid-round). A rival with no pawn left to place (all its pawns already on the display) skips the round.
 const _appEnterSupply = enterSupply;
 enterSupply = function(s, values) {
   _appEnterSupply(s, values);
-  if (s.paper?.planFirst && s.phase === 'planning') { s.paper.pre = s.paperRivals.length; s.paper.preTotal = s.paper.pre; }
+  if (!s.paper?.planFirst || s.phase !== 'planning') return;
+  const pre = s.initiative.filter(id => s.paperRivals.includes(id) && s.animals[id].remaining > 0);
+  if (pre.length) s.paper.pre = pre;
 };
 const _appCurrentPlanner = currentPlanner;
 currentPlanner = function(s) {
-  if (!(s.paper?.pre > 0) || s.phase !== 'planning' || ALL_SLOTS.every(key => s.pawns[key])) return _appCurrentPlanner(s);
-  const order = s.initiative.filter(id => s.paperRivals.includes(id));
-  const actor = order[(s.paper.preTotal - s.paper.pre) % order.length];
-  return s.animals[actor].remaining > 0 ? {actor, index: s.initiative.indexOf(actor)} : _appCurrentPlanner(s);
+  if (!s.paper?.pre?.length || s.phase !== 'planning' || ALL_SLOTS.every(key => s.pawns[key])) return _appCurrentPlanner(s);
+  const actor = s.paper.pre[0];
+  return {actor, index: s.initiative.indexOf(actor)};
 };
 const _appPlace = place;
 place = function(s, key, bot = null) {
-  const pre = s.paper?.pre > 0 && s.phase === 'planning';
+  const pre = s.paper?.pre?.length && s.phase === 'planning';
   _appPlace(s, key, bot);
   if (!pre) return;
-  if (--s.paper.pre > 0 && s.phase === 'planning') return;
-  delete s.paper.pre; delete s.paper.preTotal;
+  s.paper.pre.shift();
+  if (s.paper.pre.length && s.phase === 'planning') return;
+  delete s.paper.pre;
   if (s.phase === 'planning') { s.planning = 0; if (!_appCurrentPlanner(s)) { s.phase = 'execution'; s.cursor = 0; } }
 };
 

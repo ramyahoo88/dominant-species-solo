@@ -64,3 +64,21 @@ assert "This saved game was started before v0.5.0" in v04 and "Hard (+1 pawn per
 fresh = help_text(None)
 assert "This saved game" not in fresh and "In Paper games started in v0.4.0 or later" in fresh and "place one pawn each before anyone else" in fresh, fresh
 print("PASS Help notice for a legacy Paper save")
+
+# Restart from an App-rivals game, then switch to Paper rules: Standard (-1) is preselected, not the old 0 (now Hard).
+def app_restart():
+    js = f"""const {{load}} = require('{ROOT}/source/benchmark/load.cjs'); const r = load('worktree', ['game']);
+      process.stdout.write(r.run(`JSON.stringify(newGame('amphibians',['birds','arachnids'],true,5))`));"""
+    save = json.loads(subprocess.check_output(["node", "-e", js]))
+    with sync_playwright() as pw:
+        b = pw.chromium.launch(args=["--no-sandbox"]); p = b.new_page(viewport={"width":390,"height":850}); errs=[]
+        p.on("pageerror", lambda e: errs.append(str(e)))
+        p.goto(HTML)
+        p.evaluate("([k,v]) => localStorage.setItem(k, v)", [KEY, json.dumps({"format": KEY, "game": save})]); p.reload()
+        p.locator('[data-do="menu"]').first.click(); p.locator('[data-do="new"]').first.click(); p.locator('[data-do="new-confirm"]').first.click()
+        p.locator('input[name=rules][value="paper"]').check()
+        checked = p.evaluate("() => document.querySelector('input[name=extra]:checked')?.value ?? null")
+        assert checked == "-1" and not errs, (checked, errs)
+        b.close()
+app_restart()
+print("PASS App game restarted as Paper preselects Standard")

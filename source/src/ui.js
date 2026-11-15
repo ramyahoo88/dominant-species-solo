@@ -339,7 +339,8 @@ function showSupply() {
     'For each animal, set out ' + ['','','','six','five','four','three'][game.ids.length] + ' action pawns and ' + SETUP_BY_PLAYERS[game.ids.length][1] + ' cubes. Use one cube to mark VP, put four on the map and leave ' + (SETUP_BY_PLAYERS[game.ids.length][1] - 5) + ' in the gene pool.' +
     // GPT v0.5.3 re-audit (medium): scaled Easy (five rivals) is −1 for each rival and +1 for you, not −2.
     (game.paper?.extra ? (([rd, yd]) => ' Each rival ' + (rd > 0 ? 'takes ' + rd + ' extra' : 'returns ' + -rd) + ' action pawn' + (Math.abs(rd) === 1 ? '' : 's') +
-      (yd ? ' and you take ' + yd + ' extra' : '') + ' (paper rules, ' + paperLevel(game.paper.extra, game.paper) + ').')(game.paper.scaledEasy ? [-1, 1] : [game.paper.extra, 0]) : '') +
+      (yd ? ' and you take ' + yd + ' extra' : '') + ': each rival has ' + (SETUP_BY_PLAYERS[game.ids.length][0] + rd) + (yd ? ' and you have ' + (SETUP_BY_PLAYERS[game.ids.length][0] + yd) : '') +
+      ' (paper rules, ' + paperLevel(game.paper.extra, game.paper) + ').')(game.paper.scaledEasy ? [-1, 1] : [game.paper.extra, 0]) : '') +
     ' Match the Earth map with Wetland at the top.' :
     'Slide the physical action display as usual. Refill the three draw rows, turn up any face-down tile stacks, and fill the open card spaces.';
   return '<div class="block-head"><h2 id="turn-focus" tabindex="-1">Enter board draws</h2><span class="phase-badge">' + (game.turn === 1 ? 'Setup' : 'Reseed') +

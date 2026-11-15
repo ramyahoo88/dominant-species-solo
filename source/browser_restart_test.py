@@ -62,7 +62,7 @@ assert "This saved game was started before v0.4.0" in legacy and "Standard (+0 p
 v04 = help_text(old_save("0.4.1", 1, True))
 assert "This saved game was started before v0.5.0" in v04 and "Hard (+1 pawn per rival)" in v04, v04
 fresh = help_text(None)
-assert "This saved game" not in fresh and "In Paper games started in v0.4.0 or later" in fresh and "place one pawn each before anyone else" in fresh, fresh
+assert "This saved game" not in fresh and "In Paper games started in v0.4.0 or later" in fresh and "place one pawn each before anyone else" in fresh and "any empty corner" in fresh and "any empty corner" in legacy, fresh
 print("PASS Help notice for a legacy Paper save")
 
 # Restart from an App-rivals game, then switch to Paper rules: Standard (-1) is preselected, not the old 0 (now Hard).

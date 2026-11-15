@@ -62,6 +62,7 @@ See [benchmark instructions](source/benchmark/README.md) and [results](BENCHMARK
 - **Paper rivals** — rules for running the rivals at the table without the app. See [PAPER_RIVALS.md](PAPER_RIVALS.md).
 - **v0.3.5** — two to five rivals, with the base game's pawns and cubes for each player count; seven-change quick mode for paper rivals.
 - **v0.3.6** — the app can run the printed Paper Rivals rules (four levels); one paper version with Block the leader.
+- **v0.5.1** — Empty Earth rule for paper rivals (a rival's Abundance can reseed an Earth with no species, so the rare six-animal stall recovers); benchmark reporting fixes and balance wording from GPT's v0.5.0 audit.
 - **v0.5.0** — paper rivals plan first (they place one pawn each before you), which removes the strongest strategy's extra edge; levels Easy −2 … Expert +1; fixes from GPT's v0.4.1 follow-up.
 - **v0.4.1** — fixes from GPT's v0.4.0 audit: older saves keep their difficulty level; tuner level names; rulebook setup and balance wording.
 - **v0.4.0** — rival tie-break for the paper rules (closes half of the strongest strategy's edge); every level one pawn lower.

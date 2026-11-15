@@ -41,12 +41,12 @@ Two people can add one paper rival as the third animal to get a full three-playe
 
 ## Planning: placing a pawn
 
-**Rivals plan first.** At the start of each Planning, before anyone else places, each rival places one pawn, in Initiative order (a rival whose pawns are all already on the action display skips this). Then Planning goes around the Initiative order as usual, starting from the top, until everyone has placed all their pawns. (Without this, a player who stays first on the Initiative track gets first pick of the action display every turn, which these rivals never contest.)
+**Rivals plan first.** At the start of each Planning, before anyone else places, each rival places one pawn, in Initiative order (a rival whose pawns are all already on the action display skips this). Then Planning goes around the Initiative order as usual, starting from the top, until everyone has placed all their pawns. (Without this, a player who stays first on the Initiative track gets first pick of the action display every turn, which these rivals rarely contest.)
 
 When it is a rival's turn to place, first draw the top card of its deck (it is discarded after this placement even if an earlier step decides). Then take the first step below that gives a space.
 
 1. **Domination first.** If a Dominance Card is available, and the rival dominates more unscored tiles than it has pawns on Domination (at most 2), it takes the leftmost open Domination space.
-2. **Barren Earth.** After turn 1, if no animal is dominant on any tile, the rival takes an open Abundance space, unless it already has a pawn there. It may take any element there.
+2. **Barren Earth.** After turn 1, if no animal is dominant on any tile, the rival takes an open Abundance space, unless it already has a pawn there. It may take any element there. **Empty Earth:** if no species of any animal are left on Earth, the rival's Abundance may use any empty corner, so species can return (see the tables below).
 3. **Block the leader.** If a Dominance Card is available, the rival has fewer than 2 pawns on Domination, and the leader dominates at least one unscored tile, the rival takes the leftmost open Domination space (it needs a legal target; see the table below).
 4. **Its card.** Try the drawn card's three actions in order and place on the first one that:
     - is not a row where the rival already has a pawn;
@@ -64,7 +64,7 @@ When it is a rival's turn to place, first draw the top card of its deck (it is d
 | Initiative | The rival is not first on the Initiative track |
 | Adaptation | The box holds an element and the display has fewer than 6 |
 | Regression | An added element's type is in the Adaptation or Regression box (Reptiles: always) |
-| Abundance | The box holds an element the rival uses (any element during Barren Earth), and a tile it occupies has an empty corner |
+| Abundance | The box holds an element the rival uses (any element during Barren Earth), and a tile it occupies has an empty corner (Empty Earth: any empty corner) |
 | Wasteland | The box holds an element the rival uses |
 | Depletion | A disk on Earth is of an element in the box that the rival does not use |
 | Glaciation | A legal Glaciation tile holds opposing species and none of the rival's |
@@ -83,7 +83,7 @@ When a rival's pawn is reached, resolve it with the rule below. If the rule find
 | Initiative | Advances one place on the Initiative track, then moves this pawn to an open space later in this turn's order, chosen by Planning steps 1–3, 5 and 6 (no card). If no such space is open, it still advances and the pawn returns to the rival (this is also the rule for you) |
 | Adaptation | Takes its own printed element if the box offers it; otherwise the leftmost element |
 | Regression | Nothing to decide; see Losing an element under Other decisions |
-| Abundance | Takes the leftmost box element it uses (else the leftmost). Places it on the empty corner touching the most tiles it occupies |
+| Abundance | Takes the leftmost box element it uses (else the leftmost). Places it on the empty corner touching the most tiles it occupies. Empty Earth (no species on Earth): on any empty corner, top-left first |
 | Wasteland | Removes the leftmost box element it uses. If it uses none, forfeits |
 | Depletion | Removes a disk of a box element it does not use: the disk touching the most tiles the leader dominates, then the most tiles any opponent dominates |
 | Glaciation | Among legal tiles, prefers those with none of its species. Picks the most opposing species; then fewest of its own species |

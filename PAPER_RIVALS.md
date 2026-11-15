@@ -14,16 +14,16 @@ v0.5.0 adds **rivals plan first**: at the start of each Planning, before anyone 
 | Rivals (even game) | Easy −2 | Standard −1 | Hard 0 | Expert +1 | App |
 |---|---|---|---|---|---|
 | 2 (33%) | 66% | 42% | 26% | 16% | 20% |
-| 3 (25%) | 56% | 31% | 21% | 8% | 15% |
+| 3 (25%) | 56% | 32% | 21% | 8% | 15% |
 | 4 (20%) | 59% | 24% | 9% | 4% | 9% |
 | 5 (17%) | 75% | 28% | 6% | 4% | 8% |
 
-One of 7,200 paper games stalled (five rivals at Standard, a short game, the expansion strategy). It passed 30 turns without Ice Age and was scored as it stood. The tuned-player evaluation had one more (five rivals at Easy, 1 of 1,800 games in that cell). Games started before v0.5.0 keep their rules, pawn counts and Planning order.
+Measured with v0.5.1 (Empty Earth). No game stalled. Before v0.5.1 one of 7,200 paper games stalled (five rivals at Standard, a short game, the expansion strategy): every species and element disk had left Earth, so it passed 30 turns without Ice Age and was scored as it stood. The tuned-player evaluations had two more (five rivals at Easy). The Empty Earth rule lets a rival's Abundance use any empty corner when no species are on Earth; all three games now reach Ice Age (turns 9, 10 and 18). Replaying the 5,760 paper ladder games under both rules, 6 played out differently (each through an empty Earth), one with a different winner, which moves 3 rivals at Standard from 31% to 32%. Games started before v0.5.0 keep their level, pawn counts and Planning order (and, before v0.4.0, their tie rule); the Empty Earth rule applies to every Paper game, saved ones included.
 
 **Why (overnight 14–15 November; full log in `HARD_BALANCE_LOG.md`).**
 - **The finding:** at matched difficulty, with 3–5 rivals, paper rivals were more exploitable than the app's rivals *at every level*; with 2 rivals they were not.
   - A matched run (seed 450000, 1,440 paired games per level): the tuned checkpoint v3 led the card-chaser by 33.1 points at Hard and 22.8 against App rivals.
-  - The ablations put the extra edge in turn order and Domination play *together*. Paper rivals never contested the Initiative track, so a player who stayed first got first pick of the action display every turn.
+  - The ablations put the extra edge in turn order and Domination play *together*. Paper rivals rarely contested the Initiative track, so a player who stayed first got first pick of the action display every turn.
 - **What was screened:** more than twenty rule candidates on the same tables, read on a log-odds scale against the App baseline.
   - Holding the Initiative space against you halved the excess.
   - Racing or blocking you for Domination, rival-favoured ties, scoring the tile that gains most over you, and taking VP cards first did nothing or backfired.
@@ -31,7 +31,8 @@ One of 7,200 paper games stalled (five rivals at Standard, a short game, the exp
 - **The check:**
   - The test player was re-tuned against the new rule (checkpoint v4, 39 generations from v3).
   - It was evaluated on an untouched seed block (470000) against all three fixed policies, at paper levels and against App rivals on the same block.
-  - In that sample (1,440 games per level), at every level with 3–5 rivals, its lead over the best fixed policy was no larger than its lead against App rivals: log-odds differences of −0.37, −0.07, −0.11 and −0.22 at offsets −1, 0, +1 and +2 (the shipped levels are −2…+1; the shipped Easy was checked separately).
+  - In that sample (1,440 games per level), its log-odds lead over the best fixed policy, minus its lead against App rivals, met the +0.20 target **averaged across 3, 4 and 5 rivals** at every level: −0.37, −0.07, −0.11 and −0.22 at offsets −1, 0, +1 and +2 (the shipped levels are −2…+1; the shipped Easy, −2, gave −0.91). Single sizes vary more (largest cell +0.21, Hard with 5 rivals).
+  - GPT's v0.5.0 audit, on its own seeds (9,120 games), found Hard at **+0.19** averaged over 3–5 rivals (95% about −0.27 to +0.70), with 3 rivals alone at +0.59: inside the target, but close to it.
   - With 4× the games at +1 (4–5 rivals, seed 480000): −0.15 and −0.11.
   - The re-tune gained more against App rivals (+4.2 points) than against paper rivals (−0.2 to +3.1), so it found no new paper-specific hole.
   - With 2 rivals a strong player's lead was smaller than against App rivals. That is the cost of one printed rule for every table size.

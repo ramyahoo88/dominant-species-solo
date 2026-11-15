@@ -29,10 +29,11 @@ function playBenchmark({human, rivals, seed, short, policy}, player, trace = fal
   const seats = Object.fromEntries(s.ids.map(id => [id, {rows: {}, blocks: 0, optionalDeclines: 0}]));
   const events = [];
   let openingSupply;
-  for (let stepCount = 0; stepCount < 1800; stepCount++) {
+  const cap = typeof BENCH_TURN_CAP === 'number' ? BENCH_TURN_CAP : 30; // diagnostics may raise the stall cap
+  for (let stepCount = 0; stepCount < Math.max(1800, 60 * cap); stepCount++) {
     validateState(s);
     // A crowded table can strip Earth of elements so no one can dominate or take a card. Score such a stall as it stands.
-    const stalled = s.turn > 30;
+    const stalled = s.turn > cap;
     if (s.phase === 'finished' || stalled) {
       if (!stalled && !s.usedCards.includes('Ice Age')) throw new Error('Finished without Ice Age.');
       const [winner, runnerUp] = standings(s);

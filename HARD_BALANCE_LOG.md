@@ -413,3 +413,13 @@ Old-scale offsets (−1/0/+1/+2), with App edges from ba34:
 | Expert | 52 / 25 | 35 / 13 | 22 / 7 | 15 / 4 |
 
 Sources: `ba67`, `ba34`, `pb_c1`–`c3`, `pb_e1`, `pb_e2`.
+
+### 09:05 — v0.5.1: fixes for GPT's v0.5.0 audit
+
+- **G1, empty-board stall:** new paper rule, Empty Earth. With no species on Earth, a rival's Abundance may use any empty corner (top-left first). All three known stalls (200074; 3880523955 in `pb_c1`; 3722144011 in `ba67`) had no species and no disks, and now reach Ice Age on turns 9, 10 and 18.
+- **No other change to the measurements:**
+  - ladder replay of all 5,760 paper games under both rules (`bb02b_*`, `--detail`, `noEmptyEarth` for the old side): 6 games differ, all through an empty Earth, 1 with a different winner. 3 rivals at Standard is now 32% (114/360); the old side reproduces all 16 published cells;
+  - anchor 745/269 with and without the rule (`bb01`, `bb02`);
+  - tuned evaluations on 470000 and 490000 (`bb03`, `bb04`): every win count matches except one majority win at Easy; X35 unchanged.
+- **B1/B2:** `tune.cjs` rejects repeated rival counts and mode aliases; `final_eval.py` prints X35 only with 3, 4 and 5 present.
+- Details: `AUDIT_RESPONSE_v0.5.0.md`.

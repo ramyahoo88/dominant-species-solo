@@ -1,5 +1,23 @@
 # Release notes
 
+## v0.5.1 · November 15, 2026 · Empty Earth rule; fixes for GPT's v0.5.0 audit
+
+- **Empty Earth (paper rules; GPT finding G1):** if no species of any animal are left on Earth, a rival's Abundance may use any empty corner (top-left first, as for Habitat), so species can return.
+  - **Why:** with every species and every element disk gone, no one could dominate, migrate or speciate, and rivals could only take Abundance next to a tile they occupied. GPT's seed 200074 (Birds against five Standard rivals) sat on an empty Earth from turn 7 and was still empty at turn 121.
+  - **Result:** all three known stalls (that game and the two in the tuned-player checks) now reach Ice Age, on turns 9, 10 and 18. Resumed from GPT's turn-31 position, the first game reaches Ice Age on turn 37, as in GPT's prototype.
+  - **Which games change:** only games where Earth runs out of species. Replaying the 5,760 paper games of the difficulty table under both rules, 6 played out differently and 1 had a different winner. Re-running the tuned-player check on ba67's seeds, every win count matched except one, and the stalled game finished.
+  - **Saved games:** the rule applies to every Paper game, saved ones included, because it acts only on an empty Earth. Help says so; the notice for older saves now lists "these rules from then" (level, Planning order, tie rule).
+- **Benchmark reporting (GPT findings B1, B2):**
+  - `tune.cjs` rejects a rival count listed twice (`--bots 3,3`) and two names for one table (`--modes m2,-2`) before playing.
+  - `final_eval.py` prints the 3–5-rival mean (X35) only when all three sizes are present, and rejects duplicate rows.
+- **Wording:**
+  - The balance claim now says what was measured: the +0.20 log-odds target, averaged across three, four and five rivals, in that sample. It also gives GPT's Hard figure (+0.19, with three rivals alone at +0.59).
+  - The rulebook says rivals "rarely" (not "never") contest the Initiative track.
+- **Difficulty table:** re-measured with v0.5.1. Every cell is unchanged except 3 rivals at Standard, 31% → 32% (114 of 360 instead of 113). No test game stalled.
+- **Tests:** two new rules tests (the Empty Earth choice; GPT's seed 200074 finishes, and stalls with the rule switched off); v0.5.0 saves load; the Help mentions the rule. The benchmark's stall cap can be raised for diagnostics (`BENCH_TURN_CAP`); `--paper-options noEmptyEarth` runs the v0.5.0 rules.
+- Reproducible build: SHA-256 c90c42b6… (full hash in `HANDOFF.md`); accepts v0.1–v0.5.0 saves.
+- See [AUDIT_RESPONSE_v0.5.0.md](AUDIT_RESPONSE_v0.5.0.md).
+
 ## v0.5.0 · November 15, 2026 · rivals plan first; new levels; fixes for the GPT v0.4.1 follow-up
 
 - **Rivals plan first (paper rules):** at the start of each Planning, before anyone else places, each rival places one pawn, in Initiative order. Then Planning goes around the Initiative order as usual.

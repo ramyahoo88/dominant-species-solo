@@ -15,7 +15,8 @@ function paperLegal(s, actor, row, index) {
     case 'initiative': return s.initiative[0] !== actor;
     case 'adaptation': return s.animals[actor].added.length + ANIMALS[actor].affinity < 6 && s.boxes.adaptation.some(Boolean);
     case 'regression': return s.animals[actor].added.some(type => s.boxes.adaptation.includes(type) || s.boxes.regression.includes(type)) || actor === 'reptiles';
-    case 'abundance': return s.boxes.abundance.some(type => type && (paperBarren(s) || paperUses(s,actor,type))) && occupied(s,actor).some(t => VERTICES_OF[t].some(key => !s.corners[key]));
+    case 'abundance': return s.boxes.abundance.some(type => type && (paperBarren(s) || paperUses(s,actor,type))) &&
+      (paperEmptyEarth(s) ? activeCorners(s).some(key => !s.corners[key]) : occupied(s,actor).some(t => VERTICES_OF[t].some(key => !s.corners[key])));
     case 'wasteland': return s.boxes.wasteland.some(type => type && paperUses(s,actor,type)); // as Execution: protect an element it uses
     case 'depletion': return pDepletionCorners(s,actor,index).length > 0; // same disks Execution may remove
     case 'glaciation': return glazeTargets(s).some(t => !s.tiles[t].cubes[actor] && s.ids.some(id => s.tiles[t].cubes[id]));
@@ -35,6 +36,11 @@ function paperCheck(s, actor, test) { // the app's card conditions, with 'elemen
 }
 // Barren Earth: no animal dominates any tile, so no one can take a card. Rivals restore elements first.
 function paperBarren(s) { return s.turn > 1 && !terrainIds(s).some(t => cone(s,t)); }
+// Empty Earth (v0.5.1, GPT v0.5.0 audit G1): with no species anywhere on Earth, no one can dominate or migrate, and without
+// disks no one can speciate, so a game could stall. A rival's Abundance may then use any empty corner (top-left first, as
+// for Habitat), so species can return. Applies to every paper game, saved ones included: it acts only on an empty Earth.
+// PAPER.noEmptyEarth (testing) turns it off.
+function paperEmptyEarth(s) { return !PAPER.noEmptyEarth && !terrainIds(s).some(t => s.ids.some(id => s.tiles[t].cubes[id] > 0)); }
 // Depletion: disks on Earth of a box element the rival does not use (Planning and Execution share this).
 function pDepletionCorners(s, actor, index) { return placementTargets(s,'depletion',index,actor).filter(k => !paperUses(s,actor,s.corners[k])); }
 function paperUses(s, actor, type) { return ANIMALS[actor].el === type || s.animals[actor].added.includes(type); }
@@ -149,11 +155,12 @@ function paperPawn(s, step) {
     case 'abundance': {
       const picks = indexed(s.boxes.abundance);
       const corners = pVacantMyCorners(s,actor);
-      if (!picks.length || !corners.length) return {...PASS};
+      const empty = !corners.length && paperEmptyEarth(s) ? activeCorners(s).filter(k => !s.corners[k]) : [];
+      if (!picks.length || !corners.length && !empty.length) return {...PASS};
       const mine = picks.filter(p => pTypes(s,actor).includes(p.type));
       const p = (mine.length ? mine : picks)[0];
-      const c = pBy(corners.map(c => ({...c, tile:c.corner})), c => c.mine, c => c.vp);
-      return {pick:p.pick,corner:c.corner,label:pLabel('take ' + elementName(p.type) + ' from Abundance position ' + (p.pick + 1) + ' and place it at ' + pAt(s,c.corner) + '.')};
+      const corner = corners.length ? pBy(corners.map(c => ({...c, tile:c.corner})), c => c.mine, c => c.vp).corner : empty[0];
+      return {pick:p.pick,corner,label:pLabel('take ' + elementName(p.type) + ' from Abundance position ' + (p.pick + 1) + ' and place it at ' + pAt(s,corner) + (empty.length ? ' (Empty Earth: no species are on Earth)' : '') + '.')};
     }
     case 'wasteland': {
       const picks = indexed(s.boxes.wasteland);

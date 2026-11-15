@@ -17,8 +17,8 @@ verify('GMT p. 4: six APs and 50 cubes include one VP marker and four starting s
   }
 `);
 
-verify('v0.1 through v0.4.1 save migration preserves inventory, pending choices, and random state', `
-  for (const version of ['0.1.0','0.2.0','0.3.0','0.3.1','0.3.2','0.3.3','0.3.4','0.3.5','0.3.6','0.3.7','0.3.8','0.3.9','0.4.0','0.4.1']) {
+verify('v0.1 through v0.5.0 save migration preserves inventory, pending choices, and random state', `
+  for (const version of ['0.1.0','0.2.0','0.3.0','0.3.1','0.3.2','0.3.3','0.3.4','0.3.5','0.3.6','0.3.7','0.3.8','0.3.9','0.4.0','0.4.1','0.5.0']) {
     const s = newGame('insects',['mammals','birds'],true,51);
     s.version = version;
     s.phase = 'execution';
@@ -620,3 +620,60 @@ verify('v0.5.0 candidate: rivals plan first; the rule is in the save and survive
   assert.ok(!tight.paper.pre.includes(r1), 'a rival with no pawn to place is not in the opening round');
   assert.notEqual(currentPlanner(tight).actor, r1);
 `);
+
+// GPT v0.5.0 audit G1. Fresh runtimes: switching paper rules on must not leak into the shared runtime above.
+test('v0.5.1 Empty Earth: with no species on Earth a rival may take Abundance and seed any empty corner (top-left first)', () => {
+  const g = load('worktree', ['game']);
+  g.get('globalThis').assert = assert;
+  g.run(`(() => {
+    const s = newGame('birds',['mammals','insects'],true,7,{extra:-1});
+    s.turn = 5;
+    for (const t of terrainIds(s)) for (const id of s.ids) { s.animals[id].pool += s.tiles[t].cubes[id]; s.tiles[t].cubes[id] = 0; }
+    for (const k of Object.keys(s.corners)) delete s.corners[k];
+    s.boxes.abundance = ['grub','water',null,null];
+    validateState(JSON.parse(JSON.stringify(s)));
+    const step = {row:'abundance', index:0, actor:'mammals', key:'abundance-0'};
+    assert.ok(paperEmptyEarth(s) && paperBarren(s));
+    assert.ok(paperLegal(s,'mammals','abundance',0), 'a rival with no species has a target on an empty Earth');
+    const choice = paperPawn(s, step);
+    assert.equal(choice.corner, activeCorners(s)[0], 'the top-left empty corner');
+    assert.equal(choice.pick, 0, 'Mammals use neither element, so the leftmost');
+    assert.match(choice.label, /Empty Earth/);
+    // One species anywhere on Earth: the normal rule (an empty corner of a tile the rival occupies) applies again.
+    s.tiles[terrainIds(s)[0]].cubes.insects = 1;
+    assert.ok(!paperEmptyEarth(s));
+    assert.ok(!paperLegal(s,'mammals','abundance',0));
+    assert.ok(paperPawn(s, step).pass);
+    // Saved games from earlier versions get the rule too: a v0.4.1-shaped game (no planFirst, no level name) and a
+    // pre-v0.4.0 game (no tie-break), each loaded through validateState.
+    s.tiles[terrainIds(s)[0]].cubes.insects = 0;
+    for (const strip of [['planFirst','level'], ['planFirst','level','rivalTie']]) {
+      const old = JSON.parse(JSON.stringify(s));
+      for (const k of strip) delete old.paper[k];
+      old.version = strip.length === 2 ? '0.4.1' : '0.3.9';
+      validateState(old);
+      assert.ok(paperLegal(old,'mammals','abundance',0) && paperPawn(old, step).corner === activeCorners(old)[0], 'saved ' + old.version + ' game');
+    }
+    const v050 = JSON.parse(JSON.stringify(s)); v050.version = '0.5.0';
+    validateState(v050);
+    assert.equal(v050.version, VERSION, 'a v0.5.0 Paper save loads');
+    assert.ok(paperLegal(v050,'mammals','abundance',0));
+    // The testing switch restores the v0.5.0 rule.
+    PAPER.noEmptyEarth = true;
+    assert.ok(!paperLegal(s,'mammals','abundance',0));
+    delete PAPER.noEmptyEarth;
+  })()`);
+});
+
+test('v0.5.1 Empty Earth regression: the audit stall (seed 200074, Birds against five Standard rivals) now finishes', () => {
+  const g = load('worktree', ['game']);
+  const p = load(PLAYER_REFERENCE, ['player']);
+  const strategy = {place: p.get('playerPlacement'), choose: p.get('playerChoice')};
+  const sc = {human:'birds', rivals:['mammals','reptiles','amphibians','arachnids','insects'], seed:200074, short:true, policy:'expansion'};
+  g.run('Object.assign(PAPER, {place:true, all:true, extraAP:-1})');
+  const fixed = g.get('playBenchmark')(sc, strategy);
+  assert.equal(fixed.stalled, undefined, 'reaches Ice Age within 30 turns');
+  assert.ok(fixed.turns < 15, 'turn ' + fixed.turns);
+  g.run('PAPER.noEmptyEarth = true');
+  assert.equal(g.get('playBenchmark')(sc, strategy).stalled, true, 'without the rule this game stalls (the audited case)');
+});

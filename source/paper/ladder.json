@@ -4,7 +4,7 @@
   "standard": "A little easier than an even game",
   "hard": "About as strong as the app's rivals",
   "expert": "Tougher than the app's rivals",
-  "method": "Each cell is 360 games on seeds (block 200000) not used to tune the rules, played with v0.5.0 (rivals plan first, rival tie-break). Lower means tougher rivals. In a perfectly even game the player would win 33% against two rivals, 25% against three, 20% against four and 17% against five.",
+  "method": "Each cell is 360 games on seeds (block 200000) not used to tune the rules, played with v0.5.1 (rivals plan first, rival tie-break, Empty Earth). Lower means tougher rivals. In a perfectly even game the player would win 33% against two rivals, 25% against three, 20% against four and 17% against five.",
   "rows": [
     {
       "rivals": 2,
@@ -19,7 +19,7 @@
       "rivals": 3,
       "even": 25,
       "easy": 56,
-      "standard": 31,
+      "standard": 32,
       "hard": 21,
       "expert": 8,
       "app": 15
@@ -43,8 +43,8 @@
       "app": 8
     }
   ],
-  "strategy": "**Strategy balance.** Chasing Domination cards is still the strongest simple approach: at Standard it wins 37–56% against 15–37% for spreading out or chasing majorities. Rivals plan first since v0.5.0. Before that, a self-tuned test player that held first place on the Initiative track and took the first Domination spaces beat these rivals far more easily than the app's rivals: against three to five rivals its lead over the card-chaser was well above its lead against the app's rivals at every level (at the old Hard, 33 points against 23, in 1,440 paired games each). Re-tuned against v0.5.0 (checkpoint v4) and measured on fresh seeds (1,440 games per level), its lead over the best simple strategy was no larger than against the app's rivals at every level with three to five rivals in that sample. With two rivals its lead was smaller than against the app's rivals. Against Hard it won 45% and against the app's rivals 46% in that sample (1,440 games each).",
-  "stalls": "One of 7,200 test games stalled (five rivals at Standard, a short game): it passed 30 turns without reaching Ice Age, and the test scored it as it stood. If the action display fills before every rival has placed, Planning simply ends and the extra pawns wait for the next turn.",
+  "strategy": "**Strategy balance.** Chasing Domination cards is still the strongest simple approach: at Standard it wins 37–56% against 15–37% for spreading out or chasing majorities. Rivals plan first since v0.5.0. Before that, a self-tuned test player that held first place on the Initiative track and took the first Domination spaces beat these rivals far more easily than the app's rivals: against three to five rivals its lead over the card-chaser was well above its lead against the app's rivals at every level (at the old Hard, 33 points against 23, in 1,440 paired games each). Re-tuned against v0.5.0 (checkpoint v4) and measured on fresh seeds (1,440 games per level), its lead over the best simple strategy, compared with its lead against the app's rivals, met the target of at most +0.20 on a log-odds scale, averaged across three, four and five rivals, at every level in that sample (Easy −0.91, Standard −0.36, Hard −0.07, Expert −0.11). Single table sizes vary more, and Hard is close to the line: the independent v0.5.0 audit, on other seeds, found +0.19 averaged at Hard, with three rivals alone at +0.59. With two rivals its lead was smaller than against the app's rivals. Against Hard it won 45% and against the app's rivals 46% in that sample (1,440 games each).",
+  "stalls": "Before v0.5.1, one of 7,200 test games stalled (five rivals at Standard, a short game): every species and element disk had left Earth, and it passed 30 turns without reaching Ice Age. The Empty Earth rule (Planning step 2) fixes this. In the re-run every test game reached Ice Age, and only 6 of the 5,760 paper games played out differently at all (one with a different winner). If the action display fills before every rival has placed, Planning simply ends and the extra pawns wait for the next turn.",
   "offsets": {
     "easy": -2,
     "standard": -1,

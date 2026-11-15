@@ -33,7 +33,13 @@ const MODES = ['app', -2, -1, 0, 1];                // default for tuning, data 
 const ALL_MODES = ['app', 0, 1, 2, 3, -1, -2];      // evaluation cell order: earlier cells keep their seeds
 const MODE_NAME = {app: 'App', '-2': 'Easy', '-1': 'Standard', 0: 'Hard', 1: 'Expert', 2: 'Beyond Expert (+2)', 3: 'Beyond Expert (+3)'};
 // '--modes=app,-1,0' or 'app,m1,0' (m1 = -1, for job files).
-const parseModes = list => list.split(',').filter(Boolean).map(m => m === 'app' ? 'app' : +m.replace(/^m/, '-'));
+// Each table once: 'm2' and '-2' are the same table, and a repeat would play the same seeds twice (GPT v0.5.0 audit B1).
+const parseModes = list => {
+  const modes = list.split(',').filter(Boolean).map(m => m === 'app' ? 'app' : +m.replace(/^m/, '-'));
+  assert(modes.length && modes.every(m => ALL_MODES.includes(m)), 'Unknown rival table in ' + JSON.stringify(list) + '; use app or -2..3 (m2 = -2).');
+  assert(new Set(modes).size === modes.length, 'Rival table listed twice in ' + JSON.stringify(list) + ' (m2 and -2 are the same table); list each once.');
+  return modes;
+};
 const BOTS = [2, 3, 4, 5];
 // --bots 3,4 limits which rival counts run (cell seeds stay as with all four).
 let RUN_BOTS = BOTS;
@@ -403,7 +409,11 @@ async function main(argv) {
     features: {type: 'string'}, resume: {type: 'string'}, compare: {type: 'string'}, ablate: {type: 'string'}, bots: {type: 'string'},
   }}).values;
   assert(['majority', 'dominance', 'reach'].includes(args.focus), 'Focus is majority, dominance or reach.');
-  if (args.bots) { RUN_BOTS = args.bots.split(',').map(Number); assert(RUN_BOTS.length && RUN_BOTS.every(b => BOTS.includes(b)), 'Rival counts are 2, 3, 4 or 5.'); }
+  if (args.bots) {
+    RUN_BOTS = args.bots.split(',').map(Number);
+    assert(RUN_BOTS.length && RUN_BOTS.every(b => BOTS.includes(b)), 'Rival counts are 2, 3, 4 or 5.');
+    assert(new Set(RUN_BOTS).size === RUN_BOTS.length, 'Rival count listed twice in --bots ' + args.bots + '; a repeat plays the same seeds twice.');
+  }
   const pool = await makePool(Math.max(1, Math.min(64, +args.workers)), args['paper-options'].split(',').filter(Boolean), args.net || null);
   const animals = [...load(PLAYER_REFERENCE, ['player']).get('FOOD')];
   try {

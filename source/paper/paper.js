@@ -75,29 +75,9 @@ function paperPlacement(s, actor, cardIndex, openOverride = null) {
   const leader = pLeader(s,actor);
   const leaderDom = terrainIds(s).filter(t => !s.scored.includes(t) && cone(s,t) === leader).length;
   const blockMin = PAPER.domBlock2 ? 2 : 1;
-  // Candidate (testing, off by default): blockHuman aims Block the leader at the player instead of the VP leader.
-  const you = s.human && s.human !== actor && !s.paperRivals?.includes(s.human) ? s.human : null;
-  const blockTarget = PAPER.blockHuman && you ? you : leader;
-  const targetDom = blockTarget === leader ? leaderDom : terrainIds(s).filter(t => !s.scored.includes(t) && cone(s,t) === blockTarget).length;
-  const block = (PAPER.domBlock || PAPER.domBlock2) && !domFirst && availableCards(s).length && doms < 2 && targetDom >= blockMin ? pick(['domination'], true) : null;
-  // Candidates (testing, off by default) for turn order. initClimb: a rival that is not first in Initiative takes the open
-  // Initiative space. holdYou: a rival ahead of you on the Initiative track takes it, so you can't climb past it.
-  const initOpen = open.includes('initiative-0') && !pawnCount(s,actor,'initiative');
-  const climb = PAPER.initClimb && initOpen && s.initiative[0] !== actor ? 'initiative-0' : null;
-  const youAt = you ? s.initiative.indexOf(you) : -1, meAt = s.initiative.indexOf(actor);
-  // Variants: holdYouDirect (only the rival directly ahead of you), holdYouVP (only when you have at least this rival's VP),
-  // climbPast (the rival directly behind you takes it, to pass you).
-  const holdWho = PAPER.holdYouDirect ? youAt === meAt + 1 : youAt > meAt;
-  const hold = (PAPER.holdYou || PAPER.holdYouDirect || PAPER.holdYouVP) && initOpen && you && holdWho &&
-    (!PAPER.holdYouVP || s.animals[you].vp >= s.animals[actor].vp) ? 'initiative-0' : null;
-  const past = PAPER.climbPast && initOpen && you && meAt === youAt + 1 ? 'initiative-0' : null;
-  // Candidate (testing, off by default): leadDom races you for Domination space 1 (it resolves first) when you dominate an
-  // unscored tile and a card is available.
-  const youDominate = you && terrainIds(s).some(t => !s.scored.includes(t) && cone(s,t) === you);
-  const leadDom = PAPER.leadDom && open.includes('domination-0') && availableCards(s).length && youDominate ? 'domination-0' : null;
+  const block = (PAPER.domBlock || PAPER.domBlock2) && !domFirst && availableCards(s).length && doms < 2 && leaderDom >= blockMin ? pick(['domination'], true) : null;
   // The same order as before; also record which Planning step chose the space, for the player.
-  const steps = [['Lead Domination', () => leadDom], ['Hold Initiative', () => hold], ['Pass you on Initiative', () => past], ['Climb Initiative', () => PAPER.initClimbLate ? null : climb],
-    ['Domination first', () => domFirst], ['Barren Earth', () => barren], ['Block the leader', () => block], ['Climb Initiative', () => PAPER.initClimbLate ? climb : null],
+  const steps = [['Domination first', () => domFirst], ['Barren Earth', () => barren], ['Block the leader', () => block],
     ['Card action', () => pick(face ? face.rows : [], false, !PAPER.noWeak)], ['Fallback', () => pick(PAPER_FALLBACK, false)],
     ['Last resort', () => pick(PAPER_FALLBACK, true) || open[0]]];
   let slot = null, why = '';
@@ -205,9 +185,7 @@ function paperPawn(s, step) {
       const mine = tiles.filter(t => cone(s,t) === actor);
       const safe = tiles.filter(t => !cone(s,t) || cone(s,t) === actor);
       const pool = mine.length && availableCards(s).length ? mine : safe.filter(t => myVP(t) > 0).length ? safe : tiles;
-      // Candidate (testing, off by default): domNet. Rank tiles by the rival's VP minus your VP on that tile.
-      const you = s.human && !s.paperRivals?.includes(s.human) ? s.human : null;
-      const t = PAPER.domNet && you ? pBy(pool, t => myVP(t) - tileVP(s,t,you), myVP, t => pFirstVP(s,t)) : pBy(pool, myVP, t => pFirstVP(s,t));
+      const t = pBy(pool, myVP, t => pFirstVP(s,t));
       return {tile:t,label:describeScore(s,t)};
     }
   }
@@ -338,12 +316,6 @@ function paperClaim(s, actor, tile) {
     const top = Math.max(...s.ids.map(id => s.animals[id].vp));
     const pawnCards = ['Omnivore','Intelligence','Parasitism'];
     const ok = cards.filter(c => (c !== 'Ice Age' || s.animals[actor].vp >= top) && !(pawnCards.includes(c) && s.animals[actor].ap >= 10));
-    // Candidate (testing, off by default): cardVP. Before the list, a VP card worth 5+ VP to the rival is taken (the most VP;
-    // ties in list order). Counting: Biodiversity tiles shared, Ecodiversity matching disks, Fertile cubes on its fullest tile,
-    // Niche Biomes first-place VP x animals ahead on VP.
-    const vpCards = PAPER.cardVP ? ok.filter(c => ['Biodiversity','Ecodiversity','Fertile','Niche Biomes'].includes(c))
-      .map(c => [c, scoreCardPoints(s,actor,c,tile)]).filter(([,v]) => v >= 5).sort((a,b) => b[1] - a[1] || PAPER_CARD_ORDER.indexOf(a[0]) - PAPER_CARD_ORDER.indexOf(b[0])) : [];
-    if (vpCards.length) return {card:vpCards[0][0],label:pLabel('take ' + vpCards[0][0] + ' (' + vpCards[0][1] + ' VP).')};
     const pickd = [...(ok.length ? ok : cards)].sort((a,b) => PAPER_CARD_ORDER.indexOf(a) - PAPER_CARD_ORDER.indexOf(b))[0];
     return {card:pickd,label:pLabel('take ' + pickd + '.')};
   }
@@ -566,30 +538,29 @@ newGame = function(human, rivals, short, seed, paper = null) {
   s.paper = PAPER.flatMatch ? {extra} : {extra, detailed:true};
   // v0.4.0: rival ties go to the food chain. Recorded in the save, so games started earlier keep the rule they began with.
   if (PAPER.flatMatch && !PAPER.noRivalTie) s.paper.rivalTie = true;
-  // Candidate (testing, off by default): tieToRival. A tie for the most matches that includes you goes to the highest rival in it.
-  if (PAPER.tieToRival && s.paper.rivalTie) s.paper.tieToRival = true;
-  // Rivals plan first (candidate for v0.5.0): recorded in the save, so a game keeps the Planning order it began with.
-  // App games: on unless the setup turns it off. Benchmark games: on with the rivalsFirst switch.
-  if (s.paper.rivalTie && (paper ? !paper.noPlanFirst : PAPER.rivalsFirst)) s.paper.planFirst = true;
+  // v0.5.0: rivals plan first. Recorded in the save, so a game keeps the Planning order it began with.
+  // PAPER.noPlanFirst (testing) or setup {noPlanFirst} turns it off.
+  if (s.paper.rivalTie && !(paper ? paper.noPlanFirst : PAPER.noPlanFirst)) s.paper.planFirst = true;
   s.paperRivals = [...rivals];
   return s;
 };
 
-// Candidate (testing, off by default): extraFirst. Rivals place their extra (difficulty) pawns before anyone else, at the
-// start of Planning, in Initiative order; then Planning continues as usual from the top of the Initiative order.
+// ---------- Rivals plan first (v0.5.0) ----------
+// At the start of each Planning, before anyone else places, each rival places one pawn, in Initiative order, by its
+// normal Planning steps. Then Planning continues as usual from the top of the Initiative order. Without it a strong
+// player who held first place on the Initiative track also took the first pick of the action display every turn, which
+// paper rivals (unlike the app's) never contested; measured in HARD_BALANCE_LOG.md.
+// s.paper.pre counts the rival placements still to come in this opening round (saved, so a game can stop mid-round).
 const _appEnterSupply = enterSupply;
 enterSupply = function(s, values) {
   _appEnterSupply(s, values);
-  // Rivals plan first (s.paper.planFirst): each rival's first pawn is placed this way too, at every level.
-  const rounds = !s.paper || s.phase !== 'planning' ? 0 : (PAPER.extraFirst ? Math.max(0, s.paper.extra) : 0) + (s.paper.planFirst ? 1 : 0);
-  if (rounds) { s.paper.pre = rounds * s.paperRivals.length; s.paper.preTotal = s.paper.pre; }
+  if (s.paper?.planFirst && s.phase === 'planning') { s.paper.pre = s.paperRivals.length; s.paper.preTotal = s.paper.pre; }
 };
 const _appCurrentPlanner = currentPlanner;
 currentPlanner = function(s) {
   if (!(s.paper?.pre > 0) || s.phase !== 'planning' || ALL_SLOTS.every(key => s.pawns[key])) return _appCurrentPlanner(s);
   const order = s.initiative.filter(id => s.paperRivals.includes(id));
-  const done = s.paper.preTotal - s.paper.pre;
-  const actor = order[done % order.length];
+  const actor = order[(s.paper.preTotal - s.paper.pre) % order.length];
   return s.animals[actor].remaining > 0 ? {actor, index: s.initiative.indexOf(actor)} : _appCurrentPlanner(s);
 };
 const _appPlace = place;
@@ -614,9 +585,7 @@ cone = function(s, tile) {
   const best = Math.max(0, ...vals.map(v => v[1]));
   if (!best) return null;
   const top = vals.filter(v => v[1] === best).map(v => v[0]);
-  if (top.length < 2) return null;
-  const rivalsIn = top.filter(id => s.paperRivals.includes(id));
-  return rivalsIn.length === top.length || s.paper.tieToRival && rivalsIn.length ? rivalsIn.sort((a,b) => rank(a) - rank(b))[0] : null;
+  return top.length > 1 && top.every(id => s.paperRivals.includes(id)) ? top.sort((a,b) => rank(a) - rank(b))[0] : null;
 };
 const _appMatch = match;
 match = function(s, tile, actor, additions = s.animals[actor].added) {

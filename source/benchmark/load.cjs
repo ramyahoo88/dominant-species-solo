@@ -64,9 +64,7 @@ function load(ref, extra = []) {
         const best = Math.max(0, ...vals.map(v => v[1]));
         if (!best) return null;
         const top = vals.filter(v => v[1] === best).map(v => v[0]);
-        if (top.length < 2) return null;
-        const rivalsIn = top.filter(id => s.paperRivals.includes(id));
-        return rivalsIn.length === top.length || s.paper.tieToRival && rivalsIn.length ? rivalsIn.sort((a, b) => rank(a) - rank(b))[0] : null;
+        return top.length > 1 && top.every(id => s.paperRivals.includes(id)) ? top.sort((a, b) => rank(a) - rank(b))[0] : null;
       };
       const referenceAction = (s, step) => {
         const choice = botAction(s, step);

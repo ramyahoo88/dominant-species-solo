@@ -443,3 +443,20 @@ Sources: `ba67`, `ba34`, `pb_c1`–`c3`, `pb_e1`, `pb_e2`.
   - 490000: −0.03 / −0.17 / −0.09 / +0.10.
 - **No level is above +0.20.** Single cells vary more: Hard with 5 rivals at 470000 is +0.31, and Easy with 5 rivals at 490000 is +0.94 (Easy sits near the ceiling, at 93% for pb5, where log-odds are noisy).
 - pb5's pooled paper win %, Easy / Standard / Hard / Expert: 92.5 / 69.6 / 45.1 / 29.4 at 470000 and 93.0 / 71.8 / 47.7 / 29.0 at 490000.
+
+### 12:25 — Test: ties that include you go to the rivals (not adopted; the user's call)
+
+- **Rule tested:** if you tie a rival for the most matches on a tile, the highest rival in the tie is dominant (today no one is). Test-only switch `PAPER.tieToRival`, on branch `claude/tie-test` (1578c17), not on main.
+- **Runs:** `bd50` (470000) and `bd51` (490000), the `bd30`/`bd31` commands with the switch on, so the same seeds and v0.5.2 rules otherwise.
+- **Win %, pooled over both blocks** (2,880 games per level), v0.5.2 → with the rule:
+
+  | Level | Tuned v4 | Card-chaser | Majority | Expansion |
+  |---|---|---|---|---|
+  | Easy | 87.4 → 85.0 | 78.8 → 75.2 | 61.8 → 58.5 | 55.2 → 52.3 |
+  | Standard | 64.8 → 60.6 | 42.9 → 38.8 | 23.4 → 22.4 | 24.1 → 21.5 |
+  | Hard | 43.6 → 41.1 | 21.5 → 19.9 | 10.3 → 10.1 | 10.1 → 9.3 |
+  | Expert | 27.6 → 28.7 | 10.5 → 11.5 | 5.2 → 5.6 | 5.3 → 6.1 |
+
+- **Reading:** 2–4 points harder at Easy and Standard, about 2 at Hard, nothing at Expert (the small rise there is noise). A level step is 15–25 points, so this is a fraction of a level.
+- **Effect on strong play:** it does not widen the strong player's edge. X35 Easy / Standard / Hard / Expert is −0.70 / −0.45 / −0.17 / −0.05 at 470000 and −0.86 / −0.42 / −0.43 / −0.36 at 490000.
+- **Stalls:** one game hit the 30-turn cap (5 rivals, Hard, 490000).

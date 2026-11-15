@@ -1,0 +1,300 @@
+{
+ "focus": "dominance",
+ "start": {
+  "fit": -0.0442,
+  "win": 0.24
+ },
+ "best": {
+  "focus": "dominance",
+  "row": {
+   "initiative": -1.123,
+   "adaptation": 3.092,
+   "regression": 0.728,
+   "abundance": 2.058,
+   "wasteland": -0.323,
+   "depletion": -1.872,
+   "glaciation": -3.054,
+   "speciation": 1.22,
+   "wanderlust": 1.02,
+   "migration": 2.791,
+   "competition": 1.533,
+   "domination": 3.414
+  },
+  "cardWeight": 12.13,
+  "nonOwner": 1.14,
+  "rivalWeight": 0,
+  "setup": 6.117,
+  "domCommit": 1.435,
+  "commit": 2.302,
+  "indexPen": 0.136,
+  "cap": 7.774,
+  "oppMin": 0.188,
+  "worthless": 0.221,
+  "wander": 8.353,
+  "initFirst": 2.882,
+  "initOther": 10.323,
+  "regDue": 8.195,
+  "regNot": -4.09,
+  "glacLater": 1.543,
+  "instinct": 0.739
+ },
+ "bestGen": 24,
+ "bestValFit": 0.4079,
+ "bestValWin": 0.625,
+ "current": {
+  "focus": "dominance",
+  "row": {
+   "initiative": 0.982,
+   "adaptation": 3.425,
+   "regression": -0.438,
+   "abundance": 2.672,
+   "wasteland": 1.172,
+   "depletion": -1.627,
+   "glaciation": -2.76,
+   "speciation": 1.214,
+   "wanderlust": 1.58,
+   "migration": 3.216,
+   "competition": -1.074,
+   "domination": 3.223
+  },
+  "cardWeight": 13.823,
+  "nonOwner": 1.653,
+  "rivalWeight": 0,
+  "setup": 1.554,
+  "domCommit": 0.409,
+  "commit": 1.624,
+  "indexPen": 0.435,
+  "cap": 12.55,
+  "oppMin": 0.25,
+  "worthless": -0.16,
+  "wander": 3.728,
+  "initFirst": 2.277,
+  "initOther": 12,
+  "regDue": 11.101,
+  "regNot": -6.242,
+  "glacLater": 0.425,
+  "instinct": 1.03
+ },
+ "history": [
+  {
+   "gen": 1,
+   "popMeanWin": 0.262,
+   "seconds": 56
+  },
+  {
+   "gen": 2,
+   "popMeanWin": 0.338,
+   "seconds": 118
+  },
+  {
+   "gen": 3,
+   "popMeanWin": 0.349,
+   "seconds": 165
+  },
+  {
+   "gen": 4,
+   "popMeanWin": 0.369,
+   "seconds": 212,
+   "valFit": 0.1349,
+   "valWin": 0.393
+  },
+  {
+   "gen": 5,
+   "popMeanWin": 0.396,
+   "seconds": 288
+  },
+  {
+   "gen": 6,
+   "popMeanWin": 0.466,
+   "seconds": 324
+  },
+  {
+   "gen": 7,
+   "popMeanWin": 0.443,
+   "seconds": 371
+  },
+  {
+   "gen": 8,
+   "popMeanWin": 0.521,
+   "seconds": 408,
+   "valFit": 0.3559,
+   "valWin": 0.583
+  },
+  {
+   "gen": 9,
+   "popMeanWin": 0.535,
+   "seconds": 482
+  },
+  {
+   "gen": 10,
+   "popMeanWin": 0.501,
+   "seconds": 525
+  },
+  {
+   "gen": 11,
+   "popMeanWin": 0.464,
+   "seconds": 575
+  },
+  {
+   "gen": 12,
+   "popMeanWin": 0.464,
+   "seconds": 624,
+   "valFit": 0.3087,
+   "valWin": 0.54
+  },
+  {
+   "gen": 13,
+   "popMeanWin": 0.512,
+   "seconds": 684
+  },
+  {
+   "gen": 14,
+   "popMeanWin": 0.569,
+   "seconds": 736
+  },
+  {
+   "gen": 15,
+   "popMeanWin": 0.546,
+   "seconds": 789
+  },
+  {
+   "gen": 16,
+   "popMeanWin": 0.584,
+   "seconds": 830,
+   "valFit": 0.3568,
+   "valWin": 0.583
+  },
+  {
+   "gen": 17,
+   "popMeanWin": 0.582,
+   "seconds": 897
+  },
+  {
+   "gen": 18,
+   "popMeanWin": 0.589,
+   "seconds": 943
+  },
+  {
+   "gen": 19,
+   "popMeanWin": 0.633,
+   "seconds": 989
+  },
+  {
+   "gen": 20,
+   "popMeanWin": 0.535,
+   "seconds": 1042,
+   "valFit": 0.3655,
+   "valWin": 0.59
+  },
+  {
+   "gen": 21,
+   "popMeanWin": 0.568,
+   "seconds": 1105
+  },
+  {
+   "gen": 22,
+   "popMeanWin": 0.55,
+   "seconds": 1146
+  },
+  {
+   "gen": 23,
+   "popMeanWin": 0.557,
+   "seconds": 1185
+  },
+  {
+   "gen": 24,
+   "popMeanWin": 0.555,
+   "seconds": 1227,
+   "valFit": 0.4079,
+   "valWin": 0.625
+  },
+  {
+   "gen": 25,
+   "popMeanWin": 0.606,
+   "seconds": 1297
+  },
+  {
+   "gen": 26,
+   "popMeanWin": 0.519,
+   "seconds": 1337
+  },
+  {
+   "gen": 27,
+   "popMeanWin": 0.601,
+   "seconds": 1367
+  },
+  {
+   "gen": 28,
+   "popMeanWin": 0.611,
+   "seconds": 1414,
+   "valFit": 0.3758,
+   "valWin": 0.6
+  },
+  {
+   "gen": 29,
+   "popMeanWin": 0.59,
+   "seconds": 1485
+  },
+  {
+   "gen": 30,
+   "popMeanWin": 0.628,
+   "seconds": 1523
+  },
+  {
+   "gen": 31,
+   "popMeanWin": 0.528,
+   "seconds": 1567
+  },
+  {
+   "gen": 32,
+   "popMeanWin": 0.608,
+   "seconds": 1617,
+   "valFit": 0.3526,
+   "valWin": 0.578
+  },
+  {
+   "gen": 33,
+   "popMeanWin": 0.551,
+   "seconds": 1688
+  },
+  {
+   "gen": 34,
+   "popMeanWin": 0.591,
+   "seconds": 1729
+  },
+  {
+   "gen": 35,
+   "popMeanWin": 0.6,
+   "seconds": 1780
+  },
+  {
+   "gen": 36,
+   "popMeanWin": 0.509,
+   "seconds": 1825,
+   "valFit": 0.3617,
+   "valWin": 0.585
+  },
+  {
+   "gen": 37,
+   "popMeanWin": 0.601,
+   "seconds": 1892
+  },
+  {
+   "gen": 38,
+   "popMeanWin": 0.527,
+   "seconds": 1931
+  },
+  {
+   "gen": 39,
+   "popMeanWin": 0.613,
+   "seconds": 1975
+  },
+  {
+   "gen": 40,
+   "popMeanWin": 0.582,
+   "seconds": 2016,
+   "valFit": 0.3228,
+   "valWin": 0.55
+  }
+ ]
+}

@@ -182,7 +182,7 @@ verify('v0.3.6: paper-rules games add difficulty pawns, use the printed rules, a
   const app = newGame('insects',['birds','arachnids'],true,40);
   assert.equal(app.paper, undefined);
   const s = newGame('insects',['birds','arachnids','mammals'],true,40,{extra:1});
-  assert.deepEqual(s.paper, {extra:1, rivalTie:true, planFirst:true});
+  assert.deepEqual(s.paper, {extra:1, rivalTie:true, planFirst:true, level:'Expert'});
   for (const id of s.rivals) assert.equal(s.animals[id].ap, 6);
   assert.equal(s.animals.insects.ap, 5);
   validateState(JSON.parse(JSON.stringify(s)));
@@ -510,13 +510,20 @@ test('v0.4.0 rival tie-break: the benchmark player sees the same dominant animal
   assert.equal(player.get('cone')(JSON.parse(state), 'C4'), 'birds');
 });
 
-verify('v0.4.0 levels: Easy -1, Standard 0, Hard +1, Expert +2; games started before v0.4.0 keep their level names', `
-  assert.deepEqual(PAPER_LEVELS, [[-1,'Easy'],[0,'Standard'],[1,'Hard'],[2,'Expert']]);
-  const s = newGame('mammals',['birds','insects'],true,7,{extra:0});
-  assert.equal(paperLevel(s.paper.extra, s.paper), 'Standard');
+verify('v0.5.0 levels: Easy -2, Standard -1, Hard 0, Expert +1, recorded by name; v0.4.x games keep their level names', `
+  assert.deepEqual(PAPER_LEVELS, [[-2,'Easy'],[-1,'Standard'],[0,'Hard'],[1,'Expert']]);
+  const s = newGame('mammals',['birds','insects'],true,7,{extra:-1});
+  assert.equal(s.paper.level, 'Standard'); assert.equal(paperLevel(s.paper.extra, s.paper), 'Standard');
   assert.equal(paperLevel(1, {extra:1}), 'Standard', 'a v0.3.x game at +1 was Standard');
-  assert.equal(paperLevel(1, {extra:1, rivalTie:true}), 'Hard');
-  const easy = newGame('mammals',['birds','insects'],true,7,{extra:-1});
+  assert.equal(paperLevel(1, {extra:1, rivalTie:true}), 'Hard', 'a v0.4.x game at +1 was Hard');
+  assert.equal(paperLevel(0, {extra:0, rivalTie:true, planFirst:true}), 'Hard');
+  // A v0.4.1 save (tie-break, no planning first) records its name on load and restarts at that name on the new scale.
+  const v041 = newGame('mammals',['birds','insects'],true,7,{extra:1});
+  delete v041.paper.planFirst; delete v041.paper.level; v041.version = '0.4.1';
+  validateState(v041);
+  assert.equal(v041.paper.level, 'Hard'); assert.equal(paperExtraFor(v041.paper.level), 0);
+  assert.equal(v041.paper.planFirst, undefined, 'the saved game keeps its Planning order');
+  const easy = newGame('mammals',['birds','insects'],true,7,{extra:-2});
   for (const id of easy.rivals) assert.equal(easy.animals[id].ap, s.animals[id].ap - 1);
   validateState(JSON.parse(JSON.stringify(easy)));
 `);
@@ -524,26 +531,27 @@ verify('v0.4.0 levels: Easy -1, Standard 0, Hard +1, Expert +2; games started be
 verify('GPT v0.4.0 audit F1: older paper saves keep their level name, and a restart maps it to the current scale', `
   const old = (version, extra, tie = false) => {
     const s = newGame('amphibians',['birds','arachnids'],true,949381806,{extra});
-    if (!tie) { delete s.paper.rivalTie; delete s.paper.planFirst; }
+    delete s.paper.level; delete s.paper.planFirst;
+    if (!tie) delete s.paper.rivalTie;
     s.version = version;
     validateState(s);
     return s;
   };
   const e36 = old('0.3.6', -1);
-  assert.equal(e36.paper.level, 'Easy'); assert.equal(paperLevel(e36.paper.extra, e36.paper), 'Easy'); assert.equal(paperExtraFor('Easy'), -1);
+  assert.equal(e36.paper.level, 'Easy'); assert.equal(paperLevel(e36.paper.extra, e36.paper), 'Easy'); assert.equal(paperExtraFor('Easy'), -2);
   const s36 = old('0.3.6', 0);
-  assert.equal(paperLevel(s36.paper.extra, s36.paper), 'Standard'); assert.equal(paperExtraFor('Standard'), 0);
+  assert.equal(paperLevel(s36.paper.extra, s36.paper), 'Standard'); assert.equal(paperExtraFor('Standard'), -1);
   const s39 = old('0.3.9', 1);
   assert.equal(paperLevel(s39.paper.extra, s39.paper), 'Standard');
   const x39 = old('0.3.9', 3);
-  assert.equal(paperLevel(x39.paper.extra, x39.paper), 'Expert'); assert.equal(paperExtraFor('Expert'), 2);
+  assert.equal(paperLevel(x39.paper.extra, x39.paper), 'Expert'); assert.equal(paperExtraFor('Expert'), 1);
   // Re-saved by v0.4.0 (version overwritten): +1 could be v0.3.6 Hard or v0.3.7+ Standard, so the player must choose.
   const amb = old('0.4.0', 1);
   assert.equal(amb.paper.level, null); assert.equal(paperLevel(amb.paper.extra, amb.paper), 'Unknown level'); assert.equal(paperExtraFor(paperLevel(amb.paper.extra, amb.paper)), null);
   assert.equal(old('0.4.0', -1).paper.level, 'Easy');
   // New games (tie-break) keep using the current scale and record no level.
-  const now = newGame('amphibians',['birds','arachnids'],true,7,{extra:1});
-  validateState(now); assert.equal(now.paper.level, undefined); assert.equal(paperLevel(1, now.paper), 'Hard');
+  const now = newGame('amphibians',['birds','arachnids'],true,7,{extra:0});
+  validateState(now); assert.equal(now.paper.level, 'Hard'); assert.equal(paperLevel(0, now.paper), 'Hard');
   // A save can't carry an unknown level name.
   const bad = old('0.3.9', 1); bad.paper.level = 'Legendary';
   assert.throws(() => validateState(bad));
@@ -553,7 +561,7 @@ verify('GPT v0.4.0 audit F1: older paper saves keep their level name, and a rest
 verify('GPT v0.4.1 follow-up R2: an Easy save re-exported by v0.3.7-v0.3.9 is still recovered as Easy', `
   const old = (version, extra) => {
     const s = newGame('amphibians',['birds','arachnids'],true,949381806,{extra});
-    delete s.paper.rivalTie; delete s.paper.planFirst;
+    delete s.paper.rivalTie; delete s.paper.planFirst; delete s.paper.level;
     s.version = version;
     validateState(s);
     return s;
@@ -561,7 +569,7 @@ verify('GPT v0.4.1 follow-up R2: an Easy save re-exported by v0.3.7-v0.3.9 is st
   // -1 was only ever the v0.3.6 Easy setting, and +3 only the v0.3.7-v0.3.9 Expert setting, whoever saved the file last.
   for (const v of ['0.3.6','0.3.7','0.3.8','0.3.9','0.4.0']) assert.equal(old(v, -1).paper.level, 'Easy', v);
   for (const v of ['0.3.7','0.3.9','0.4.0']) assert.equal(old(v, 3).paper.level, 'Expert', v);
-  assert.equal(paperExtraFor(old('0.3.9', -1).paper.level), -1);
+  assert.equal(paperExtraFor(old('0.3.9', -1).paper.level), -2);
   // The documented limit: a v0.3.6 Standard (0) re-saved by v0.3.9 is identical to a v0.3.9 Easy game.
   assert.equal(old('0.3.9', 0).paper.level, 'Easy');
   assert.equal(old('0.4.0', 0).paper.level, null);

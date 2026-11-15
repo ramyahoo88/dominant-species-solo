@@ -26,10 +26,13 @@ const A = ids => ids.map(id => [id,nameOf(id)]);
 const cardRows = face => '<div class="card-flow">' + face.rows.map(row => '<span>' + ROW_BY_ID[row].name + '</span>').join('') + '</div>';
 let game = null;
 let undo = [];
-let setup = {human:'amphibians',bots:['birds','arachnids'],short:true,paper:false,extra:0};
+let setup = {human:'amphibians',bots:['birds','arachnids'],short:true,paper:false,extra:-1}; // extra: Standard on the Paper scale
 // Re-measured for v0.3.8: +0 is a little easier than an even game, +1 a little tougher, +2 about as tough as the app's rivals.
 // v0.4.0: the rival tie-break makes paper rivals about one pawn stronger, so every level is one pawn lower.
-const PAPER_LEVELS = [[-1,'Easy'],[0,'Standard'],[1,'Hard'],[2,'Expert']];
+// v0.5.0: rivals plan first (they place one pawn each before anyone else), which makes them stronger, so the levels
+// moved down again. Every new Paper game records its level name (paper.level), so a later scale change can't misread it.
+const PAPER_LEVELS = [[-2,'Easy'],[-1,'Standard'],[0,'Hard'],[1,'Expert']];
+const PAPER_LEVELS_V04 = [[-1,'Easy'],[0,'Standard'],[1,'Hard'],[2,'Expert']]; // v0.4.0–v0.4.1 games (tie-break, no planning first)
 const PAPER_LEVELS_V03 = [[0,'Easy'],[1,'Standard'],[2,'Hard'],[3,'Expert']]; // v0.3.7–v0.3.9 games (no tie-break)
 const PAPER_LEVELS_V036 = [[-1,'Easy'],[0,'Standard'],[1,'Hard'],[2,'Expert']]; // v0.3.6 games (no tie-break)
 const PAPER_LEVEL_NAMES = ['Easy','Standard','Hard','Expert'];
@@ -37,11 +40,13 @@ const PAPER_LEVEL_NAMES = ['Easy','Standard','Hard','Expert'];
 // pawn scale changed twice (v0.3.6: -1..+2, v0.3.7-v0.3.9: 0..+3). null = the name could not be recovered.
 function paperLevel(extra, paper = null) {
   if (paper && paper.level !== undefined) return paper.level ?? 'Unknown level';
-  const table = paper && !paper.rivalTie ? PAPER_LEVELS_V03 : PAPER_LEVELS;
+  const table = !paper || paper.planFirst ? PAPER_LEVELS : paper.rivalTie ? PAPER_LEVELS_V04 : PAPER_LEVELS_V03;
   return (table.find(([n]) => n === extra) || [0,'Custom'])[1];
 }
 function recordPaperLevel(s) {
-  if (!s?.paper || s.paper.rivalTie || s.paper.level !== undefined) return;
+  if (!s?.paper || s.paper.level !== undefined || s.paper.planFirst) return;
+  // v0.4.0-v0.4.1 games: the tie-break without planning first, on that release's scale (the version check is not needed).
+  if (s.paper.rivalTie) { s.paper.level = (PAPER_LEVELS_V04.find(([n]) => n === s.paper.extra) || [0, null])[1]; return; }
   // Before v0.4.0, -1 existed only on the v0.3.6 scale (Easy) and +3 only on the v0.3.7-v0.3.9 scale (Expert). These two
   // endpoints are recovered whichever version saved the file last (GPT v0.4.1 follow-up R2).
   if (s.paper.extra === -1 || s.paper.extra === 3) { s.paper.level = s.paper.extra === -1 ? 'Easy' : 'Expert'; return; }
@@ -108,7 +113,7 @@ function readSupplyDraft(s, raw) {
 function validateState(s) {
   function assert(ok) { if (!ok) throw new Error('This is not a valid Dominant Species companion save.'); }
   recordPaperLevel(s); // before the version is replaced: the level scale depends on it
-  if (s && ['0.1.0', '0.2.0', '0.3.0', '0.3.1', '0.3.2', '0.3.3', '0.3.4', '0.3.5', '0.3.6', '0.3.7', '0.3.8', '0.3.9', '0.4.0'].includes(s.version)) s.version = VERSION;
+  if (s && ['0.1.0', '0.2.0', '0.3.0', '0.3.1', '0.3.2', '0.3.3', '0.3.4', '0.3.5', '0.3.6', '0.3.7', '0.3.8', '0.3.9', '0.4.0', '0.4.1'].includes(s.version)) s.version = VERSION;
   const keys = value => value && typeof value === 'object' ? Object.keys(value) : [];
   assert(s && s.version === VERSION && ['supply','planning','execution','finished'].includes(s.phase) &&
     num(s.turn) && s.turn > 0 && num(s.rng) && s.rng <= 0xffffffff && num(s.seed) && s.seed <= 0xffffffff);

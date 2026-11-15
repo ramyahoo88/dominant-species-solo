@@ -541,6 +541,8 @@ newGame = function(human, rivals, short, seed, paper = null) {
   // v0.5.0: rivals plan first. Recorded in the save, so a game keeps the Planning order it began with.
   // PAPER.noPlanFirst (testing) or setup {noPlanFirst} turns it off.
   if (s.paper.rivalTie && !(paper ? paper.noPlanFirst : PAPER.noPlanFirst)) s.paper.planFirst = true;
+  // A game started from the app records its level name (v0.5.0), so a later change of scale can't misread it.
+  if (paper && s.paper.planFirst && typeof PAPER_LEVELS !== 'undefined') { const lv = PAPER_LEVELS.find(([n]) => n === extra); if (lv) s.paper.level = lv[1]; }
   s.paperRivals = [...rivals];
   return s;
 };

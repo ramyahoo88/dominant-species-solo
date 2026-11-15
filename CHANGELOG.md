@@ -1,5 +1,14 @@
 # Release notes
 
+## v0.4.0 · November 14, 2026 · rival tie-break and new levels
+
+- **Rival tie-break (paper rules):** when only rivals tie for the most matches on a tile, the rival higher in the food chain is dominant. If you tie with them, no one is dominant, as in the normal rules.
+  - Why: flat matching made rivals tie constantly, leaving tiles undominated, and that handed the player cards, Ice Age points and board control.
+  - It halves the edge of the strongest player we could build (a self-tuned test player): from +40 points over the best simple strategy to +20 at Standard, the same margin the app's rivals allow.
+- **Difficulty levels move down one pawn**, because the rivals are now about one pawn stronger: Easy −1, Standard +0, Hard +1, Expert +2. Standard is about an even game with 2–4 rivals, Hard matches the app's rivals and Expert is tougher. New table in the rulebook and `PAPER_RIVALS.md`.
+- **Saved games** started before v0.4.0 keep their rules and pawn counts, and show their original level name.
+- **Testing:** the self-tuned test player is in `source/benchmark/tune.cjs` (opt-in; `--tune`, `--evaluate`, `--selftest`). Five more rules tests (35 in total).
+
 ## v0.3.9 · November 14, 2026 · fixes for the GPT v0.3.8 re-audit
 
 - **Initiative, player form:** while a space is open you must choose where the pawn goes, as printed. Forfeiting the whole action is a separate button. On a full display you still move up and the pawn returns to you.

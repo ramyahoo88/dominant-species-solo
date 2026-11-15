@@ -16,6 +16,7 @@ These rules run the rival animals at the table without the app, against two to f
 - **First-place value:** the leftmost number on the Tile Scoring table: Sea 9, Wetland 8, Savannah 7, Jungle 6, Forest 5, Desert 4, Mountain 3, Tundra 1.
 - **Uses an element:** the element is on the rival's animal display (printed or added).
 - **Matches (rivals only):** a rival matches a tile with its printed element count (2, or 3 for Amphibians) plus its number of added elements, capped at the number of element disks on that tile. The element types don't matter. Use this count wherever the game asks how many elements a rival matches (dominance, Extinction, and every "matches" in these rules). Adaptation, Regression and Disease still change the count. You count your own animal normally.
+- **Rival ties:** if only rivals tie for the most matches on a tile, the rival higher in the food chain is dominant. If you tie with them, no one is dominant there, as in the normal rules.
 - **Ties:** when a rule still ties, take the higher first-place value, then the tile or space closest to the top-left of the board.
 
 ## Setup and difficulty

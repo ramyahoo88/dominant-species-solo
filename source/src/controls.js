@@ -224,7 +224,8 @@ document.addEventListener('click',event => {
         deckTab=btn.dataset.animal; renderModal(); modal.querySelector('[data-animal="'+deckTab+'"]')?.focus(); break;
       case 'new': openModal('new'); break;
       case 'new-confirm':
-        setup={human:game.human,bots:[...game.rivals],short:game.short,paper:!!game.paper,extra:game.paper ? game.paper.extra : 1};
+        // A pre-v0.4.0 paper game (no tie-break) maps to the same level name, one pawn lower.
+        setup={human:game.human,bots:[...game.rivals],short:game.short,paper:!!game.paper,extra:game.paper ? game.paper.extra - (game.paper.rivalTie ? 0 : 1) : 0};
         game=null; undo=[]; reveal=null; preview=null; draft={}; notice=''; initialError='';
         modal.close(); save(); render(false);
         main.focus();

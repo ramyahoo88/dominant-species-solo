@@ -66,10 +66,10 @@ def ladder_table(ladder):
 
 def difficulty(ladder):
     return ("| Level | Each rival's pawns | Use it when |\n| --- | --- | --- |\n"
-            "| Easy | Base count | " + ladder["easy"] + " |\n"
-            "| Standard | Base count +1 | " + ladder["standard"] + " |\n"
-            "| Hard | Base count +2 | " + ladder["hard"] + " |\n"
-            "| Expert | Base count +3 | " + ladder["expert"] + " |\n\n"
+            "| Easy | Base count −1 | " + ladder["easy"] + " |\n"
+            "| Standard | Base count | " + ladder["standard"] + " |\n"
+            "| Hard | Base count +1 | " + ladder["hard"] + " |\n"
+            "| Expert | Base count +2 | " + ladder["expert"] + " |\n\n"
             "**Playing in the app instead:** the app can run these exact rules, so you don't need to print anything. "
             "On the setup screen choose **Paper rules** and a level. The app draws each rival's card, names the Planning step "
             "that chose each space, and spells out every change to make on the board.")
@@ -91,7 +91,7 @@ def testing(ladder):
         "**Stalls.** " + ladder["stalls"],
         "**Limits.** The scripted player is a fixed strategy, not a person, so expect a strong human to win more often at every level. "
         "These rules have not yet been played at a real table.",
-        "The rules live in `source/paper/paper.js`. For example, `node source/benchmark.cjs --base <commit> --candidate <commit> --paper 2 --bots 3 "
+        "The rules live in `source/paper/paper.js`. For example, `node source/benchmark.cjs --base <commit> --candidate <commit> --paper 1 --bots 3 "
         "--seed 200000 --repeats 2` repeats the Hard test against three rivals (360 games; pin both sides to the release commit).",
     ])
 

@@ -6,20 +6,28 @@ Table-playable rules for the rival animals (two to five), so Dominant Species ca
 - One version only (November 2026): flat element matching, a fixed Dominance Card list, always the card's reverse (No) face, simple Adaptation, full Speciation, Migration without rank-gain checks (it still avoids losing a rank where it leaves), Glaciation without the tundra bonus, Barren Earth, and **Block the leader** (deny the leader's Domination). The earlier detailed rules (card checks, card scoring, rank checks) were retired; `--paper-options full` restores them only to reproduce old results.
 - Benchmark: `node source/benchmark.cjs --base main --candidate worktree --paper N [--bots 2..5]` plays the app's rivals (base) against paper rivals with N extra action pawns (candidate) on the same seeds: 0 Easy, 1 Standard, 2 Hard, 3 Expert.
 
-## Difficulty (seed block 200000, 360 games per cell, v0.3.8; scripted player's win rate, lower is tougher)
+## Difficulty (v0.4.0, seed block 200000, 360 games per cell; scripted player's win rate, lower is tougher)
 
-v0.3.8 fixed the paper rules to match the printed procedures (GPT re-audit E2–E6), which made the rivals stronger. The pawn counts are unchanged (Easy +0, Standard +1, Hard +2, Expert +3); the descriptions moved instead: Easy is a little easier than an even game, Standard a little tougher, Hard about as strong as the app's rivals, Expert tougher.
+v0.4.0 adds the **rival tie-break**: when only rivals tie for the most matches on a tile, the rival higher in the food chain is dominant. Flat matching made rivals tie constantly, and a tie leaves a tile with no dominant animal. At game end paper rivals dominated 2.6 tiles each, against 6.0 for the app's rivals, which handed the player cards, Ice Age points and control of the board. With the tie-break the rivals are about one pawn stronger, so every level is one pawn lower: Easy −1, Standard +0, Hard +1, Expert +2.
 
-| Rivals (even game) | Easy +0 | Standard +1 | Hard +2 | Expert +3 | App |
+| Rivals (even game) | Easy −1 | Standard +0 | Hard +1 | Expert +2 | App |
 |---|---|---|---|---|---|
-| 2 (33%) | 46% | 25% | 19% | 17% | 20% |
-| 3 (25%) | 33% | 17% | 9% | 10% | 15% |
-| 4 (20%) | 26% | 15% | 11% | 7% | 9% |
-| 5 (17%) | 26% | 11% | 8% | 4% | 8% |
+| 2 (33%) | 48% | 30% | 20% | 16% | 20% |
+| 3 (25%) | 36% | 26% | 11% | 8% | 15% |
+| 4 (20%) | 31% | 17% | 7% | 6% | 9% |
+| 5 (17%) | 30% | 11% | 5% | 3% | 8% |
 
-No game stalled. v0.3.7 numbers for comparison: Standard was 31/22/20/15%.
+No game stalled. Games started before v0.4.0 keep their rules and pawn counts.
 
-**Strategy balance.** Chasing Dominance Cards is still the strongest scripted strategy: at Standard it won 43%, 28%, 17% and 13% (2–5 rivals) against 5–20% for the other two. At Hard and Expert the three even out. A self-tuned test player (branch `claude/learning-player`) suggests a stronger version of this plan: contest Initiative, take cards, use Wanderlust. That is under evaluation for the next release.
+**Strategy balance.**
+- Chasing Dominance Cards is still the strongest simple strategy: at Standard it won 44%, 38%, 19% and 15% (2–5 rivals), against 2–25% for the other two.
+- The self-tuned test player (`source/benchmark/tune.cjs`) found the bigger hole: fighting for turn order and the Domination spaces.
+  - It beat v0.3.9 paper rivals by +40 points over the card-chaser at Standard. The app's rivals allow +20.
+  - The tie-break cut that to +20 at Standard and +13 at Hard (720 games per cell).
+  - A re-tuned, stronger player (v2) confirmed it: +24 at Standard, +15 at Hard.
+- Counters tried and dropped:
+  - Holding Initiative against you backfired: rivals waste a pawn each turn.
+  - Blocking with more Domination pawns just made rivals tougher for everyone.
 
 ## History
 

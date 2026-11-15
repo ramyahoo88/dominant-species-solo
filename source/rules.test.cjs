@@ -509,3 +509,14 @@ test('v0.4.0 rival tie-break: the benchmark player sees the same dominant animal
   assert.equal(game.get('cone')(JSON.parse(state), 'C4'), 'birds');
   assert.equal(player.get('cone')(JSON.parse(state), 'C4'), 'birds');
 });
+
+verify('v0.4.0 levels: Easy -1, Standard 0, Hard +1, Expert +2; games started before v0.4.0 keep their level names', `
+  assert.deepEqual(PAPER_LEVELS, [[-1,'Easy'],[0,'Standard'],[1,'Hard'],[2,'Expert']]);
+  const s = newGame('mammals',['birds','insects'],true,7,{extra:0});
+  assert.equal(paperLevel(s.paper.extra, s.paper), 'Standard');
+  assert.equal(paperLevel(1, {extra:1}), 'Standard', 'a v0.3.x game at +1 was Standard');
+  assert.equal(paperLevel(1, {extra:1, rivalTie:true}), 'Hard');
+  const easy = newGame('mammals',['birds','insects'],true,7,{extra:-1});
+  for (const id of easy.rivals) assert.equal(easy.animals[id].ap, s.animals[id].ap - 1);
+  validateState(JSON.parse(JSON.stringify(easy)));
+`);

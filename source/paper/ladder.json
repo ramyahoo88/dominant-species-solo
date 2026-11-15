@@ -1,48 +1,48 @@
 {
   "rulebook": "2026-11-14",
-  "easy": "A little easier than an even game; the best level for learning",
-  "standard": "A little tougher than an even game",
+  "easy": "Easier than an even game; the best level for learning",
+  "standard": "About an even game with two to four rivals; a little tougher with five",
   "hard": "About as strong as the app's rivals",
   "expert": "Tougher than the app's rivals",
-  "method": "Each cell is 360 games on seeds (block 200000) not used to tune the rules, played with v0.3.8. Lower means tougher rivals. In a perfectly even game the player would win 33% against two rivals, 25% against three, 20% against four and 17% against five.",
+  "method": "Each cell is 360 games on seeds (block 200000) not used to tune the rules, played with v0.4.0 (rival tie-break). Lower means tougher rivals. In a perfectly even game the player would win 33% against two rivals, 25% against three, 20% against four and 17% against five.",
   "rows": [
     {
       "rivals": 2,
       "even": 33,
-      "easy": 46,
-      "standard": 25,
-      "hard": 19,
-      "expert": 17,
+      "easy": 48,
+      "standard": 30,
+      "hard": 20,
+      "expert": 16,
       "app": 20
     },
     {
       "rivals": 3,
       "even": 25,
-      "easy": 33,
-      "standard": 17,
-      "hard": 9,
-      "expert": 10,
+      "easy": 36,
+      "standard": 26,
+      "hard": 11,
+      "expert": 8,
       "app": 15
     },
     {
       "rivals": 4,
       "even": 20,
-      "easy": 26,
-      "standard": 15,
-      "hard": 11,
-      "expert": 7,
+      "easy": 31,
+      "standard": 17,
+      "hard": 7,
+      "expert": 6,
       "app": 9
     },
     {
       "rivals": 5,
       "even": 17,
-      "easy": 26,
+      "easy": 30,
       "standard": 11,
-      "hard": 8,
-      "expert": 4,
+      "hard": 5,
+      "expert": 3,
       "app": 8
     }
   ],
-  "strategy": "**Strategy balance.** Chasing Domination cards is the strongest approach in testing: at Standard it wins 13–43% against paper rivals versus 5–20% for spreading out or chasing majorities. At Hard and Expert the three approaches even out. If you want a harder game, avoid leaning on Domination cards, or move up a level.",
-  "stalls": "With the Barren Earth step, no test game stalled: every game reached a normal end. If the action display fills before every rival has placed, Planning simply ends and the extra pawns wait for the next turn."
+  "strategy": "**Strategy balance.** Chasing Domination cards is still the strongest simple approach: at Standard it wins 15–44% against 2–25% for spreading out or chasing majorities. A self-tuned test player that fights for turn order and Domination spaces does better still, about 20 points above the card-chaser at Standard, which is the same margin it gets against the app's rivals. Before the rival tie-break that margin was about 40 points.",
+  "stalls": "No test game stalled: every game reached a normal end. If the action display fills before every rival has placed, Planning simply ends and the extra pawns wait for the next turn."
 }

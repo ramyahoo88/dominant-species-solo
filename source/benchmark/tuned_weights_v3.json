@@ -1,0 +1,541 @@
+{
+ "focus": "dominance",
+ "features": "all",
+ "settings": {
+  "features": "all",
+  "trainModes": "app,0,1,2,3",
+  "trainSeed": 350000,
+  "validateSeed": 360000,
+  "validateGames": 400,
+  "pairs": 12,
+  "games": 64,
+  "sigma": 0.5,
+  "lr": 0.35,
+  "start": "source/benchmark/tuned_weights_v2.json"
+ },
+ "start": {
+  "fit": 0.0861,
+  "win": 0.343
+ },
+ "best": {
+  "focus": "dominance",
+  "row": {
+   "initiative": -1.123,
+   "adaptation": 5.236,
+   "regression": 0.728,
+   "abundance": 0.92,
+   "wasteland": 0.209,
+   "depletion": -1.287,
+   "glaciation": -2.052,
+   "speciation": 0.957,
+   "wanderlust": 0.436,
+   "migration": 0.894,
+   "competition": -0.415,
+   "domination": 3.414
+  },
+  "cardWeight": 13.254,
+  "nonOwner": 0.913,
+  "rivalWeight": 0.194,
+  "setup": 7.239,
+  "domCommit": 2.208,
+  "commit": 3.017,
+  "indexPen": 0.07,
+  "cap": 10.412,
+  "oppMin": 0.193,
+  "worthless": 0.934,
+  "wander": 8.034,
+  "initFirst": 3.61,
+  "initOther": 9.888,
+  "regDue": 7.796,
+  "regNot": -1.291,
+  "glacLater": -1.768,
+  "instinct": 0.515,
+  "late": {
+   "initiative": 1.948,
+   "adaptation": -0.113,
+   "regression": 0.152,
+   "abundance": -2.252,
+   "wasteland": -1.369,
+   "depletion": -1.094,
+   "glaciation": 0.923,
+   "speciation": 1.351,
+   "wanderlust": 1.078,
+   "migration": 0.544,
+   "competition": 0.364,
+   "domination": 0.93
+  },
+  "card": {
+   "Aquatic": -2.225,
+   "Biodiversity": 0.06,
+   "Biomass": 1.113,
+   "Blight": 2.213,
+   "Catastrophe": -0.781,
+   "Cold Snap": 1.772,
+   "Disease": -3.172,
+   "Ecodiversity": 0.326,
+   "Evolution": -0.482,
+   "Fecundity": -2.088,
+   "Fertile": -1.492,
+   "Habitat": 0.683,
+   "Hibernation": 4.524,
+   "Ice Age": -2.419,
+   "Ice Sheet": -4.679,
+   "Immigrants": -2.696,
+   "Instinct": 0.677,
+   "Intelligence": 1.137,
+   "Mass Exodus": -0.439,
+   "Metamorphosis": -0.073,
+   "Niche Biomes": -3.149,
+   "Nocturnal": -1.684,
+   "Omnivore": -1.665,
+   "Parasitism": -0.256,
+   "Predator": 2.705,
+   "Symbiotic": 0.797
+  },
+  "reserve": 1.398,
+  "specCost": 0.104,
+  "loneTundra": 2.291,
+  "elemPen": -0.209,
+  "denyDeplete": -1.201,
+  "denyComp": -0.736,
+  "denyGlac": -0.248
+ },
+ "bestGen": 24,
+ "bestValFit": 0.2416,
+ "bestValWin": 0.48,
+ "current": {
+  "focus": "dominance",
+  "row": {
+   "initiative": -1.123,
+   "adaptation": 4.937,
+   "regression": 0.728,
+   "abundance": 1.715,
+   "wasteland": 0.461,
+   "depletion": -1.706,
+   "glaciation": -2.196,
+   "speciation": 0.394,
+   "wanderlust": 0.739,
+   "migration": 1.321,
+   "competition": -0.591,
+   "domination": 3.414
+  },
+  "cardWeight": 13.61,
+  "nonOwner": 0.966,
+  "rivalWeight": 0.041,
+  "setup": 6.74,
+  "domCommit": 3.337,
+  "commit": 3.212,
+  "indexPen": 0.124,
+  "cap": 12.027,
+  "oppMin": 0.221,
+  "worthless": 0.906,
+  "wander": 9.388,
+  "initFirst": 4.603,
+  "initOther": 9.856,
+  "regDue": 10.436,
+  "regNot": -0.355,
+  "glacLater": -0.294,
+  "instinct": 0.704,
+  "late": {
+   "initiative": 2.865,
+   "adaptation": 0.074,
+   "regression": 0.477,
+   "abundance": -2.127,
+   "wasteland": -1.724,
+   "depletion": -0.831,
+   "glaciation": 0.599,
+   "speciation": 2.351,
+   "wanderlust": 0.37,
+   "migration": 0.912,
+   "competition": 0.174,
+   "domination": 2.164
+  },
+  "card": {
+   "Aquatic": -1.989,
+   "Biodiversity": -0.602,
+   "Biomass": 0.076,
+   "Blight": 3.037,
+   "Catastrophe": -0.325,
+   "Cold Snap": 1.847,
+   "Disease": -3.538,
+   "Ecodiversity": -0.586,
+   "Evolution": 1.339,
+   "Fecundity": -1.342,
+   "Fertile": -1.013,
+   "Habitat": 0.642,
+   "Hibernation": 4.474,
+   "Ice Age": -2.452,
+   "Ice Sheet": -6.39,
+   "Immigrants": -1.41,
+   "Instinct": -0.516,
+   "Intelligence": 1.312,
+   "Mass Exodus": -0.75,
+   "Metamorphosis": -0.076,
+   "Niche Biomes": -4.319,
+   "Nocturnal": -3.257,
+   "Omnivore": -3.329,
+   "Parasitism": -0.063,
+   "Predator": 3.228,
+   "Symbiotic": 1.928
+  },
+  "reserve": 2.857,
+  "specCost": 0.112,
+  "loneTundra": 2.666,
+  "elemPen": -0.607,
+  "denyDeplete": -1.498,
+  "denyComp": -1.227,
+  "denyGlac": -0.309
+ },
+ "moved": {
+  "row.adaptation": 1.07,
+  "row.abundance": -0.8,
+  "row.wasteland": -1.52,
+  "row.depletion": 0.69,
+  "row.glaciation": 0.81,
+  "row.speciation": 0.9,
+  "row.migration": -0.87,
+  "row.competition": -0.69,
+  "rivalWeight": -0.52,
+  "setup": 0.5,
+  "worthless": 1.93,
+  "initFirst": 0.96,
+  "regNot": 1.24,
+  "late.initiative": 1.18,
+  "late.adaptation": 0.55,
+  "late.regression": 1.23,
+  "late.abundance": -1.48,
+  "late.depletion": -0.85,
+  "late.glaciation": 0.69,
+  "late.speciation": 0.69,
+  "late.migration": 0.59,
+  "card.Blight": 0.88,
+  "card.Cold Snap": 0.88,
+  "card.Disease": -1.2,
+  "card.Ecodiversity": -0.5,
+  "card.Evolution": 1.19,
+  "card.Fecundity": -0.77,
+  "card.Fertile": -0.79,
+  "card.Habitat": -0.53,
+  "card.Hibernation": 2.75,
+  "card.Ice Age": -1.15,
+  "card.Ice Sheet": -0.55,
+  "card.Immigrants": -0.73,
+  "card.Mass Exodus": -0.58,
+  "card.Niche Biomes": -0.57,
+  "card.Omnivore": -0.95,
+  "card.Predator": 1.75,
+  "loneTundra": 2.12,
+  "elemPen": -1.14,
+  "denyDeplete": -1.33
+ },
+ "startWeights": {
+  "focus": "dominance",
+  "row": {
+   "initiative": -1.123,
+   "adaptation": 4.164,
+   "regression": 0.728,
+   "abundance": 1.719,
+   "wasteland": 1.734,
+   "depletion": -1.979,
+   "glaciation": -2.857,
+   "speciation": 0.054,
+   "wanderlust": 0.672,
+   "migration": 1.768,
+   "competition": 0.272,
+   "domination": 3.414
+  },
+  "cardWeight": 12.687,
+  "nonOwner": 0.78,
+  "rivalWeight": 0.298,
+  "setup": 6.492,
+  "domCommit": 1.858,
+  "commit": 3.108,
+  "indexPen": 0.092,
+  "cap": 9.539,
+  "oppMin": 0.159,
+  "worthless": -0.999,
+  "wander": 8.622,
+  "initFirst": 2.166,
+  "initOther": 10.305,
+  "regDue": 6.349,
+  "regNot": -3.765,
+  "glacLater": -1.246,
+  "instinct": 0.42,
+  "late": {
+   "initiative": 0.767,
+   "adaptation": -0.659,
+   "regression": -1.082,
+   "abundance": -0.768,
+   "wasteland": -1.364,
+   "depletion": -0.241,
+   "glaciation": 0.232,
+   "speciation": 0.658,
+   "wanderlust": 1.184,
+   "migration": -0.046,
+   "competition": -0.009,
+   "domination": 0.511
+  },
+  "card": {
+   "Aquatic": -1.903,
+   "Biodiversity": 0.45,
+   "Biomass": 1.204,
+   "Blight": 0.892,
+   "Catastrophe": -0.471,
+   "Cold Snap": 0.45,
+   "Disease": -1.374,
+   "Ecodiversity": 1.069,
+   "Evolution": -2.27,
+   "Fecundity": -0.938,
+   "Fertile": -0.312,
+   "Habitat": 1.48,
+   "Hibernation": 0.399,
+   "Ice Age": -0.694,
+   "Ice Sheet": -3.847,
+   "Immigrants": -1.601,
+   "Instinct": 0.674,
+   "Intelligence": 1.468,
+   "Mass Exodus": 0.424,
+   "Metamorphosis": -0.753,
+   "Niche Biomes": -2.298,
+   "Nocturnal": -1.809,
+   "Omnivore": -0.242,
+   "Parasitism": -0.838,
+   "Predator": 0.084,
+   "Symbiotic": 1.363
+  },
+  "reserve": 0.972,
+  "specCost": 0.131,
+  "loneTundra": 1.23,
+  "elemPen": 0.361,
+  "denyDeplete": 0.134,
+  "denyComp": -0.46,
+  "denyGlac": -0.342
+ },
+ "history": [
+  {
+   "gen": 1,
+   "popMeanWin": 0.35,
+   "seconds": 60
+  },
+  {
+   "gen": 2,
+   "popMeanWin": 0.386,
+   "seconds": 110
+  },
+  {
+   "gen": 3,
+   "popMeanWin": 0.385,
+   "seconds": 174,
+   "valFit": 0.1601,
+   "valWin": 0.407
+  },
+  {
+   "gen": 4,
+   "popMeanWin": 0.352,
+   "seconds": 250
+  },
+  {
+   "gen": 5,
+   "popMeanWin": 0.349,
+   "seconds": 297
+  },
+  {
+   "gen": 6,
+   "popMeanWin": 0.395,
+   "seconds": 354,
+   "valFit": 0.1759,
+   "valWin": 0.425
+  },
+  {
+   "gen": 7,
+   "popMeanWin": 0.346,
+   "seconds": 432
+  },
+  {
+   "gen": 8,
+   "popMeanWin": 0.441,
+   "seconds": 497
+  },
+  {
+   "gen": 9,
+   "popMeanWin": 0.501,
+   "seconds": 561,
+   "valFit": 0.1529,
+   "valWin": 0.403
+  },
+  {
+   "gen": 10,
+   "popMeanWin": 0.47,
+   "seconds": 640
+  },
+  {
+   "gen": 11,
+   "popMeanWin": 0.394,
+   "seconds": 686
+  },
+  {
+   "gen": 12,
+   "popMeanWin": 0.447,
+   "seconds": 749,
+   "valFit": 0.1546,
+   "valWin": 0.4
+  },
+  {
+   "gen": 13,
+   "popMeanWin": 0.423,
+   "seconds": 825,
+   "valFit": 0.2203,
+   "valWin": 0.46
+  },
+  {
+   "gen": 14,
+   "popMeanWin": 0.404,
+   "seconds": 76
+  },
+  {
+   "gen": 15,
+   "popMeanWin": 0.399,
+   "seconds": 126,
+   "valFit": 0.1845,
+   "valWin": 0.427
+  },
+  {
+   "gen": 16,
+   "popMeanWin": 0.398,
+   "seconds": 197
+  },
+  {
+   "gen": 17,
+   "popMeanWin": 0.423,
+   "seconds": 266
+  },
+  {
+   "gen": 18,
+   "popMeanWin": 0.415,
+   "seconds": 333,
+   "valFit": 0.1792,
+   "valWin": 0.422
+  },
+  {
+   "gen": 19,
+   "popMeanWin": 0.456,
+   "seconds": 426
+  },
+  {
+   "gen": 20,
+   "popMeanWin": 0.414,
+   "seconds": 490
+  },
+  {
+   "gen": 21,
+   "popMeanWin": 0.422,
+   "seconds": 547,
+   "valFit": 0.1888,
+   "valWin": 0.43
+  },
+  {
+   "gen": 22,
+   "popMeanWin": 0.415,
+   "seconds": 614
+  },
+  {
+   "gen": 23,
+   "popMeanWin": 0.452,
+   "seconds": 684
+  },
+  {
+   "gen": 24,
+   "popMeanWin": 0.436,
+   "seconds": 754,
+   "valFit": 0.2416,
+   "valWin": 0.48
+  },
+  {
+   "gen": 25,
+   "popMeanWin": 0.476,
+   "seconds": 833
+  },
+  {
+   "gen": 26,
+   "popMeanWin": 0.464,
+   "seconds": 884,
+   "valFit": 0.2132,
+   "valWin": 0.455
+  },
+  {
+   "gen": 27,
+   "popMeanWin": 0.486,
+   "seconds": 69,
+   "valFit": 0.2375,
+   "valWin": 0.475
+  },
+  {
+   "gen": 28,
+   "popMeanWin": 0.436,
+   "seconds": 165
+  },
+  {
+   "gen": 29,
+   "popMeanWin": 0.493,
+   "seconds": 234
+  },
+  {
+   "gen": 30,
+   "popMeanWin": 0.398,
+   "seconds": 297,
+   "valFit": 0.1992,
+   "valWin": 0.44
+  },
+  {
+   "gen": 31,
+   "popMeanWin": 0.398,
+   "seconds": 381
+  },
+  {
+   "gen": 32,
+   "popMeanWin": 0.459,
+   "seconds": 432
+  },
+  {
+   "gen": 33,
+   "popMeanWin": 0.399,
+   "seconds": 502,
+   "valFit": 0.2315,
+   "valWin": 0.468
+  },
+  {
+   "gen": 34,
+   "popMeanWin": 0.454,
+   "seconds": 582
+  },
+  {
+   "gen": 35,
+   "popMeanWin": 0.483,
+   "seconds": 644
+  },
+  {
+   "gen": 36,
+   "popMeanWin": 0.468,
+   "seconds": 708,
+   "valFit": 0.2308,
+   "valWin": 0.468
+  },
+  {
+   "gen": 37,
+   "popMeanWin": 0.445,
+   "seconds": 803
+  },
+  {
+   "gen": 38,
+   "popMeanWin": 0.407,
+   "seconds": 875
+  },
+  {
+   "gen": 39,
+   "popMeanWin": 0.535,
+   "seconds": 931,
+   "valFit": 0.1868,
+   "valWin": 0.427
+  }
+ ]
+}

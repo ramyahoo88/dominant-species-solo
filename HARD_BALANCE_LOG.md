@@ -164,3 +164,36 @@ The anchor reproduces v4 exactly (Hard 745/1440 v3, 269/1440 dominance).
 - Paper rivals choose the tile to score by their own VP only. So they often score tiles where you collect a lot (second place on big tiles).
 - **New candidate `domNet`:** a rival scores the tile with the most (its VP − your VP). Locally, with holdYou, the VP fed to v3 drops from 21.3 to 10.2 (App's level).
 - Queued: ba29x1 domNet, ba29x2 holdYou + domNet. These run before the re-tune; the re-tune's candidate is chosen from them.
+
+### 00:55 — Batch 3 and a new leading candidate: `rivalsFirst`
+
+X35 / X2 against the pooled App baseline.
+
+| Run | X35 | X2 | Easy v3/dom | Std v3/dom | Hard v3/dom | Exp v3/dom |
+|---|---|---|---|---|---|---|
+| ba20 cardVP | +0.69 | −0.05 | | 68.5/35.2 | 55.6/21.9 | 44.2/16.9 |
+| ba21 holdYou+cardVP | +0.35 | −0.50 | | 64.8/36.2 | 50.8/29.1 | 41.3/20.6 |
+| ba22 holdYou+initClimb | +0.38 | −0.39 | | 61.1/32.2 | 47.3/23.5 | 36.8/17.2 |
+| ba23 anchor, seed 460000 | +0.95 | +0.16 | | 66.5/29.0 | 53.3/18.3 | 40.3/12.4 |
+| ba24 holdYou, seed 460000 | +0.45 | −0.33 | | 60.9/33.1 | 48.0/23.3 | 38.3/16.8 |
+| **ba28 rivalsFirst** | (see below) | −0.34 | 61.1/40.8 | 41.6/21.0 | 27.3/10.6 | |
+| ba29 holdYou+rivalsFirst | | −0.43 | 56.2/40.0 | 41.2/20.2 | 26.7/12.1 | |
+| ba29x1 domNet | +1.33 | +0.18 | | 56.5/20.6 | 42.4/12.6 | 36.7/7.9 |
+
+**domNet backfires.** It hurts the simple player much more than v3.
+
+**rivalsFirst: edgeX by rival count (2/3/4/5):**
+- Easy (−1): −0.87 / −0.05 / −0.10 / −0.04
+- Standard (0): −0.37 / +0.11 / +0.15 / −0.05
+- Hard (+1): −0.32 / +0.21 / +0.64 / +0.48. Floor effects: dominance at 4–5 rivals is 4% and 3%.
+
+**What it means.**
+- With rivalsFirst, Standard is about as hard as App rivals (dominance 21.0% vs App 19.3%; v3 41.6% vs App about 41%).
+- At 3–5 rivals the excess is gone at Easy and Standard. A strong player's edge matches the one against App rivals.
+- holdYou adds nothing on top. rivalsFirst alone is one rule, so it's preferred.
+- At +1 it is identical to extraFirst (same placement order), which is a consistency check.
+- **Level step is bigger:** dominance 40.8 → 21.0 → 10.6 from −1 to +1. Likely new mapping: Easy −2, Standard −1, Hard 0, Expert +1. It needs a ladder that includes −2 (benchmark.cjs, scripted player).
+
+**Queue changes (00:55).**
+- ba30–32 were retargeted to **re-tune against rivalsFirst**. The file names still say `hy`; the checkpoint is `results/ba_rf.ckpt.json`.
+- Added ba29y1: rivalsFirst at seed 460000 (confirmation).

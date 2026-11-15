@@ -72,7 +72,7 @@ function nnSampleGame(sc, player, opts) {
     const scores = player.scores(st, sc.human, sc.policy);
     if (!scores || scores.length < 2) return null;
     const ranked = [...scores].sort((a, b) => b.value - a.value);
-    const cands = ranked.slice(0, opts.k).map(c => ({...c, win: 0, margin: 0}));
+    const cands = ranked.slice(0, opts.k).map(c => ({...c, win: 0, margin: 0, raw: []}));
     for (let m = 0; m < opts.m; m++) {
       const base = copy(st);
       const dealt = nnResample(base, supply, nnRandom(Math.floor(rnd() * 4294967296)));
@@ -82,10 +82,13 @@ function nnSampleGame(sc, player, opts) {
         const g = nnContinue(s2, copy(dealt.supply), dealt.seed, sc.human, player, sc.policy);
         c.win += g.win / opts.m;
         c.margin += g.margin / opts.m;
+        c.raw.push([g.win, g.margin]);
       }
     }
     samples.push({features: player.features(st, sc.human), turn: st.turn,
-      cands: cands.map(c => [NN_SLOT_INDEX[c.slot], +c.tuned.toFixed(4), +c.residual.toFixed(4), +c.win.toFixed(4), +c.margin.toFixed(3)])});
+      cands: cands.map(c => [NN_SLOT_INDEX[c.slot], +c.tuned.toFixed(4), +c.residual.toFixed(4), +c.win.toFixed(4), +c.margin.toFixed(3)]),
+      // --raw: each candidate's [win, margin] per re-dealt future (future m is the same for every candidate).
+      ...(opts.raw ? {raw: cands.map(c => c.raw)} : {})});
     return null;
   };
   const game = nnContinue(s, supply, sc.seed, sc.human, player, sc.policy, onPlan);

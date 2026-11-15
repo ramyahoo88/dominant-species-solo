@@ -376,3 +376,21 @@ Old-scale offsets (−1/0/+1/+2), with App edges from ba34:
 **Option B for the user (not built on main):** planning first only with 3+ rivals.
 - 2-rival games would play as v0.4.1.
 - The cost: 2-rival levels need their own offsets (the v0.4.1 scale, Easy −1 … Expert +2), and the rule and difficulty table get a rival-count condition.
+
+### 04:50 — Independent check by the player-bot agent: PASS
+
+**Setup:** seed 490000, shipped code (byte-identical to main), jobs `pb_c1`–`c3`, 360 per cell. I re-ran `final_eval.py` on its files and the numbers match.
+
+**X35 by level** (Easy / Standard / Hard / Expert):
+
+| Run | Easy | Standard | Hard | Expert |
+|---|---|---|---|---|
+| Independent (490000) | −0.64 | −0.47 | −0.23 | −0.13 |
+| Pooled with mine (470000) | −0.78 | −0.41 | −0.15 | −0.12 |
+
+- No level with 3–5 rivals is above +0.2. The highest pooled cell is Hard with 5 rivals, at +0.10.
+- The worker's re-fit simple human also stays below App's edge at every level.
+- v4 beats v3 on these fresh seeds by +1 to +4 points at the paper levels and +5.7 at App.
+- One stall in 34,560 games, again at 5 rivals Easy: the known crowded-table case.
+
+**Correction from the worker on the neural-network player:** the full headroom data (648 decisions) shows a small real gain over v3's placements, +0.013 win probability per decision (±0.008). Reopening it would need new data against v0.5.0 rivals; this is left for the user.

@@ -205,7 +205,9 @@ function paperPawn(s, step) {
       const mine = tiles.filter(t => cone(s,t) === actor);
       const safe = tiles.filter(t => !cone(s,t) || cone(s,t) === actor);
       const pool = mine.length && availableCards(s).length ? mine : safe.filter(t => myVP(t) > 0).length ? safe : tiles;
-      const t = pBy(pool, myVP, t => pFirstVP(s,t));
+      // Candidate (testing, off by default): domNet. Rank tiles by the rival's VP minus your VP on that tile.
+      const you = s.human && !s.paperRivals?.includes(s.human) ? s.human : null;
+      const t = PAPER.domNet && you ? pBy(pool, t => myVP(t) - tileVP(s,t,you), myVP, t => pFirstVP(s,t)) : pBy(pool, myVP, t => pFirstVP(s,t));
       return {tile:t,label:describeScore(s,t)};
     }
   }

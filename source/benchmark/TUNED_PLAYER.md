@@ -224,3 +224,9 @@ The line is +0.2. One run's X35 is about ±0.3 (95%); a single 5-rival cell abou
 - Largest moves from v3: later Migration (+2.1) and Depletion (+2.0), Glaciation and Competition rows down (−2.1,
   −2.0), Predator and Aquatic cards up (+2.6, +1.9). Initiative weights rose (initFirst +0.8, initOther +1.3,
   late Initiative +1.3).
+
+**Confirmation on the balance agent's 470000 tables** (`pb_e2`, pb5 merged into `ba67`/`ba34`): pb5 beats v4 by
++5.9 (Easy), +2.6, +1.5, +1.6 (Expert) points and is 4.0 behind at App. Pooled over both seed blocks
+(2,880 tables per level): pb5 minus v4 is +5.4, +4.2, +2.4, +0.5 and −5.3 at App. Best against best, X35 pooled:
+Easy −0.12, Standard −0.21, Hard −0.09, Expert −0.09 (pb5 against its own App edge: +0.05, −0.04, +0.05, −0.01).
+No level with 3–5 rivals reaches +0.2. Hard and Expert sit about level with App; Easy and Standard a little below.

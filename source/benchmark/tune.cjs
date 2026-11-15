@@ -49,6 +49,12 @@ const GROUPS = {
   elements: () => ['elemPen'],
   denial: () => ['denyDeplete', 'denyComp', 'denyGlac'],
 };
+// Ablation-only groups (--ablate): the two drivers the balance agent found (Initiative climbing, Domination stacking).
+// They overlap 'base' and 'phase', so --features doesn't use them.
+const ABLATIONS = {
+  initiative: () => ['initFirst', 'initOther', 'late.initiative'],
+  domination: () => ['cardWeight', 'nonOwner', 'rivalWeight', 'setup', 'domCommit', 'late.domination'],
+};
 const groupKeys = (defaults, list) => (list === 'all' ? Object.keys(GROUPS) : list.split(',').filter(Boolean)).flatMap(g => {
   assert(GROUPS[g], 'Unknown feature group ' + g + '; use ' + Object.keys(GROUPS).join(', ') + ' or all.');
   return GROUPS[g](defaults);
@@ -268,7 +274,7 @@ async function evaluate(args, pool, animals) {
   }
   for (const group of (args.ablate || '').split(',').filter(Boolean)) {
     const w = complete(pool.defaults, JSON.parse(JSON.stringify(weights)));
-    for (const k of groupKeys(pool.defaults, group)) setKey(w, k, getKey(pool.defaults, k));
+    for (const k of ABLATIONS[group] ? ABLATIONS[group]() : groupKeys(pool.defaults, group)) setKey(w, k, getKey(pool.defaults, k));
     columns.push({label: 'no_' + group, policy: 'tuned', weights: w});
   }
   const table = [];

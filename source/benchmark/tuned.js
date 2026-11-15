@@ -197,7 +197,8 @@ function tunedDomination(s, actor, W, skip = 0) {
   return choices[skip] ?? {value: 0};
 }
 
-function tunedPlacement(state, actor, W, timing = null) {
+// Every open action space with its Planning value (null if none is open). tunedPlacement plays the best one.
+function tunedOptions(state, actor, W, timing = null) {
   const s = visibleBoard(state);
   const policy = POLICIES.tuned;
   const open = ALL_SLOTS.filter(key => !s.pawns[key] && (timing !== 'initiative' || key !== 'initiative-0') &&
@@ -242,7 +243,11 @@ function tunedPlacement(state, actor, W, timing = null) {
     }
     return {slot, value: timing === 'instinct' && EXECUTION.indexOf(slot) < s.cursor ? value * W.instinct : value};
   });
-  return choiceBest(options).slot;
+  return options;
+}
+function tunedPlacement(state, actor, W, timing = null) {
+  const options = tunedOptions(state, actor, W, timing);
+  return options ? choiceBest(options).slot : null;
 }
 
 // Execution choices: the fixed player's (frozen reference helpers), except where a round-2 feature is on.

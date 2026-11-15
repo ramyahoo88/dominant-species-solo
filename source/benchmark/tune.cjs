@@ -5,7 +5,8 @@
 //        [--pairs 8] [--games 64] [--validate-games 400] [--focus dominance] [--weights FILE] [--out FILE]
 //        [--features base,phase,cards,cubes,elements,denial | all] [--resume CHECKPOINT]
 //   node source/benchmark.cjs --evaluate [--weights FILE] [--seed 230000] [--per-cell 90] [--modes app,1] [--policies tuned,dominance]
-//        [--compare v1=FILE,...] [--ablate phase,cards,...]
+//        [--compare v1=FILE,...] [--ablate phase,cards,...] [--net NET.json for the 'nn' policy]
+//   node source/benchmark.cjs --nn-data --weights FILE [--net NET.json] --seed S --out PREFIX [--k 4 --m 2 --rate .07 --minutes 17]
 //   node source/benchmark.cjs --selftest
 //
 // --features picks the weight groups the tuner moves (default base = the v1 weights); the others stay as --weights
@@ -70,8 +71,8 @@ function rng(seed) {
 
 // ---------------------------------------------------------------- worker
 function worker() {
-  const player = load(PLAYER_REFERENCE, ['player', 'tuned']);
-  const game = load('worktree', ['game']);
+  const player = load(PLAYER_REFERENCE, ['player', 'tuned', 'nn/features', 'nn/nnplayer']);
+  const game = load('worktree', ['game', 'nn/driver']);
   // Paper rule candidates under test (e.g. initLeader), applied to every paper game.
   const options = Object.fromEntries((workerData?.paperOptions || []).map(o => [o, true]));
   // 'full' restores the retired detailed paper rules (as benchmark.cjs does); 'realMatch' turns flat matching off.
@@ -80,11 +81,20 @@ function worker() {
   const play = game.get('playBenchmark');
   const strategy = {place: player.get('playerPlacement'), choose: player.get('playerChoice')};
   const setTuned = player.get('setTuned');
-  parentPort.on('message', ({id, weights, scenarios}) => {
+  // Neural-network player ('nn' policy): the net from --net, read once per worker.
+  if (workerData?.netFile) player.get('setNet')(JSON.parse(readFileSync(workerData.netFile, 'utf8').replace(/^\uFEFF/, '')));
+  const visible = player.get('visibleBoard'), features = player.get('nnFeatures'), scores = player.get('nnSlotScores');
+  const nnPlayer = {...strategy, scores, features: (s, actor) => features(visible(s), actor)};
+  const sampleGame = game.get('nnSampleGame');
+  parentPort.on('message', ({id, weights, scenarios, nn}) => {
     if (weights) setTuned(weights);
     const out = scenarios.map(sc => {
       game.run('Object.assign(PAPER, ' + JSON.stringify(sc.mode === 'app' ? {place: false, all: false, extraAP: 0} : {place: true, all: true, extraAP: sc.mode, ...options}) + ')');
       try {
+        if (nn) {
+          const {game: g, samples} = sampleGame(sc, nnPlayer, nn);
+          return {win: g.win, margin: g.margin, stalled: !!g.stalled, samples: samples.map(x => ({...x, features: Array.from(x.features)}))};
+        }
         const g = play(sc, strategy);
         return {win: g.winner === g.human ? 1 : 0, margin: g.humanMargin, stalled: !!g.stalled};
       } catch (error) {
@@ -93,23 +103,23 @@ function worker() {
     });
     parentPort.postMessage({id, out});
   });
-  parentPort.postMessage({ready: true, defaults: JSON.parse(JSON.stringify(player.get('DEFAULT_WEIGHTS')))});
+  parentPort.postMessage({ready: true, defaults: JSON.parse(JSON.stringify(player.get('DEFAULT_WEIGHTS'))), featureSize: player.get('NN_FEATURE_SIZE'), featuresVersion: player.get('NN_FEATURES_VERSION'), slots: [...player.get('ALL_SLOTS')]});
 }
 
 // ---------------------------------------------------------------- pool
-async function makePool(n, paperOptions = []) {
+async function makePool(n, paperOptions = [], netFile = null) {
   const workers = [];
-  let defaults;
+  let defaults, featureSize, featuresVersion, slots;
   await Promise.all(Array.from({length: n}, () => new Promise((ok, fail) => {
-    const w = new Worker(__filename, {workerData: {paperOptions}});
+    const w = new Worker(__filename, {workerData: {paperOptions, netFile}});
     w.once('error', fail);
-    w.once('message', msg => { defaults = msg.defaults; ok(); });
+    w.once('message', msg => { ({defaults, featureSize, featuresVersion, slots} = msg); ok(); });
     workers.push(w);
   })));
   let next = 0;
   const pending = new Map();
   for (const w of workers) w.on('message', ({id, out}) => { const p = pending.get(id); pending.delete(id); p(out); });
-  const send = (w, weights, scenarios) => new Promise(ok => { const id = next++; pending.set(id, ok); w.postMessage({id, weights, scenarios}); });
+  const send = (w, weights, scenarios, nn) => new Promise(ok => { const id = next++; pending.set(id, ok); w.postMessage({id, weights, scenarios, nn}); });
   // Play every (weights, scenarios) job, spreading each job's games over all workers.
   async function run(jobs) {
     const tasks = [];
@@ -117,7 +127,7 @@ async function makePool(n, paperOptions = []) {
       const chunk = Math.ceil(job.scenarios.length / workers.length);
       for (let k = 0; k < workers.length; k++) {
         const part = job.scenarios.slice(k * chunk, (k + 1) * chunk);
-        if (part.length) tasks.push({j, at: k * chunk, weights: job.weights, part});
+        if (part.length) tasks.push({j, at: k * chunk, weights: job.weights, part, nn: job.nn});
       }
     });
     const results = jobs.map(job => Array(job.scenarios.length));
@@ -125,13 +135,13 @@ async function makePool(n, paperOptions = []) {
     await Promise.all(workers.map(async w => {
       while (t < tasks.length) {
         const task = tasks[t++];
-        const out = await send(w, task.weights, task.part);
+        const out = await send(w, task.weights, task.part, task.nn);
         out.forEach((g, i) => { results[task.j][task.at + i] = g; });
       }
     }));
     return results;
   }
-  return {run, defaults, close: () => workers.forEach(w => w.terminate())};
+  return {run, defaults, featureSize, featuresVersion, slots, size: workers.length, close: () => workers.forEach(w => w.terminate())};
 }
 
 // ---------------------------------------------------------------- scenarios
@@ -296,6 +306,45 @@ async function evaluate(args, pool, animals) {
     pooled, vsTuned, errors, table};
 }
 
+// Training data for the neural-network player (source/benchmark/nn): random tables played by the 'nn' policy (the
+// tuned player from --weights plus the --net correction, or the tuned player alone with no --net). Sampled Planning
+// placements carry their top --k spaces played out on --m shared re-dealt futures. Writes OUT.bin (float32 features,
+// one row per sample) and OUT.jsonl (candidates [space, tuned value, net value, win rate, mean margin] and the table).
+// Stops starting new batches after --minutes, so a job stays short.
+async function nnData(args, pool, animals) {
+  const {appendFileSync, existsSync, unlinkSync} = require('node:fs');
+  assert(args.out, 'Give --out PREFIX (for PREFIX.bin and PREFIX.jsonl).');
+  for (const ext of ['.bin', '.jsonl']) if (existsSync(args.out + ext)) unlinkSync(args.out + ext);
+  writeFileSync(args.out + '.meta.json', JSON.stringify({featureSize: pool.featureSize, featuresVersion: pool.featuresVersion, slots: pool.slots,
+    weights: args.weights || 'defaults', net: args.net || null, k: +args.k, m: +args.m, rate: +args.rate, seed: +args.seed}));
+  const read = file => JSON.parse(readFileSync(file, 'utf8').replace(/^\uFEFF/, ''));
+  const file = args.weights ? read(args.weights) : {};
+  const weights = complete(pool.defaults, file.best ?? file);
+  const opts = {k: +args.k, m: +args.m, rate: +args.rate};
+  const batch = pool.size * 2, limit = Date.now() + 60000 * +args.minutes;
+  let start = +args.seed, games = 0, wins = 0, samples = 0, errors = [], stalled = 0;
+  const t0 = Date.now();
+  while (Date.now() < limit && games < +args['max-games']) {
+    const scs = scenarios(start++, batch, animals).map(sc => ({...sc, policy: 'nn'}));
+    const [res] = await pool.run([{weights, scenarios: scs, nn: opts}]);
+    for (let i = 0; i < res.length; i++) {
+      const g = res[i];
+      games++;
+      if (g.error) { errors.push(g.error); continue; }
+      wins += g.win; stalled += g.stalled ? 1 : 0;
+      for (const x of g.samples) {
+        appendFileSync(args.out + '.bin', Buffer.from(Float32Array.from(x.features).buffer));
+        appendFileSync(args.out + '.jsonl', JSON.stringify({cands: x.cands, turn: x.turn, mode: scs[i].mode, bots: scs[i].bots, human: scs[i].human}) + '\n');
+        samples++;
+      }
+    }
+    process.stderr.write(JSON.stringify({games, samples, winRate: +(wins / games).toFixed(3), seconds: Math.round((Date.now() - t0) / 1000)}) + '\n');
+  }
+  return {featureSize: pool.featureSize, games, samples, winRate: +(wins / Math.max(1, games)).toFixed(3), stalled, errors: errors.slice(0, 5),
+    errorCount: errors.length, seeds: [+args.seed, start - 1], perBatch: batch, opts, net: args.net || null, weights: args.weights || 'defaults',
+    seconds: Math.round((Date.now() - t0) / 1000)};
+}
+
 async function selftest(pool, animals) {
   // With default weights the tuned player must play exactly like the fixed 'dominance' policy.
   const base = scenarios(4242, 24, animals);
@@ -309,7 +358,9 @@ async function selftest(pool, animals) {
 
 async function main(argv) {
   const args = parseArgs({args: argv, options: {
-    tune: {type: 'boolean'}, evaluate: {type: 'boolean'}, selftest: {type: 'boolean'},
+    tune: {type: 'boolean'}, evaluate: {type: 'boolean'}, selftest: {type: 'boolean'}, 'nn-data': {type: 'boolean'},
+    net: {type: 'string'}, k: {type: 'string', default: '4'}, m: {type: 'string', default: '2'}, rate: {type: 'string', default: '.07'},
+    minutes: {type: 'string', default: '17'}, 'max-games': {type: 'string', default: '1000000'},
     workers: {type: 'string', default: String(availableParallelism())},
     'train-seed': {type: 'string', default: '210000'}, 'validate-seed': {type: 'string', default: '220000'},
     seed: {type: 'string', default: '230000'}, 'per-cell': {type: 'string', default: '90'},
@@ -321,10 +372,11 @@ async function main(argv) {
     features: {type: 'string'}, resume: {type: 'string'}, compare: {type: 'string'}, ablate: {type: 'string'},
   }}).values;
   assert(['majority', 'dominance', 'reach'].includes(args.focus), 'Focus is majority, dominance or reach.');
-  const pool = await makePool(Math.max(1, Math.min(64, +args.workers)), args['paper-options'].split(',').filter(Boolean));
+  const pool = await makePool(Math.max(1, Math.min(64, +args.workers)), args['paper-options'].split(',').filter(Boolean), args.net || null);
   const animals = [...load(PLAYER_REFERENCE, ['player']).get('FOOD')];
   try {
-    const result = args.selftest ? await selftest(pool, animals) : args.evaluate ? await evaluate(args, pool, animals) : await tune(args, pool, animals);
+    const result = args.selftest ? await selftest(pool, animals) : args['nn-data'] ? await nnData(args, pool, animals) :
+      args.evaluate ? await evaluate(args, pool, animals) : await tune(args, pool, animals);
     process.stdout.write(JSON.stringify(result, null, 2) + '\n');
   } finally { pool.close(); }
 }

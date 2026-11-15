@@ -25,6 +25,7 @@ Set up a normal game for your player count: you plus two to five rival animals, 
 
 1. Shuffle each rival's eight deck cards face down. When a deck runs out, reshuffle its discards.
 2. Choose a difficulty and adjust **each rival's** action pawns from the base count. Extra pawns come from the unused pawns in the box.
+3. Before the first Planning, place the dominance cones using these rules: rivals use the paper matching count, and rival ties go to the food chain (Terms used). Only an animal that is present and matches at least one element can be dominant. Update the cones whenever the result changes.
 
 {{DIFFICULTY}}
 

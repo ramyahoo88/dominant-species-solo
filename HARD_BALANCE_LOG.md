@@ -330,3 +330,25 @@ Checklist item 5 is resolved: there is no excess at +1 with 4–5 rivals.
 - Standard (−1) is a little easier than an even game with 2–3 rivals.
 - Expert (+1) is tougher than App rivals.
 - **Tuner labels changed to match:** −2 Easy … +1 Expert; −2 cells get new seeds and older cells keep theirs.
+
+### 03:20 — Release checks on the shipped code (advisor's blocking list)
+
+1. **Errors and stalls:** no errors in ba28, ba29y1, ba33, ba34, ba55 or ba67. One stalled game in ba67 (5 rivals) and one in the ladder (ba62, 5 rivals, Standard); both are noted in the rulebook.
+2. **Shipped `paper.js` benchmarked:**
+   - **ba66** (`noPlanFirst`, Hard at 450000): 745/269, the same as v4_hardapp.
+   - **ba67** (default rules, seed 470000, levels −2..+1): the −1/0/+1 cells reproduce ba33 exactly. The one exception is 5 rivals at −1 (re-tuned 57% vs 56%), which comes from the opening-round change for a rival with no pawn to place.
+3. **Shipped Easy (−2) evaluated (ba67).** X35 on the shipped scale:
+   - Easy −0.91 (ceiling: the best fixed policy wins 76–81%);
+   - Standard −0.36;
+   - Hard −0.07;
+   - Expert −0.11.
+   - **Every shipped level passes.**
+4. **Restart default:** an App game restarted as Paper now preselects Standard (−1), not 0, with a browser test that fails without the fix.
+5. **Opening round:** it is now an explicit list of rivals with a pawn to place. A rival whose pawns are all on the display (Easy at 5 rivals with an Instinct-parked pawn) skips it, and the rule text says so. There is a rules test for it, and ba68 re-ran the 5-rival Easy ladder cell.
+
+**Non-blocking items done:**
+- results worded "in that sample";
+- a `TUNED_PLAYER.md` note;
+- the save-migration test includes 0.4.1;
+- the player's code doesn't read `currentPlanner` or `s.planning` (grep), so the re-tune isn't blind to the order;
+- `final_eval.py` notes that labels changed (compare by `extraPawns`).

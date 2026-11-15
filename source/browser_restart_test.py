@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parent.parent
 def old_save(version, extra):
     js = f"""const {{load}} = require('{ROOT}/source/benchmark/load.cjs'); const r = load('worktree', ['game']);
       process.stdout.write(r.run(`(() => {{ const s = newGame('amphibians',['birds','arachnids'],true,949381806,{{extra:{extra}}});
-      delete s.paper.rivalTie; s.version = '{version}'; return JSON.stringify(s); }})()`));"""
+      delete s.paper.rivalTie; delete s.paper.planFirst; s.version = '{version}'; return JSON.stringify(s); }})()`));"""
     return json.loads(subprocess.check_output(["node", "-e", js]))
 
 def run(version, extra, expect_extra):

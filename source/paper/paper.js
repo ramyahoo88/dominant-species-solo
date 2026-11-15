@@ -568,6 +568,9 @@ newGame = function(human, rivals, short, seed, paper = null) {
   if (PAPER.flatMatch && !PAPER.noRivalTie) s.paper.rivalTie = true;
   // Candidate (testing, off by default): tieToRival. A tie for the most matches that includes you goes to the highest rival in it.
   if (PAPER.tieToRival && s.paper.rivalTie) s.paper.tieToRival = true;
+  // Rivals plan first (candidate for v0.5.0): recorded in the save, so a game keeps the Planning order it began with.
+  // App games: on unless the setup turns it off. Benchmark games: on with the rivalsFirst switch.
+  if (s.paper.rivalTie && (paper ? !paper.noPlanFirst : PAPER.rivalsFirst)) s.paper.planFirst = true;
   s.paperRivals = [...rivals];
   return s;
 };
@@ -577,8 +580,8 @@ newGame = function(human, rivals, short, seed, paper = null) {
 const _appEnterSupply = enterSupply;
 enterSupply = function(s, values) {
   _appEnterSupply(s, values);
-  // rivalsFirst (testing): each rival's first pawn is placed this way too, at every level.
-  const rounds = !s.paper || s.phase !== 'planning' ? 0 : (PAPER.extraFirst ? Math.max(0, s.paper.extra) : 0) + (PAPER.rivalsFirst ? 1 : 0);
+  // Rivals plan first (s.paper.planFirst): each rival's first pawn is placed this way too, at every level.
+  const rounds = !s.paper || s.phase !== 'planning' ? 0 : (PAPER.extraFirst ? Math.max(0, s.paper.extra) : 0) + (s.paper.planFirst ? 1 : 0);
   if (rounds) { s.paper.pre = rounds * s.paperRivals.length; s.paper.preTotal = s.paper.pre; }
 };
 const _appCurrentPlanner = currentPlanner;

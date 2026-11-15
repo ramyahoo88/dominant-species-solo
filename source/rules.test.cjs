@@ -182,7 +182,7 @@ verify('v0.3.6: paper-rules games add difficulty pawns, use the printed rules, a
   const app = newGame('insects',['birds','arachnids'],true,40);
   assert.equal(app.paper, undefined);
   const s = newGame('insects',['birds','arachnids','mammals'],true,40,{extra:1});
-  assert.deepEqual(s.paper, {extra:1, rivalTie:true});
+  assert.deepEqual(s.paper, {extra:1, rivalTie:true, planFirst:true});
   for (const id of s.rivals) assert.equal(s.animals[id].ap, 6);
   assert.equal(s.animals.insects.ap, 5);
   validateState(JSON.parse(JSON.stringify(s)));
@@ -524,7 +524,7 @@ verify('v0.4.0 levels: Easy -1, Standard 0, Hard +1, Expert +2; games started be
 verify('GPT v0.4.0 audit F1: older paper saves keep their level name, and a restart maps it to the current scale', `
   const old = (version, extra, tie = false) => {
     const s = newGame('amphibians',['birds','arachnids'],true,949381806,{extra});
-    if (!tie) delete s.paper.rivalTie;
+    if (!tie) { delete s.paper.rivalTie; delete s.paper.planFirst; }
     s.version = version;
     validateState(s);
     return s;
@@ -553,7 +553,7 @@ verify('GPT v0.4.0 audit F1: older paper saves keep their level name, and a rest
 verify('GPT v0.4.1 follow-up R2: an Easy save re-exported by v0.3.7-v0.3.9 is still recovered as Easy', `
   const old = (version, extra) => {
     const s = newGame('amphibians',['birds','arachnids'],true,949381806,{extra});
-    delete s.paper.rivalTie;
+    delete s.paper.rivalTie; delete s.paper.planFirst;
     s.version = version;
     validateState(s);
     return s;
@@ -565,4 +565,34 @@ verify('GPT v0.4.1 follow-up R2: an Easy save re-exported by v0.3.7-v0.3.9 is st
   // The documented limit: a v0.3.6 Standard (0) re-saved by v0.3.9 is identical to a v0.3.9 Easy game.
   assert.equal(old('0.3.9', 0).paper.level, 'Easy');
   assert.equal(old('0.4.0', 0).paper.level, null);
+`);
+
+verify('v0.5.0 candidate: rivals plan first; the rule is in the save and survives a save made mid pre-round', `
+  const human = 'insects', rivals = ['mammals','birds','reptiles'];
+  const s = newGame(human, rivals, true, 11, {extra:0});
+  assert.equal(s.paper.planFirst, true);
+  const sup = makeSupplies(s, 11);
+  enterSupply(s, nextSupply(s, sup, 11));
+  assert.equal(s.initiative[0], human, 'the player starts first in Initiative here');
+  const order = s.initiative.filter(id => rivals.includes(id));
+  const seen = [];
+  for (let i = 0; i < order.length; i++) {
+    const p = currentPlanner(s);
+    seen.push(p.actor);
+    const copy = JSON.parse(JSON.stringify(s));
+    validateState(copy);
+    assert.equal(currentPlanner(copy).actor, p.actor, 'a save made mid pre-round resumes with the same rival');
+    botPlacement(s);
+  }
+  assert.deepEqual(seen, order, 'each rival places one pawn first, in Initiative order');
+  assert.equal(s.paper.pre, undefined);
+  assert.equal(currentPlanner(s).actor, human, 'then Planning starts again from the top of the Initiative order');
+  // A game saved before the rule keeps the earlier order: the player places first.
+  const old = newGame(human, rivals, true, 11, {extra:0});
+  delete old.paper.planFirst;
+  enterSupply(old, nextSupply(old, makeSupplies(old, 11), 11));
+  assert.equal(currentPlanner(old).actor, human);
+  // A bad pre-round count is rejected.
+  const bad = JSON.parse(JSON.stringify(s)); bad.paper.pre = 9; bad.paper.preTotal = 3;
+  assert.throws(() => validateState(bad));
 `);

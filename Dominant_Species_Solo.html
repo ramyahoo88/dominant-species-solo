@@ -446,7 +446,7 @@ dialog::backdrop{background:#132d2c88}
 <noscript>This companion needs JavaScript. Open the downloaded HTML file in a browser.</noscript>
 <script>'use strict';
 
-const VERSION = '0.3.9';
+const VERSION = '0.4.0';
 const SAVE_KEY = 'dominant-species-solo-v1';
 // GMT rules p. 4: of the 50 gathered cubes, one marks VP.
 const THREE_PLAYER_CUBES = 50;
@@ -2630,11 +2630,26 @@ newGame = function(human, rivals, short, seed, paper = null) {
   const extra = paper ? Number(paper.extra || 0) : Number(PAPER.extraAP || 0);
   for (const id of rivals) s.animals[id].ap += extra;
   s.paper = PAPER.flatMatch ? {extra} : {extra, detailed:true};
+  // v0.4.0: rival ties go to the food chain. Recorded in the save, so games started earlier keep the rule they began with.
+  if (PAPER.flatMatch && !PAPER.noRivalTie) s.paper.rivalTie = true;
   s.paperRivals = [...rivals];
   return s;
 };
 
 // ---------- Option: flat element matching for rivals ----------
+// Rival tie-break (v0.4.0). Flat matching makes rivals tie often, and a tie leaves a tile with no dominant animal, which
+// handed the player cards, Ice Age points and board control. When only paper rivals share the most matches on a tile,
+// the rival higher in the food chain is dominant. A tie that includes the player still leaves the tile undominated.
+const _appCone = cone;
+cone = function(s, tile) {
+  const owner = _appCone(s, tile);
+  if (owner || !s.paper?.rivalTie || !s.paperRivals) return owner;
+  const vals = s.ids.filter(id => s.tiles[tile]?.cubes[id]).map(id => [id, match(s,tile,id)]);
+  const best = Math.max(0, ...vals.map(v => v[1]));
+  if (!best) return null;
+  const top = vals.filter(v => v[1] === best).map(v => v[0]);
+  return top.length > 1 && top.every(id => s.paperRivals.includes(id)) ? top.sort((a,b) => rank(a) - rank(b))[0] : null;
+};
 const _appMatch = match;
 match = function(s, tile, actor, additions = s.animals[actor].added) {
   if (PAPER.flatMatch && s.paperRivals?.includes(actor)) return Math.min(ANIMALS[actor].affinity + additions.length, VERTICES_OF[tile].filter(k => s.corners[k]).length);
@@ -2729,7 +2744,7 @@ function readSupplyDraft(s, raw) {
 }
 function validateState(s) {
   function assert(ok) { if (!ok) throw new Error('This is not a valid Dominant Species companion save.'); }
-  if (s && ['0.1.0', '0.2.0', '0.3.0', '0.3.1', '0.3.2', '0.3.3', '0.3.4', '0.3.5', '0.3.6', '0.3.7', '0.3.8'].includes(s.version)) s.version = VERSION;
+  if (s && ['0.1.0', '0.2.0', '0.3.0', '0.3.1', '0.3.2', '0.3.3', '0.3.4', '0.3.5', '0.3.6', '0.3.7', '0.3.8', '0.3.9'].includes(s.version)) s.version = VERSION;
   const keys = value => value && typeof value === 'object' ? Object.keys(value) : [];
   assert(s && s.version === VERSION && ['supply','planning','execution','finished'].includes(s.phase) &&
     num(s.turn) && s.turn > 0 && num(s.rng) && s.rng <= 0xffffffff && num(s.seed) && s.seed <= 0xffffffff);

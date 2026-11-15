@@ -76,8 +76,12 @@ function paperPlacement(s, actor, cardIndex, openOverride = null) {
   const leaderDom = terrainIds(s).filter(t => !s.scored.includes(t) && cone(s,t) === leader).length;
   const blockMin = PAPER.domBlock2 ? 2 : 1;
   const block = (PAPER.domBlock || PAPER.domBlock2) && !domFirst && availableCards(s).length && doms < 2 && leaderDom >= blockMin ? pick(['domination'], true) : null;
+  // Candidate (testing, off by default): contest Initiative. initLeader: take the open Initiative space when the VP leader is behind
+  // this rival on the Initiative track (stops the leader climbing). initAlways: take it whenever it is open.
+  const initOpen = open.includes('initiative-0') && !pawnCount(s,actor,'initiative');
+  const holdInit = initOpen && (PAPER.initAlways || PAPER.initLeader && s.initiative.indexOf(leader) > s.initiative.indexOf(actor)) ? 'initiative-0' : null;
   // The same order as before; also record which Planning step chose the space, for the player.
-  const steps = [['Domination first', () => domFirst], ['Barren Earth', () => barren], ['Block the leader', () => block],
+  const steps = [['Domination first', () => domFirst], ['Barren Earth', () => barren], ['Block the leader', () => block], ['Hold Initiative', () => holdInit],
     ['Card action', () => pick(face ? face.rows : [], false, !PAPER.noWeak)], ['Fallback', () => pick(PAPER_FALLBACK, false)],
     ['Last resort', () => pick(PAPER_FALLBACK, true) || open[0]]];
   let slot = null, why = '';

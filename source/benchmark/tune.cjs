@@ -43,13 +43,15 @@ function rng(seed) {
 function worker() {
   const player = load(PLAYER_REFERENCE, ['player', 'tuned']);
   const game = load('worktree', ['game']);
+  // Paper rule candidates under test (e.g. initLeader), applied to every paper game.
+  const options = Object.fromEntries((workerData?.paperOptions || []).map(o => [o, true]));
   const play = game.get('playBenchmark');
   const strategy = {place: player.get('playerPlacement'), choose: player.get('playerChoice')};
   const setTuned = player.get('setTuned');
   parentPort.on('message', ({id, weights, scenarios}) => {
     if (weights) setTuned(weights);
     const out = scenarios.map(sc => {
-      game.run('Object.assign(PAPER, ' + JSON.stringify(sc.mode === 'app' ? {place: false, all: false, extraAP: 0} : {place: true, all: true, extraAP: sc.mode}) + ')');
+      game.run('Object.assign(PAPER, ' + JSON.stringify(sc.mode === 'app' ? {place: false, all: false, extraAP: 0} : {place: true, all: true, extraAP: sc.mode, ...options}) + ')');
       try {
         const g = play(sc, strategy);
         return {win: g.winner === g.human ? 1 : 0, margin: g.humanMargin, stalled: !!g.stalled};
@@ -63,11 +65,11 @@ function worker() {
 }
 
 // ---------------------------------------------------------------- pool
-async function makePool(n) {
+async function makePool(n, paperOptions = []) {
   const workers = [];
   let defaults;
   await Promise.all(Array.from({length: n}, () => new Promise((ok, fail) => {
-    const w = new Worker(__filename);
+    const w = new Worker(__filename, {workerData: {paperOptions}});
     w.once('error', fail);
     w.once('message', msg => { defaults = msg.defaults; ok(); });
     workers.push(w);
@@ -220,10 +222,10 @@ async function main(argv) {
     'validate-games': {type: 'string', default: '400'}, 'validate-every': {type: 'string', default: '4'},
     sigma: {type: 'string', default: '.5'}, lr: {type: 'string', default: '.6'},
     focus: {type: 'string', default: 'dominance'}, weights: {type: 'string'}, out: {type: 'string'},
-    modes: {type: 'string'}, policies: {type: 'string'},
+    modes: {type: 'string'}, policies: {type: 'string'}, 'paper-options': {type: 'string', default: ''},
   }}).values;
   assert(['majority', 'dominance', 'reach'].includes(args.focus), 'Focus is majority, dominance or reach.');
-  const pool = await makePool(Math.max(1, Math.min(64, +args.workers)));
+  const pool = await makePool(Math.max(1, Math.min(64, +args.workers)), args['paper-options'].split(',').filter(Boolean));
   const animals = [...load(PLAYER_REFERENCE, ['player']).get('FOOD')];
   try {
     const result = args.selftest ? await selftest(pool, animals) : args.evaluate ? await evaluate(args, pool, animals) : await tune(args, pool, animals);

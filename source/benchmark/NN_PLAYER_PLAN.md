@@ -1,15 +1,45 @@
-# Neural-network placement player: proposed design (not built)
+# Neural-network placement player: design and result
+
+## Result (15 Nov 2026): stopped, no realisable gain over tuned v3
+
+The player was built as below (`nn/features.js`, `nn/nnplayer.js`, `nn/driver.js`, `nn/train.py`) and
+trained on 8,704 samples against v0.4.1 rivals (v3 making every later choice, 2 playouts per candidate).
+It never beat v3: on held-back samples its picks scored 0.693 utility against v3's 0.695.
+
+A headroom check then asked whether any player could beat v3 this way. At 180 Planning decisions
+(seeds 349500–349900, App and −1..+2, 2–5 rivals), each of v3's top 4 spaces was played out 16 times on
+the same re-dealt futures (`--nn-data --raw --k 4 --m 16`; analysis `nn/headroom.py`):
+
+| Measure (per decision) | Utility (win + margin/100) | Win probability |
+|---|---|---|
+| Best of 4 chosen on 8 playouts, scored on the other 8 | −0.010 (95% ±0.029) | −0.015 (±0.020) |
+| v3's 2nd choice minus its 1st | −0.012 (±0.026) | −0.009 (±0.016) |
+| v3's 4th choice minus its 1st | −0.049 (±0.035) | −0.032 (±0.023) |
+| Best of 4 on all 16 playouts (biased upward by selection) | +0.096 | +0.056 |
+| A perfect chooser among the 4 (rough empirical-Bayes estimate) | +0.035 | +0.017 |
+
+- v3's ordering is right on average: every lower-ranked space does worse than its pick.
+- The candidates do differ in some positions (a perfect chooser would gain up to about 2 points of win
+  probability per decision), but 8 playouts per candidate cannot find those positions, and a net trained
+  on 2-playout labels has far noisier evidence still.
+- Finding the gain would need far more playouts per decision (a search player, too slow for benchmarks)
+  or far more data. Both are poor value, and the paper rivals are about to change (`rivalsFirst`), which
+  would make data against v0.4.1 rivals stale anyway. Tuned v3 stays the strong test player.
+
+The original proposal follows.
+
+## Proposal (14 Nov)
 
 Step 2 of the player-bot plan: a placement player that learns from simulated games and is trained with
 PyTorch on the job PC's GPU. This file is the proposal to approve before any of it is built.
 
-## What it decides
+### What it decides
 
 Only Planning (where to put each action pawn), the decision where the tuned player gains most and where the
 frozen reference helpers do not reach. Every execution choice (targets, cards, effects) stays with the tuned
 player, so the comparison against tuned v2 measures placement alone.
 
-## Model: a residual on the tuned player
+### Model: a residual on the tuned player
 
     score(slot) = tunedValue(slot) + net(state)[slot]       illegal slots masked; play the best score
 
@@ -29,7 +59,7 @@ Inputs, all from the player's point of view (opponents ordered by threat, so the
 | 6 animal displays: VP, gene pool, pawns left, elements added, Initiative position, species | about 100 |
 | Dominance Cards in the market, deck phase, turn, table (rivals, App or paper level) | about 40 |
 
-## Training: rollout targets first, PPO only if needed
+### Training: rollout targets first, PPO only if needed
 
 1. **Rollout targets (recommended start).** At sampled Planning decisions, take the tuned player's top 4
    spaces and play each one out 4 times to the end, with the current player making every later choice.
@@ -40,7 +70,7 @@ Inputs, all from the player's point of view (opponents ordered by threat, so the
 2. **PPO fine-tuning (optional).** Ordinary self-improvement from whole games with a value baseline. It is
    cheaper per game but much noisier, because about 50 placements share one game result.
 
-## Pipeline
+### Pipeline
 
 | Piece | Where | Notes |
 |---|---|---|
@@ -48,7 +78,7 @@ Inputs, all from the player's point of view (opponents ordered by threat, so the
 | Trainer | new `tools/pb_train_nn.py` | PyTorch with CUDA. Reads the shards and writes weights as JSON. |
 | Player | new `source/benchmark/nnplayer.js`, policy `nn` in `--evaluate` | Loads the JSON and runs the MLP in JS. |
 
-## What I need from you before building
+### What I need from you before building
 
 - **A way to run Python jobs.** The runner accepts only `bench`, `git-pull` and `git-checkout`. Either add a
   `train <args>` job type to `tools/job-runner.ps1` (it would run `python tools/pb_train_nn.py <args>` in
@@ -59,7 +89,7 @@ Inputs, all from the player's point of view (opponents ordered by threat, so the
   5 hours of runner time in 20-minute jobs. Training itself takes minutes. PPO would need about 1 to 2 hours
   per round, but the results are less certain.
 
-## How success is measured
+### How success is measured
 
 The same held-out `--evaluate` tables as tuned v2 (new seed block), pooled by level, with a paired
 comparison against tuned v2 on identical tables. The aim is the cells where v2 is weakest: App rivals and

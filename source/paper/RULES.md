@@ -8,6 +8,8 @@ These rules run the rival animals at the table without the app, against two to f
 
 **You need:** the base game, and for each rival eight cards numbered 1–8 (or a d8; rolling repeats numbers that a shuffled deck would not, which the difficulty tests did not measure). The decks are listed under Rival decks.
 
+**Player aids:** `paper/Paper_Rivals_Player_Aids.pdf` has four reference sheets (Planning, Execution, Dominance Cards, and Setup with the other decisions) and one sheet per rival with its deck, power and food-chain position. They condense these rules; if the two ever disagree, this rulebook wins.
+
 **Terms used throughout**
 
 - **Opponents in VP order:** the rival's opponents (you and the other rivals) from highest to lowest on the VP track, ties to the animal higher in the food chain. The first one is the **leader**.
@@ -100,7 +102,7 @@ When a rival's pawn is reached, resolve it with the rule below. If the rule find
 - start with the tile's first-place value;
 - add it again if that opponent ranks above the rival and no longer does afterwards (a tie goes to the food chain, so 2–2 against a higher animal is not a pass);
 - add half of it if this is that opponent's last species there;
-- add 6 more if that also takes away the opponent's dominance.
+- add 6 more if it is that opponent's last species there and that opponent is dominant there (so it loses its dominance).
 
 ## Dominance Cards
 
@@ -121,7 +123,7 @@ When a rival's pawn is reached, resolve it with the rule below. If the rule find
 | Hibernation | A tile it matches: tundra first, then a tile it is not on, then where the returned species gain a rank |
 | Ice Sheet | As the Glaciation action |
 | Instinct | An open space not yet resolved this turn, by Planning steps 1–3, 5 and 6. If none is open, an open space that already resolved: the pawn waits there for next turn (not on the final turn) |
-| Mass Exodus | The tile without its species holding the most opposing species. Its own species go to the adjacent tile it matches best (tie: higher first-place value, then board order); each opponent's to the one that opponent matches least (tie: the lower first-place value, then board order) |
+| Mass Exodus | Among occupied tiles with an adjacent tile on Earth, prefer one without its own species; then choose the one holding the most opposing species. Break ties by higher first-place value, then board order. Its own species go to the adjacent tile it matches best (tie: higher first-place value, then board order); each opponent's to the one that opponent matches least (tie: the lower first-place value, then board order) |
 | Metamorphosis | Swaps the added element on the fewest corners of its tiles (tie: the one it added earliest) for the bag element on the most. Among equally useful bag elements, prefer its printed type; if still tied, use Meat, Sun, Seed, Water, Grub, Grass order |
 | Predator | On each of its tiles, a species of the first opponent in VP order present there |
 

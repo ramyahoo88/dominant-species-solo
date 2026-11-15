@@ -62,6 +62,7 @@ See [benchmark instructions](source/benchmark/README.md) and [results](BENCHMARK
 - **Paper rivals** — rules for running the rivals at the table without the app. See [PAPER_RIVALS.md](PAPER_RIVALS.md).
 - **v0.3.5** — two to five rivals, with the base game's pawns and cubes for each player count; seven-change quick mode for paper rivals.
 - **v0.3.6** — the app can run the printed Paper Rivals rules (four levels); one paper version with Block the leader.
+- **Printables update** (no app change) — player aids (four reference sheets and one per rival), the rulebook in the aids' design with the cut-out cards in its appendix, and the Mass Exodus fallback from GPT's v0.5.4 re-audit.
 - **v0.5.4** — paper rivals place on Migration only when they can move, break rival-only ties by most species, skip five cards that would do nothing, and reseed Earth when no rival species are left; fixes for GPT's v0.5.3 re-audit.
 - **v0.5.3** — Mammals' Extinction save follows the printed tie order; every rulebook row prints its own tie priorities; scaled Easy with five rivals (−1 for each rival, +1 for you); fixes for GPT's v0.5.2 re-audit.
 - **v0.5.2** — one board order (furthest left, then highest) for every paper-rival tie, so the app picks the same corner as the printed rules; fix for GPT's v0.5.1 re-audit.

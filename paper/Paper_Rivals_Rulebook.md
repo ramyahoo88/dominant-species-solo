@@ -8,6 +8,8 @@ These rules run the rival animals at the table without the app, against two to f
 
 **You need:** the base game, and for each rival eight cards numbered 1–8 (or a d8; rolling repeats numbers that a shuffled deck would not, which the difficulty tests did not measure). The decks are listed under Rival decks.
 
+**Player aids:** `paper/Paper_Rivals_Player_Aids.pdf` has four reference sheets (Planning, Execution, Dominance Cards, and Setup with the other decisions) and one sheet per rival with its deck, power and food-chain position. They condense these rules; if the two ever disagree, this rulebook wins.
+
 **Terms used throughout**
 
 - **Opponents in VP order:** the rival's opponents (you and the other rivals) from highest to lowest on the VP track, ties to the animal higher in the food chain. The first one is the **leader**.
@@ -107,7 +109,7 @@ When a rival's pawn is reached, resolve it with the rule below. If the rule find
 - start with the tile's first-place value;
 - add it again if that opponent ranks above the rival and no longer does afterwards (a tie goes to the food chain, so 2–2 against a higher animal is not a pass);
 - add half of it if this is that opponent's last species there;
-- add 6 more if that also takes away the opponent's dominance.
+- add 6 more if it is that opponent's last species there and that opponent is dominant there (so it loses its dominance).
 
 ## Dominance Cards
 
@@ -128,7 +130,7 @@ When a rival's pawn is reached, resolve it with the rule below. If the rule find
 | Hibernation | A tile it matches: tundra first, then a tile it is not on, then where the returned species gain a rank |
 | Ice Sheet | As the Glaciation action |
 | Instinct | An open space not yet resolved this turn, by Planning steps 1–3, 5 and 6. If none is open, an open space that already resolved: the pawn waits there for next turn (not on the final turn) |
-| Mass Exodus | The tile without its species holding the most opposing species. Its own species go to the adjacent tile it matches best (tie: higher first-place value, then board order); each opponent's to the one that opponent matches least (tie: the lower first-place value, then board order) |
+| Mass Exodus | Among occupied tiles with an adjacent tile on Earth, prefer one without its own species; then choose the one holding the most opposing species. Break ties by higher first-place value, then board order. Its own species go to the adjacent tile it matches best (tie: higher first-place value, then board order); each opponent's to the one that opponent matches least (tie: the lower first-place value, then board order) |
 | Metamorphosis | Swaps the added element on the fewest corners of its tiles (tie: the one it added earliest) for the bag element on the most. Among equally useful bag elements, prefer its printed type; if still tied, use Meat, Sun, Seed, Water, Grub, Grass order |
 | Predator | On each of its tiles, a species of the first opponent in VP order present there |
 
@@ -238,7 +240,7 @@ Every rule was built in the app's simulator and judged by win rate: how often a 
 | 4 (20%) | 54% | 18% | 7% | 2% | 9% |
 | 5 (17%) | 40% | 20% | 4% | 2% | 8% |
 
-**Strategy balance.** Chasing Domination cards is still the strongest simple approach: at Standard it wins 28–48% against 9–30% for spreading out or chasing majorities. Rivals plan first since v0.5.0. Before that, a self-tuned test player that held first place on the Initiative track and took the first Domination spaces beat these rivals far more easily than the app's rivals: against three to five rivals its lead over the card-chaser was well above its lead against the app's rivals at every level (at the old Hard, 33 points against 23, in 1,440 paired games each). Re-tuned against v0.5.0 (checkpoint v4) and measured with v0.5.4 on two seed blocks not used for tuning (1,440 games per level in each), its lead over the best simple strategy, compared with its lead against the app's rivals, met the target of at most +0.20 on a log-odds scale, averaged across three, four and five rivals, at every level in both samples (Easy −0.82 and −0.78, Standard −0.50 and −0.52, Hard −0.32 and −0.25, Expert −0.19 and −0.42). Single table sizes vary more. Independent audits on their own seeds found Hard at +0.19 (v0.5.0), at −0.51, 95% about −0.76 to −0.20 (v0.5.1), at −0.11, 95% about −0.41 to +0.17 (v0.5.2), and at −0.41, 95% about −0.66 to −0.10 (v0.5.3). With two rivals its lead was smaller than against the app's rivals. Against Hard it won 36% and against the app's rivals 46% in the first sample (1,440 games each).
+**Strategy balance.** Chasing Domination cards is still the strongest simple approach: at Standard it wins 28–48% against 9–30% for spreading out or chasing majorities. Rivals plan first since v0.5.0. Before that, a self-tuned test player that held first place on the Initiative track and took the first Domination spaces beat these rivals far more easily than the app's rivals: against three to five rivals its lead over the card-chaser was well above its lead against the app's rivals at every level (at the old Hard, 33 points against 23, in 1,440 paired games each). Re-tuned against v0.5.0 (checkpoint v4) and measured with v0.5.4 on two seed blocks not used for tuning (1,440 games per level in each), its lead over the best simple strategy, compared with its lead against the app's rivals, met the target of at most +0.20 on a log-odds scale, averaged across three, four and five rivals, at every level in both samples (Easy −0.82 and −0.78, Standard −0.50 and −0.52, Hard −0.32 and −0.25, Expert −0.19 and −0.42). Single table sizes vary more. Independent audits on their own seeds found Hard at +0.19 (v0.5.0), at −0.51, 95% about −0.76 to −0.20 (v0.5.1), at −0.11, 95% about −0.41 to +0.17 (v0.5.2), at −0.41, 95% about −0.66 to −0.10 (v0.5.3), and at −0.43, 95% about −0.73 to −0.10 (v0.5.4). With two rivals its lead was smaller than against the app's rivals. Against Hard it won 36% and against the app's rivals 46% in the first sample (1,440 games each).
 
 **How the rules got here.** The first version scored every Dominance Card, checked each card's condition and counted element types and rank gains. Lighter rules played as well or better and take roughly 15 minutes less upkeep per rival per game, so that version was retired. Ideas that tested weaker and were left out: the card's Yes face, the leftmost space instead of the best, simpler Competition targets, one generic effect for every card, no Wanderlust element, a fixed card position, a center-out tie-breaker, and dropping Domination first. For v0.5.0, against a self-tuned test player: holding the Initiative space against you, climbing past you, racing or blocking you for the first Domination space, rival-favoured ties with you, scoring the tile that gains the most over you, and taking VP cards first. Rivals planning first beat them all.
 

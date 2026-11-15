@@ -533,3 +533,10 @@ Sources: `ba67`, `ba34`, `pb_c1`–`c3`, `pb_e1`, `pb_e2`.
   - `remaining-ties`, `check-new-element-wording`, `board-order` and `focused` give identical evidence; `recovery` passes;
   - the browser `remaining-ties` and `focused` checks pass once their version checks say 0.5.4;
   - for scaled Easy, `focused` now captures the corrected instruction.
+
+### 17:55 — GPT's v0.5.4 re-audit (54a21a5): pass; printables update
+
+- **Verdict:** pass for continued playtesting. A1, P1, the four rule changes and older saves check out; build hash matches; 48 tests pass.
+- **Fresh Hard X35:** −0.43 (95% −0.73 to −0.10) on seed block 1140000, 14,400 games, no errors or stalls. By rivals: 2 −0.72 (control), 3 −0.53, 4 −0.52, 5 −0.25. Now in the Testing text with the earlier four.
+- **P2 (low, printed only):** Mass Exodus had no printed fallback when the rival is on every tile. GPT's wording adopted; its save is a test.
+- **Printables update (no app change):** player aids, rulebook in the aids' design with the cut-out cards, Competition +6 wording.

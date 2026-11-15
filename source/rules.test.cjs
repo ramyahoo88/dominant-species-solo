@@ -915,3 +915,37 @@ test('v0.5.1 Empty Earth regression: the audited stall (seed 200074) finishes, a
   })()`));
   assert.ok(end.phase === 'finished' && end.iceAge, JSON.stringify(end));
 });
+
+test('Printables update: Mass Exodus prefers a tile without the rival, else the most opposing species anyway (GPT v0.5.4 re-audit, P2)', () => {
+  const g = load('worktree', ['game']);
+  g.get('globalThis').assert = assert;
+  g.run(`(() => {
+    Object.assign(PAPER, {place:true, all:true, extraAP:-1});
+    const s = newGame('birds',['mammals','insects'],true,7,{extra:-1});
+    const land = terrainIds(s);
+    const opp = t => s.tiles[t].cubes.birds + s.tiles[t].cubes.insects;
+    // A tile without Mammals comes first while one exists (E3 and C3 here), even with fewer opposing species than C4.
+    assert.equal(paperEffect(s,{kind:'effect',name:'Mass Exodus',actor:'mammals'}).tile, 'E3');
+    // Mammals on every tile: the most opposing species anyway (C4 and E3 have 2), then the higher first-place value (E3 Savannah 7 over C4 Forest 5).
+    for (const t of land) if (!s.tiles[t].cubes.mammals) { s.tiles[t].cubes.mammals = 1; s.animals.mammals.pool--; }
+    assert.deepEqual(land.filter(t => opp(t) === 2).sort(), ['C4','E3']);
+    assert.equal(paperEffect(s,{kind:'effect',name:'Mass Exodus',actor:'mammals'}).tile, 'E3');
+    s.tiles.C4.terrain = 'sea';
+    assert.equal(paperEffect(s,{kind:'effect',name:'Mass Exodus',actor:'mammals'}).tile, 'C4');
+  })()`);
+  // GPT's v0.5.4 save: Mammals on all seven tiles, three Insects on D3. Mass Exodus leaves D3: 1 Mammal to D2, 3 Insects to D4.
+  Object.assign(g.get('globalThis'), {exodus:FIX('gpt-v054-mass-exodus-own-everywhere.json')});
+  g.run(`(() => {
+    const s = copy(exodus);
+    validateState(s);
+    const step = nextStep(s);
+    assert.equal(step.name, 'Mass Exodus');
+    assert.ok(terrainIds(s).every(t => s.tiles[t].cubes.mammals > 0), 'fixture: Mammals on every tile');
+    const choice = botAction(s,step);
+    assert.equal(choice.tile, 'D3');
+    assert.deepEqual(choice.moves, {mammals:[{from:'D3',to:'D2',n:1}], insects:[{from:'D3',to:'D4',n:3}]});
+    runStep(s,step,choice);
+    validateState(s);
+    assert.equal(s.tiles.D4.cubes.insects, 3);
+  })()`);
+});

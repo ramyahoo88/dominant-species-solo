@@ -118,6 +118,8 @@ def main():
         return tuned_t[idx] + torch.gather(r, 1, slot_t[idx]), torch.gather(r, 1, slot_t[idx])
 
     def pair_loss(sel):
+        if len(sel) == 0:
+            return torch.zeros((), device=dev), float('nan')
         i, ka, kb, w = P['i'][sel], P['a'][sel], P['b'][sel], P['w'][sel]
         s, r = scores(i)
         diff = (s.gather(1, ka[:, None]) - s.gather(1, kb[:, None]))[:, 0] / a.temp

@@ -358,3 +358,21 @@ Checklist item 5 is resolved: there is no excess at +1 with 4–5 rivals.
 - **Released:** main 759af34, build fe36f6c6. The online rulebook mirror is updated (rev 40). COORDINATION is updated, and the worker is assigned the independent held-out check (assignment 7).
 - **ba68** (shipped code, 5 rivals, Easy ladder cell): 74.7%, against 74.4% for the research code. The table now shows 75%.
 - **Queued ba69:** 2 rivals with `noPlanFirst` (v4/v3/fixed, seed 470000). It gives the numbers for the open choice of applying the rule only with 3+ rivals.
+
+### 03:30 — 2 rivals without planning first (ba69, seed 470000)
+
+Old-scale offsets (−1/0/+1/+2), with App edges from ba34:
+
+| Offset | best fixed | v4 | edgeX |
+|---|---|---|---|
+| −1 | 70% | 89% | −0.50 |
+| 0 | 49% | 84% | −0.05 |
+| +1 | 35% | 77% | +0.08 |
+| +2 | 23% | 66% | +0.12 |
+
+- So with 2 rivals the v0.4.x Planning order matches App rivals' skill response.
+- With planning first (shipped), 2-rival edgeX is −0.68 to −1.06: strong play is under-rewarded. For example, at shipped Standard v4 wins 78% and the best fixed policy 64%.
+
+**Option B for the user (not built on main):** planning first only with 3+ rivals.
+- 2-rival games would play as v0.4.1.
+- The cost: 2-rival levels need their own offsets (the v0.4.1 scale, Easy −1 … Expert +2), and the rule and difficulty table get a rival-count condition.

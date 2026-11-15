@@ -614,7 +614,10 @@ cone = function(s, tile) {
   const best = Math.max(0, ...vals.map(v => v[1]));
   if (!best) return null;
   const top = vals.filter(v => v[1] === best).map(v => v[0]);
-  return top.length > 1 && top.every(id => s.paperRivals.includes(id)) ? top.sort((a,b) => rank(a) - rank(b))[0] : null;
+  if (top.length < 2) return null;
+  const rivalsIn = top.filter(id => s.paperRivals.includes(id));
+  // Testing only (off by default, not a rule): PAPER.tieToRival gives a tie that includes you to the highest rival in it.
+  return rivalsIn.length === top.length || PAPER.tieToRival && rivalsIn.length ? rivalsIn.sort((a,b) => rank(a) - rank(b))[0] : null;
 };
 const _appMatch = match;
 match = function(s, tile, actor, additions = s.animals[actor].added) {

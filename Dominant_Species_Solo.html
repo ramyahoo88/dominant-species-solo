@@ -446,7 +446,7 @@ dialog::backdrop{background:#132d2c88}
 <noscript>This companion needs JavaScript. Open the downloaded HTML file in a browser.</noscript>
 <script>'use strict';
 
-const VERSION = '0.4.1';
+const VERSION = '0.5.0';
 const SAVE_KEY = 'dominant-species-solo-v1';
 // GMT rules p. 4: of the 50 gathered cubes, one marks VP.
 const THREE_PLAYER_CUBES = 50;
@@ -2632,8 +2632,41 @@ newGame = function(human, rivals, short, seed, paper = null) {
   s.paper = PAPER.flatMatch ? {extra} : {extra, detailed:true};
   // v0.4.0: rival ties go to the food chain. Recorded in the save, so games started earlier keep the rule they began with.
   if (PAPER.flatMatch && !PAPER.noRivalTie) s.paper.rivalTie = true;
+  // v0.5.0: rivals plan first. Recorded in the save, so a game keeps the Planning order it began with.
+  // PAPER.noPlanFirst (testing) or setup {noPlanFirst} turns it off.
+  if (s.paper.rivalTie && !(paper ? paper.noPlanFirst : PAPER.noPlanFirst)) s.paper.planFirst = true;
+  // A game started from the app records its level name (v0.5.0), so a later change of scale can't misread it.
+  if (paper && s.paper.planFirst && typeof PAPER_LEVELS !== 'undefined') { const lv = PAPER_LEVELS.find(([n]) => n === extra); if (lv) s.paper.level = lv[1]; }
   s.paperRivals = [...rivals];
   return s;
+};
+
+// ---------- Rivals plan first (v0.5.0) ----------
+// At the start of each Planning, before anyone else places, each rival places one pawn, in Initiative order, by its
+// normal Planning steps. Then Planning continues as usual from the top of the Initiative order. Without it a strong
+// player who held first place on the Initiative track also took the first pick of the action display every turn, which
+// paper rivals (unlike the app's) never contested; measured in HARD_BALANCE_LOG.md.
+// s.paper.pre counts the rival placements still to come in this opening round (saved, so a game can stop mid-round).
+const _appEnterSupply = enterSupply;
+enterSupply = function(s, values) {
+  _appEnterSupply(s, values);
+  if (s.paper?.planFirst && s.phase === 'planning') { s.paper.pre = s.paperRivals.length; s.paper.preTotal = s.paper.pre; }
+};
+const _appCurrentPlanner = currentPlanner;
+currentPlanner = function(s) {
+  if (!(s.paper?.pre > 0) || s.phase !== 'planning' || ALL_SLOTS.every(key => s.pawns[key])) return _appCurrentPlanner(s);
+  const order = s.initiative.filter(id => s.paperRivals.includes(id));
+  const actor = order[(s.paper.preTotal - s.paper.pre) % order.length];
+  return s.animals[actor].remaining > 0 ? {actor, index: s.initiative.indexOf(actor)} : _appCurrentPlanner(s);
+};
+const _appPlace = place;
+place = function(s, key, bot = null) {
+  const pre = s.paper?.pre > 0 && s.phase === 'planning';
+  _appPlace(s, key, bot);
+  if (!pre) return;
+  if (--s.paper.pre > 0 && s.phase === 'planning') return;
+  delete s.paper.pre; delete s.paper.preTotal;
+  if (s.phase === 'planning') { s.planning = 0; if (!_appCurrentPlanner(s)) { s.phase = 'execution'; s.cursor = 0; } }
 };
 
 // ---------- Option: flat element matching for rivals ----------
@@ -2685,10 +2718,13 @@ const A = ids => ids.map(id => [id,nameOf(id)]);
 const cardRows = face => '<div class="card-flow">' + face.rows.map(row => '<span>' + ROW_BY_ID[row].name + '</span>').join('') + '</div>';
 let game = null;
 let undo = [];
-let setup = {human:'amphibians',bots:['birds','arachnids'],short:true,paper:false,extra:0};
+let setup = {human:'amphibians',bots:['birds','arachnids'],short:true,paper:false,extra:-1}; // extra: Standard on the Paper scale
 // Re-measured for v0.3.8: +0 is a little easier than an even game, +1 a little tougher, +2 about as tough as the app's rivals.
 // v0.4.0: the rival tie-break makes paper rivals about one pawn stronger, so every level is one pawn lower.
-const PAPER_LEVELS = [[-1,'Easy'],[0,'Standard'],[1,'Hard'],[2,'Expert']];
+// v0.5.0: rivals plan first (they place one pawn each before anyone else), which makes them stronger, so the levels
+// moved down again. Every new Paper game records its level name (paper.level), so a later scale change can't misread it.
+const PAPER_LEVELS = [[-2,'Easy'],[-1,'Standard'],[0,'Hard'],[1,'Expert']];
+const PAPER_LEVELS_V04 = [[-1,'Easy'],[0,'Standard'],[1,'Hard'],[2,'Expert']]; // v0.4.0–v0.4.1 games (tie-break, no planning first)
 const PAPER_LEVELS_V03 = [[0,'Easy'],[1,'Standard'],[2,'Hard'],[3,'Expert']]; // v0.3.7–v0.3.9 games (no tie-break)
 const PAPER_LEVELS_V036 = [[-1,'Easy'],[0,'Standard'],[1,'Hard'],[2,'Expert']]; // v0.3.6 games (no tie-break)
 const PAPER_LEVEL_NAMES = ['Easy','Standard','Hard','Expert'];
@@ -2696,15 +2732,20 @@ const PAPER_LEVEL_NAMES = ['Easy','Standard','Hard','Expert'];
 // pawn scale changed twice (v0.3.6: -1..+2, v0.3.7-v0.3.9: 0..+3). null = the name could not be recovered.
 function paperLevel(extra, paper = null) {
   if (paper && paper.level !== undefined) return paper.level ?? 'Unknown level';
-  const table = paper && !paper.rivalTie ? PAPER_LEVELS_V03 : PAPER_LEVELS;
+  const table = !paper || paper.planFirst ? PAPER_LEVELS : paper.rivalTie ? PAPER_LEVELS_V04 : PAPER_LEVELS_V03;
   return (table.find(([n]) => n === extra) || [0,'Custom'])[1];
 }
 function recordPaperLevel(s) {
-  if (!s?.paper || s.paper.rivalTie || s.paper.level !== undefined) return;
+  if (!s?.paper || s.paper.level !== undefined || s.paper.planFirst) return;
+  // v0.4.0-v0.4.1 games: the tie-break without planning first, on that release's scale (the version check is not needed).
+  if (s.paper.rivalTie) { s.paper.level = (PAPER_LEVELS_V04.find(([n]) => n === s.paper.extra) || [0, null])[1]; return; }
+  // Before v0.4.0, -1 existed only on the v0.3.6 scale (Easy) and +3 only on the v0.3.7-v0.3.9 scale (Expert). These two
+  // endpoints are recovered whichever version saved the file last (GPT v0.4.1 follow-up R2).
+  if (s.paper.extra === -1 || s.paper.extra === 3) { s.paper.level = s.paper.extra === -1 ? 'Easy' : 'Expert'; return; }
   const scale = s.version === '0.3.6' ? PAPER_LEVELS_V036 : ['0.3.7','0.3.8','0.3.9'].includes(s.version) ? PAPER_LEVELS_V03 : null;
   if (scale) s.paper.level = (scale.find(([n]) => n === s.paper.extra) || [0, null])[1];
   // Saved again by v0.4.0, which overwrote the version: only -1 (v0.3.6 Easy) and +3 (v0.3.7+ Expert) are unambiguous.
-  else if (s.version === '0.4.0') s.paper.level = s.paper.extra === -1 ? 'Easy' : s.paper.extra === 3 ? 'Expert' : null;
+  else if (s.version === '0.4.0') s.paper.level = null; // any other offset re-saved by v0.4.0 is ambiguous
 }
 // The pawn offset for a level name on the current scale, or null if the name is unknown.
 function paperExtraFor(name) { return PAPER_LEVELS.find(([,n]) => n === name)?.[0] ?? null; }
@@ -2764,7 +2805,7 @@ function readSupplyDraft(s, raw) {
 function validateState(s) {
   function assert(ok) { if (!ok) throw new Error('This is not a valid Dominant Species companion save.'); }
   recordPaperLevel(s); // before the version is replaced: the level scale depends on it
-  if (s && ['0.1.0', '0.2.0', '0.3.0', '0.3.1', '0.3.2', '0.3.3', '0.3.4', '0.3.5', '0.3.6', '0.3.7', '0.3.8', '0.3.9', '0.4.0'].includes(s.version)) s.version = VERSION;
+  if (s && ['0.1.0', '0.2.0', '0.3.0', '0.3.1', '0.3.2', '0.3.3', '0.3.4', '0.3.5', '0.3.6', '0.3.7', '0.3.8', '0.3.9', '0.4.0', '0.4.1'].includes(s.version)) s.version = VERSION;
   const keys = value => value && typeof value === 'object' ? Object.keys(value) : [];
   assert(s && s.version === VERSION && ['supply','planning','execution','finished'].includes(s.phase) &&
     num(s.turn) && s.turn > 0 && num(s.rng) && s.rng <= 0xffffffff && num(s.seed) && s.seed <= 0xffffffff);
@@ -2773,7 +2814,10 @@ function validateState(s) {
     s.rivals.every(id => id !== s.human && s.ids.includes(id)) && typeof s.short === 'boolean');
   assert(s.paper === undefined || (s.paper && Number.isInteger(s.paper.extra) && s.paper.extra >= -2 && s.paper.extra <= 4 &&
     (s.paper.level === undefined || s.paper.level === null || PAPER_LEVEL_NAMES.includes(s.paper.level)) &&
-    Array.isArray(s.paperRivals) && s.paperRivals.length === s.rivals.length && s.paperRivals.every(id => s.rivals.includes(id))));
+    Array.isArray(s.paperRivals) && s.paperRivals.length === s.rivals.length && s.paperRivals.every(id => s.rivals.includes(id)) &&
+    (s.paper.planFirst === undefined || s.paper.planFirst === true && s.paper.rivalTie === true) &&
+    (s.paper.pre === undefined && s.paper.preTotal === undefined || s.phase === 'planning' && Number.isInteger(s.paper.pre) && Number.isInteger(s.paper.preTotal) &&
+      s.paper.pre > 0 && s.paper.pre <= s.paper.preTotal && s.paper.preTotal <= 4 * s.rivals.length)));
   assert(Array.isArray(s.initiative) && s.initiative.length === s.ids.length && unique(s.initiative).length === s.ids.length && s.initiative.every(id => s.ids.includes(id)) &&
     num(s.cursor) && s.cursor <= EXECUTION.length && num(s.planning) && s.planning < s.ids.length && typeof s.ending === 'boolean');
   assert(s.tiles && s.corners && s.pawns && s.animals && s.boxes && s.decks && terrainIds(s).length >= 7 && Object.keys(INITIAL_TILES).every(id => s.tiles[id]));
@@ -3685,7 +3729,8 @@ function renderModal() {
     '<li>Place your own pawns. Reveal a card for each rival placement and mirror the indicated slot on your action display.</li>' +
     '<li>Apply each action to the physical board and confirm it here. The Earth map uses the starting wetland as north. Corner 1 points right, and corners 2–6 follow clockwise. The map shows a shared corner once.</li>' +
     '<li>Follow the app’s Extinction and Survival prompts. After Ice Age, complete the turn and compare the final scores.</li></ol>' +
-    '<h3>Bot cards</h3><p>Each rival shuffles its own eight-card deck, checks one condition per placement and starts on the corresponding face. The action list guides the pawn placement. The bot can take another open space when it sees a stronger opportunity. Targets are chosen when the pawn resolves.</p><p>With <b>Paper rules</b>, the rivals follow the printed Paper Rivals rulebook exactly: always the reverse face of the card, simple counting rules, and a pawn adjustment for difficulty (Easy −1, Standard 0, Hard +1, Expert +2). When only rivals tie for the most matches on a tile, the rival higher in the food chain is dominant; a tie that includes you leaves the tile with no dominant animal. Use it to learn the printed rules, or to play them without printing anything.</p>' +
+    '<h3>Bot cards</h3><p>Each rival shuffles its own eight-card deck, checks one condition per placement and starts on the corresponding face. The action list guides the pawn placement. The bot can take another open space when it sees a stronger opportunity. Targets are chosen when the pawn resolves.</p><p>With <b>Paper rules</b>, the rivals follow the printed Paper Rivals rulebook exactly: always the reverse face of the card, simple counting rules, and a pawn adjustment for difficulty (' + PAPER_LEVELS.map(([n,name]) => name + ' ' + (n < 0 ? '−' + -n : n ? '+' + n : '0')).join(', ') + '). In Paper games started in v0.5.0 or later, the rivals plan first: at the start of each Planning, they place one pawn each before anyone else, in Initiative order. In Paper games started in v0.4.0 or later, when only rivals tie for the most matches on a tile, the rival higher in the food chain is dominant; a tie that includes you leaves the tile with no dominant animal. Use it to learn the printed rules, or to play them without printing anything.</p>' +
+    (game?.paper && !game.paper.planFirst ? '<p><b>This saved game</b> was started before ' + (game.paper.rivalTie ? 'v0.5.0' : 'v0.4.0') + ' and keeps the rules it began with: ' + esc(paperLevel(game.paper.extra, game.paper)) + ' (' + (game.paper.extra < 0 ? '−' + -game.paper.extra : '+' + game.paper.extra) + ' pawn' + (Math.abs(game.paper.extra) === 1 ? '' : 's') + ' per rival), the rivals place in normal Initiative order' + (game.paper.rivalTie ? '' : ', and a tie between rivals leaves the tile with no dominant animal') + '.</p>' : '') +
     '<h3>Board tracking</h3><p>The companion checks cones automatically. When a protected Hibernation cube shares a tile with other cubes of the same animal, the app moves or removes the ordinary cubes first. Confirm each physical move to save it. Undo is available until you close or reload the page. Export a save before switching browsers or devices.</p>' +
     '<p><a href="'+RULEBOOK+'" target="_blank" rel="noopener noreferrer">GMT rulebook</a> · <a href="'+PHOTO+'" target="_blank" rel="noopener noreferrer">Portage Glacier photo, USGS</a></p>';
   if (modalKind === 'decks') content='<div class="deck-tabs" role="group" aria-label="Animal deck">' + FOOD.map(id=>button(nameOf(id),'deck-tab','sm',

@@ -90,7 +90,9 @@ def testing(ladder):
         "types and rank gains. Lighter rules played as well or better and take roughly 15 minutes less upkeep per rival per game, so that "
         "version was retired. Ideas that tested weaker and were left out: the card's Yes face, the leftmost space instead of the best, "
         "simpler Competition targets, one generic effect for every card, no Wanderlust element, a fixed card position, a center-out "
-        "tie-breaker, and dropping Domination first.",
+        "tie-breaker, and dropping Domination first. For v0.5.0, against a self-tuned test player: holding the Initiative space against you, "
+        "climbing past you, racing or blocking you for the first Domination space, rival-favoured ties with you, scoring the tile that gains "
+        "the most over you, and taking VP cards first. Rivals planning first beat them all.",
         "**Stalls.** " + ladder["stalls"],
         "**Limits.** The scripted player is a fixed strategy, not a person, so expect a strong human to win more often at every level. "
         "These rules have not yet been played at a real table.",

@@ -1,5 +1,36 @@
 # Release notes
 
+## v0.5.0 · November 15, 2026 · rivals plan first; new levels; fixes for the GPT v0.4.1 follow-up
+
+- **Rivals plan first (paper rules):** at the start of each Planning, before anyone else places, each rival places one pawn, in Initiative order. Then Planning goes around the Initiative order as usual.
+  - **Why:** a strong player who stayed first on the Initiative track got first pick of the action display every turn, and paper rivals never contested it.
+    - Against 3–5 rivals, the self-tuned test player beat paper rivals much more easily than the app's rivals, at every level.
+    - At the old Hard it led the card-chaser by 33 points, against 23 for App rivals (1,440 paired games each).
+  - **Result:** the test player was re-tuned against the new rule (checkpoint v4) and measured on fresh seeds. Its lead over the best simple strategy is now no larger than against the app's rivals at every level with 3–5 rivals. With 2 rivals its lead is smaller.
+  - **What else was tried:** more than twenty candidate rules overnight, logged in `HARD_BALANCE_LOG.md`.
+    - Holding the Initiative space against you halved the excess.
+    - Domination-race, blocking and card rules did nothing or backfired.
+- **Difficulty levels move down** (planning first makes the rivals stronger): **Easy −2, Standard −1, Hard 0, Expert +1** pawns per rival.
+  - Hard matches the app's rivals for the strong test player (45% vs 46%) and is a little easier for a simple one.
+  - The new difficulty table is in the rulebook and `PAPER_RIVALS.md`. One of 7,200 test games stalled.
+- **Saved games:**
+  - New Paper games record their level name and the planning rule.
+  - v0.4.0–v0.4.1 games keep their old Planning order and level names; older games keep their rules.
+  - "Start a new game" maps the level name to the new scale.
+  - A game saved in the middle of the rivals' opening placements resumes with the right rival.
+- **GPT v0.4.1 follow-ups:**
+  - R1: Help says which rules apply to new games, and shows a notice for an older saved game.
+  - R2: an Easy save re-exported by v0.3.7–v0.3.9 is recovered as Easy.
+  - R3: evaluator labels are checked before any game is played (player-bot agent, merged).
+  - See [AUDIT_RESPONSE_v0.4.1.md](AUDIT_RESPONSE_v0.4.1.md).
+- **Tuner:**
+  - Level names follow the new scale (−2 Easy … +1 Expert; `--paper-options noPlanFirst` runs the v0.4.x rules).
+  - New `--bots` option.
+  - v4 weights (`source/benchmark/tuned_weights_v4.json`).
+- **Tests:**
+  - 38 rules tests, including the opening placements, a save made mid-way through them, the legacy Planning order and level recovery.
+  - The browser restart test covers 8 saves and Help.
+
 ## v0.4.1 · November 14, 2026 · fixes for the GPT v0.4.0 audit
 
 - **Older paper saves keep their level:** a game saved in v0.3.6–v0.3.9 now shows its original level name, and "Start a new game" picks the same level on the current scale. If an old save's level can't be recovered, you choose one; the setup can no longer start at an unlisted difficulty.

@@ -302,3 +302,31 @@ X35 / X2 against the pooled App baseline.
 - **2 rivals:** a strong player's edge is smaller than against App rivals (−0.55 to −1.06). That is accepted (see 01:20).
 
 **Decision: ship rivalsFirst as v0.5.0**, once the ladder (ba35–54) fixes the level offsets.
+
+### 02:40 — +1 at 4–5 rivals with 4× games (ba55, seed 480000); ladder
+
+**ba55** (1,440 games per cell):
+
+| Rivals | re-tuned | v3 | best fixed | edgeX |
+|---|---|---|---|---|
+| 4 | 21% | 18% | 7% | −0.15 |
+| 5 | 13% | 10% | 4% | −0.11 |
+
+Checklist item 5 is resolved: there is no excess at +1 with 4–5 rivals.
+
+**Scripted-player ladder** (benchmark.cjs, seed 200000, rivalsFirst; App from the same jobs). Win %:
+
+| Rivals | −2 | −1 | 0 | +1 | +2 | App |
+|---|---|---|---|---|---|---|
+| 2 | 66 | 42 | 26 | 16 | 10 | 20 |
+| 3 | 56 | 31 | 21 | 8 | 6 | 15 |
+
+- The 4–5 rival cells first ran with too few games (`--repeats 2` gives only 180 and 36 games there). They are being re-run with repeats 4 and 20 (ba56–65), as for the v0.4.0 ladder.
+- The player-bot's `pb_n4` headroom check ran in a gap in my queue (02:27), which is allowed. It delays the reruns by about 16 minutes.
+
+**Level mapping: Easy −2, Standard −1, Hard 0, Expert +1.**
+- Hard (0) matches the app's rivals for the strong player: v4 wins 44.8% vs 45.7% against App rivals at seed 470000.
+- For simpler players Hard is a little easier than App rivals (scripted 26/21 vs 20/15 at 2/3 rivals).
+- Standard (−1) is a little easier than an even game with 2–3 rivals.
+- Expert (+1) is tougher than App rivals.
+- **Tuner labels changed to match:** −2 Easy … +1 Expert; −2 cells get new seeds and older cells keep theirs.

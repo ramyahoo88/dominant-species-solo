@@ -742,6 +742,27 @@ verify('v0.5.4 card skips: a rival skips Metamorphosis, Disease, Niche Biomes, N
   assert.equal(claim(['Hibernation','Fertile']), 'Hibernation'); delete PAPER.noCardSkip;
 `);
 
+test('v0.5.4 Empty Earth: no rival species on Earth is enough (a 5-rival Hard test game stalled with only the player left)', () => {
+  const g = load('worktree', ['game']);
+  const p = load(PLAYER_REFERENCE, ['player']);
+  const strategy = {place: p.get('playerPlacement'), choose: p.get('playerChoice')};
+  const sc = {human:'mammals', rivals:['reptiles','amphibians','insects','arachnids','birds'], seed:3880436785, short:false, policy:'majority'};
+  g.run('Object.assign(PAPER, {place:true, all:true, extraAP:0, oldEmptyEarth:true})');
+  assert.equal(g.get('playBenchmark')(sc, strategy).stalled, true, 'with the v0.5.1 condition the game stalls (one Mammal left, no disks)');
+  g.run('delete PAPER.oldEmptyEarth');
+  const fixed = g.get('playBenchmark')(sc, strategy);
+  assert.equal(fixed.stalled, undefined, 'reaches Ice Age'); assert.ok(fixed.turns < 20, 'turn ' + fixed.turns);
+  g.get('globalThis').assert = assert;
+  g.run(`(() => {
+    const s = newGame('mammals',['birds','insects'],true,7,{extra:0});
+    for (const t of terrainIds(s)) for (const id of s.ids) if (id !== 'mammals') s.tiles[t].cubes[id] = 0;
+    assert.ok(occupied(s,'mammals').length > 0 && paperEmptyEarth(s), 'only the player has species: Empty Earth');
+    PAPER.oldEmptyEarth = true; assert.ok(!paperEmptyEarth(s), 'old condition: no species at all'); delete PAPER.oldEmptyEarth;
+    s.tiles[occupied(s,'mammals')[0]].cubes.birds = 1;
+    assert.ok(!paperEmptyEarth(s), 'a rival species on Earth: not Empty Earth');
+  })()`);
+});
+
 test('v0.5.3 Mammals Extinction save: equal first-place values go to board order, not the order Mammals reached the tiles', () => {
   const g = load('worktree', ['game']);
   g.get('globalThis').assert = assert;

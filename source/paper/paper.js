@@ -44,7 +44,12 @@ function paperBarren(s) { return s.turn > 1 && !terrainIds(s).some(t => cone(s,t
 // disks no one can speciate, so a game could stall. A rival's Abundance may then use any empty corner (top-left first, as
 // for Habitat), so species can return. Applies to every paper game, saved ones included: it acts only on an empty Earth.
 // PAPER.noEmptyEarth (testing) turns it off.
-function paperEmptyEarth(s) { return !PAPER.noEmptyEarth && !terrainIds(s).some(t => s.ids.some(id => s.tiles[t].cubes[id] > 0)); }
+// v0.5.4: no RIVAL species on Earth is enough. A v0.5.4 test game (5 rivals, Hard) stalled with only the player's one
+// species left and no disks: no rival could place, speciate or move. PAPER.oldEmptyEarth (testing) restores "no species at all".
+function paperEmptyEarth(s) {
+  const who = PAPER.oldEmptyEarth || !s.paperRivals ? s.ids : s.paperRivals;
+  return !PAPER.noEmptyEarth && !terrainIds(s).some(t => who.some(id => s.tiles[t].cubes[id] > 0));
+}
 // Depletion: disks on Earth of a box element the rival does not use (Planning and Execution share this).
 function pDepletionCorners(s, actor, index) { return placementTargets(s,'depletion',index,actor).filter(k => !paperUses(s,actor,s.corners[k])); }
 function paperUses(s, actor, type) { return ANIMALS[actor].el === type || s.animals[actor].added.includes(type); }
@@ -181,7 +186,7 @@ function paperPawn(s, step) {
       const mine = picks.filter(p => pTypes(s,actor).includes(p.type));
       const p = (mine.length ? mine : picks)[0];
       const corner = corners.length ? pBy(corners.map(c => ({...c, tile:c.corner})), c => c.mine, c => c.vp).corner : empty[0];
-      return {pick:p.pick,corner,label:pLabel('take ' + elementName(p.type) + ' from Abundance position ' + (p.pick + 1) + ' and place it at ' + pAt(s,corner) + (empty.length ? ' (Empty Earth: no species are on Earth)' : '') + '.')};
+      return {pick:p.pick,corner,label:pLabel('take ' + elementName(p.type) + ' from Abundance position ' + (p.pick + 1) + ' and place it at ' + pAt(s,corner) + (empty.length ? ' (Empty Earth: no rival species are on Earth)' : '') + '.')};
     }
     case 'wasteland': {
       const picks = indexed(s.boxes.wasteland);

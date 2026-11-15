@@ -221,3 +221,19 @@ X35 / X2 against the pooled App baseline.
    - write the level name into every new save from now on.
 8. **Worker:** told not to collect data against v0.4.1 rivals (COORDINATION, 01:00).
 9. **Cut-off:** if nothing has passed a re-tune by about 04:00, don't start a release; leave the branch and the report.
+
+### 01:20 — Confirmations; release shape
+
+- **Re-anchor (ba29y2):** Hard at 450000 still gives 745/269 after all the edits.
+- **rivalsFirst on fresh seed 460000 (ba29y1):** Easy 60.7/44.9, Standard 39.7/20.0, Hard 27.4/12.0.
+  - edgeX at 3/4/5 rivals: Easy −0.55/−0.23/−0.21; Standard +0.09/+0.23/+0.12; Hard +0.16/+0.50/−0.24.
+  - 2 rivals: −0.84/−0.58/−0.51.
+  - **Confirms** that the excess is gone at Easy and Standard.
+- **Decision on 2 rivals:** the rule applies at every table size.
+  - One printed rule with no rival-count condition is simpler at the table.
+  - The cost: at 2 rivals a strong player's edge is somewhat smaller than against App rivals (about 6 points at Standard). That's no exploit.
+  - The alternative (rivalsFirst only with 3+ rivals) keeps 2-rival play as in v0.4.1 but needs level offsets per rival count.
+- **Re-tune stage 1 (ba30, 13 generations):** validation win 0.388 → 0.405. A small gain, so no big new hole so far.
+- **Release shape:**  now has only the rule. It is on by default (benchmark too);  turns it off.
+  - The screened candidates remain on this branch at commit f104c5b.
+  - **Not yet on the PC:** the PC keeps the research  until the ladder jobs finish.

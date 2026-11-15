@@ -713,6 +713,35 @@ verify('v0.5.4 rival ties: when only rivals tie on matches, the most species win
   assert.equal(newGame('birds',['mammals','insects'],true,7,{extra:0, oldRivalTie:true}).paper.speciesTie, undefined);
 `);
 
+verify('v0.5.4 card skips: a rival skips Metamorphosis, Disease, Niche Biomes, Nocturnal and Hibernation when they would do nothing', `
+  Object.assign(PAPER, {place:true, all:true, extraAP:0});
+  const s = newGame('birds',['mammals','insects'],true,7,{extra:0});
+  const a = 'mammals', claim = list => { s.market = [...list]; return paperClaim(s,a,null).card; };
+  // Fresh game: no added elements, no eliminated species, nobody ahead on VP; Mammals may or may not lead Initiative.
+  s.initiative = ['mammals','birds','insects'];
+  assert.equal(claim(['Metamorphosis','Disease','Niche Biomes','Nocturnal','Hibernation','Fertile']), 'Fertile', 'all five idle: skipped');
+  assert.equal(claim(['Metamorphosis','Disease','Niche Biomes','Nocturnal','Hibernation']), 'Metamorphosis', 'all idle and nothing else: the first on the list anyway');
+  s.animals.mammals.added = ['meat'];
+  assert.equal(claim(['Metamorphosis','Fertile']), 'Metamorphosis', 'an added element to swap');
+  s.animals.mammals.added = [];
+  s.animals.birds.added = ['seed'];
+  assert.equal(claim(['Disease','Fertile']), 'Disease', 'Birds have more elements (2+1 against 2) and an added one');
+  s.animals.mammals.added = ['meat'];
+  assert.equal(claim(['Disease','Fertile']), 'Fertile', 'equal elements: Disease would hit no one');
+  s.animals.mammals.added = []; s.animals.birds.added = [];
+  // Niche Biomes is last but Ice Age on the list: with no one ahead it is idle and Ice Age (allowed when level) comes first.
+  assert.equal(claim(['Niche Biomes','Ice Age']), 'Ice Age', 'nobody has more VP: Niche Biomes skipped');
+  s.animals.insects.vp = 5;
+  assert.equal(claim(['Niche Biomes','Ice Age']), 'Niche Biomes', 'an opponent has more VP (and Ice Age waits)');
+  s.initiative = ['birds','mammals','insects'];
+  assert.equal(claim(['Nocturnal','Fertile']), 'Nocturnal', 'not first on Initiative');
+  s.animals.mammals.dead = 2;
+  assert.equal(claim(['Hibernation','Fertile']), 'Hibernation', 'eliminated species to return');
+  // Testing switch: the v0.5.3 list.
+  s.animals.mammals.dead = 0; PAPER.noCardSkip = true;
+  assert.equal(claim(['Hibernation','Fertile']), 'Hibernation'); delete PAPER.noCardSkip;
+`);
+
 test('v0.5.3 Mammals Extinction save: equal first-place values go to board order, not the order Mammals reached the tiles', () => {
   const g = load('worktree', ['game']);
   g.get('globalThis').assert = assert;
@@ -840,15 +869,15 @@ test('v0.5.1 Empty Earth regression: the audited stall (seed 200074) finishes, a
   const strategy = {place: p.get('playerPlacement'), choose: p.get('playerChoice')};
   const sc = {human:'birds', rivals:['mammals','reptiles','amphibians','arachnids','insects'], seed:200074, short:true, policy:'expansion'};
   // With the v0.5.1 corner order the game follows the audited path: it stalls without Empty Earth and finishes with it.
-  // (v0.5.4: the old Migration test and food-chain rival ties too, so the path is the audited one.)
-  g.run('Object.assign(PAPER, {place:true, all:true, extraAP:-1, oldCornerOrder:true, oldMigTest:true, oldRivalTie:true})');
+  // (v0.5.4: the old Migration test, food-chain rival ties and card list too, so the path is the audited one.)
+  g.run('Object.assign(PAPER, {place:true, all:true, extraAP:-1, oldCornerOrder:true, oldMigTest:true, oldRivalTie:true, noCardSkip:true})');
   const fixed = g.get('playBenchmark')(sc, strategy);
   assert.equal(fixed.stalled, undefined, 'reaches Ice Age within 30 turns');
   assert.ok(fixed.turns < 15, 'turn ' + fixed.turns);
   g.run('PAPER.noEmptyEarth = true');
   assert.equal(g.get('playBenchmark')(sc, strategy).stalled, true, 'without the rule this game stalls (the audited case)');
   // GPT's saved turn-31 position (no species, no disks) under the current rules: Ice Age is reached.
-  g.run('delete PAPER.noEmptyEarth; delete PAPER.oldCornerOrder; delete PAPER.oldMigTest; delete PAPER.oldRivalTie');
+  g.run('delete PAPER.noEmptyEarth; delete PAPER.oldCornerOrder; delete PAPER.oldMigTest; delete PAPER.oldRivalTie; delete PAPER.noCardSkip');
   g.get('globalThis').FIXTURE = FIX('gpt-v050-stall-200074-turn31.json');
   g.get('globalThis').STRATEGY = strategy;
   const end = JSON.parse(g.run(`(() => {

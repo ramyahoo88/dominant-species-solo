@@ -338,12 +338,27 @@ function paperCardPoints(s, actor, card, tile) {
     default: return 2.5;
   }
 }
+// v0.5.4 card skips: the list also skips a card that would do nothing. Measured on v0.5.3 (2,880 games), paper rivals
+// took Metamorphosis for nothing in 50% of plays, Disease 34%, Niche Biomes 31%, Nocturnal 20%, Hibernation 8%.
+// PAPER.noCardSkip (testing) restores the v0.5.3 list.
+function paperCardIdle(s, actor, card) {
+  if (PAPER.noCardSkip) return false;
+  const me = s.animals[actor], els = id => ANIMALS[id].affinity + s.animals[id].added.length;
+  switch (card) {
+    case 'Metamorphosis': return !me.added.length || !elementOptions(s).length;
+    case 'Disease': return !s.ids.some(id => id !== actor && s.animals[id].added.length && els(id) > els(actor));
+    case 'Niche Biomes': return !s.ids.some(id => id !== actor && s.animals[id].vp > me.vp);
+    case 'Nocturnal': return s.initiative[0] === actor;
+    case 'Hibernation': return !me.dead;
+  }
+  return false;
+}
 function paperClaim(s, actor, tile) {
   const cards = availableCards(s);
   if (PAPER.cardList) { // a printed priority list, no scoring; Ice Age only when leading or tied on VP
     const top = Math.max(...s.ids.map(id => s.animals[id].vp));
     const pawnCards = ['Omnivore','Intelligence','Parasitism'];
-    const ok = cards.filter(c => (c !== 'Ice Age' || s.animals[actor].vp >= top) && !(pawnCards.includes(c) && s.animals[actor].ap >= 10));
+    const ok = cards.filter(c => (c !== 'Ice Age' || s.animals[actor].vp >= top) && !(pawnCards.includes(c) && s.animals[actor].ap >= 10) && !paperCardIdle(s,actor,c));
     const pickd = [...(ok.length ? ok : cards)].sort((a,b) => PAPER_CARD_ORDER.indexOf(a) - PAPER_CARD_ORDER.indexOf(b))[0];
     return {card:pickd,label:pLabel('take ' + pickd + '.')};
   }

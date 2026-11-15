@@ -460,3 +460,30 @@ Sources: `ba67`, `ba34`, `pb_c1`–`c3`, `pb_e1`, `pb_e2`.
 - **Reading:** 2–4 points harder at Easy and Standard, about 2 at Hard, nothing at Expert (the small rise there is noise). A level step is 15–25 points, so this is a fraction of a level.
 - **Effect on strong play:** it does not widen the strong player's edge. X35 Easy / Standard / Hard / Expert is −0.70 / −0.45 / −0.17 / −0.05 at 470000 and −0.86 / −0.42 / −0.43 / −0.36 at 490000.
 - **Stalls:** one game hit the 30-turn cap (5 rivals, Hard, 490000).
+
+### 12:56 — Test: why 5 rivals is easier than 4 at Easy (diagnosis only; no rule change)
+
+- **Question:** the v0.5.2 ladder has Easy at 56% with 4 rivals but 75% with 5, and Standard at 21% against 25%.
+- **Runs:** `be01`–`be08`, the ladder commands for 4 and 5 rivals at every level with `--detail` (seed 200000, 360 games a cell). The win counts match the published ladder exactly.
+- **Per game, paper rivals (pawn actions and VP are per turn and per game means):**
+
+  | Level | Rivals | Win % | Turns | Your pawns / turn | Pawns / rival / turn | Your VP | Best rival VP | Your share of all VP |
+  |---|---|---|---|---|---|---|---|---|
+  | Easy | 4 | 55.6 | 5.9 | 4.25 | 2.41 | 148 | 122 | 30% |
+  | Easy | 5 | 74.7 | 6.3 | 3.24 | 1.32 | 129 | 83 | 34% |
+  | Standard | 4 | 21.4 | 5.8 | 4.21 | 3.45 | 114 | 151 | 20% |
+  | Standard | 5 | 24.7 | 5.9 | 3.19 | 2.34 | 92 | 122 | 18% |
+  | Hard | 4 | 10.8 | 5.9 | 4.22 | 4.54 | 105 | 160 | 17% |
+  | Hard | 5 | 7.2 | 5.8 | 3.19 | 3.39 | 79 | 135 | 14% |
+  | Expert | 4 | 3.6 | 5.7 | 4.21 | 5.54 | 93 | 157 | 15% |
+  | Expert | 5 | 3.9 | 5.7 | 3.17 | 4.42 | 70 | 136 | 12% |
+  | App | 4 | 9.4 | 7.4 | 4.20 | 4.34 | 108 | 153 | 18% |
+  | App | 5 | 7.8 | 8.0 | 3.14 | 3.26 | 86 | 133 | 14% |
+
+- **Cause: the level is a flat pawn change on a base that shrinks with the table.** Setup gives each animal 4 pawns with 4 rivals and 3 with 5. Easy's −2 leaves a rival 2 pawns (half of yours) with 4 rivals but 1 (a third of yours) with 5. Five Easy rivals place about 6.6 pawns a turn between them, fewer than four Easy rivals (9.6).
+- **Not game length:** 6.3 turns against 5.9.
+- **Not rival behaviour:** at the same pawns per rival, 5 rivals is much harder than 4: 2 pawns each, 56% (4 rivals, Easy) against 25% (5, Standard); 3 each, 21% (4, Standard) against 7% (5, Hard). Indexed by rival pawns ÷ your pawns, the 5-rival cells sit at or below the 4-rival line (at 2/3, about 33% interpolated for 4 rivals against 25% for 5).
+- **Standard's 21 against 25** is about 1.3 standard errors, so within noise; the same cause in a milder form (rivals at 3/4 of your pawns with 4 rivals, 2/3 with 5).
+- **Easy with 5 rivals stops rewarding play:** card-chaser 76%, expansion 72%, majority 77%. With 4 rivals the card-chaser leads, 70% against 48–49%. It is also the cell where pb5 reached 93% (log above).
+- **Blocking:** more blocking would not fix this cell, since one-pawn rivals have little to block with. Earlier blocking variants (`ba06` blockHuman: no effect; `ba04` holdYou: dropped for rivals planning first) were tested at Hard before planning-first. The `blocks` column counts only the app bot's denial placements, so it is zero for paper rivals by construction.
+- **Options for the user:** leave it (the printed table already shows 75%), or make Easy scale with the table, for example with 5 rivals Easy = rivals −1 and you +1 pawn (2 against 4, the 4-rival ratio). A change would need a branch test, then the ladder row, the printables and the app's level; it would ship after GPT's v0.5.2 audit.

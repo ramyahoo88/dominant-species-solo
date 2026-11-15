@@ -394,3 +394,22 @@ Old-scale offsets (−1/0/+1/+2), with App edges from ba34:
 - One stall in 34,560 games, again at 5 rivals Easy: the known crowded-table case.
 
 **Correction from the worker on the neural-network player:** the full headroom data (648 decisions) shows a small real gain over v3's placements, +0.013 win probability per decision (±0.008). Reopening it would need new data against v0.5.0 rivals; this is left for the user.
+
+### 07:20 — User decision: keep A; win table
+
+**The user keeps A:** rivals plan first at every table size. Option B (3+ rivals only) is closed.
+
+**Win % by level and rival count** (shipped v0.5.0 code; seeds 470000 and 490000 pooled, about 720 games per cell, roughly ±3–4 points):
+- *Strong* = the better of the two tuned test players in that cell (v4 or the worker's pb5).
+- *Simple* = always going for Domination (the best of the three fixed policies in every cell).
+
+| Rivals are | 2 rivals | 3 rivals | 4 rivals | 5 rivals |
+|---|---|---|---|---|
+| Fair share | 33 | 25 | 20 | 17 |
+| App rivals | 69 / 30 | 47 / 18 | 39 / 13 | 34 / 12 |
+| Easy | 94 / 83 | 94 / 80 | 91 / 77 | 94 / 78 |
+| Standard | 82 / 63 | 75 / 46 | 64 / 34 | 59 / 31 |
+| Hard | 69 / 43 | 52 / 23 | 39 / 16 | 27 / 8 |
+| Expert | 52 / 25 | 35 / 13 | 22 / 7 | 15 / 4 |
+
+Sources: `ba67`, `ba34`, `pb_c1`–`c3`, `pb_e1`, `pb_e2`.

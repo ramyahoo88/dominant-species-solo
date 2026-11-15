@@ -84,13 +84,19 @@ function paperPlacement(s, actor, cardIndex, openOverride = null) {
   // Initiative space. holdYou: a rival ahead of you on the Initiative track takes it, so you can't climb past it.
   const initOpen = open.includes('initiative-0') && !pawnCount(s,actor,'initiative');
   const climb = PAPER.initClimb && initOpen && s.initiative[0] !== actor ? 'initiative-0' : null;
-  const hold = PAPER.holdYou && initOpen && you && s.initiative.indexOf(you) > s.initiative.indexOf(actor) ? 'initiative-0' : null;
+  const youAt = you ? s.initiative.indexOf(you) : -1, meAt = s.initiative.indexOf(actor);
+  // Variants: holdYouDirect (only the rival directly ahead of you), holdYouVP (only when you have at least this rival's VP),
+  // climbPast (the rival directly behind you takes it, to pass you).
+  const holdWho = PAPER.holdYouDirect ? youAt === meAt + 1 : youAt > meAt;
+  const hold = (PAPER.holdYou || PAPER.holdYouDirect || PAPER.holdYouVP) && initOpen && you && holdWho &&
+    (!PAPER.holdYouVP || s.animals[you].vp >= s.animals[actor].vp) ? 'initiative-0' : null;
+  const past = PAPER.climbPast && initOpen && you && meAt === youAt + 1 ? 'initiative-0' : null;
   // Candidate (testing, off by default): leadDom races you for Domination space 1 (it resolves first) when you dominate an
   // unscored tile and a card is available.
   const youDominate = you && terrainIds(s).some(t => !s.scored.includes(t) && cone(s,t) === you);
   const leadDom = PAPER.leadDom && open.includes('domination-0') && availableCards(s).length && youDominate ? 'domination-0' : null;
   // The same order as before; also record which Planning step chose the space, for the player.
-  const steps = [['Lead Domination', () => leadDom], ['Hold Initiative', () => hold], ['Climb Initiative', () => PAPER.initClimbLate ? null : climb],
+  const steps = [['Lead Domination', () => leadDom], ['Hold Initiative', () => hold], ['Pass you on Initiative', () => past], ['Climb Initiative', () => PAPER.initClimbLate ? null : climb],
     ['Domination first', () => domFirst], ['Barren Earth', () => barren], ['Block the leader', () => block], ['Climb Initiative', () => PAPER.initClimbLate ? climb : null],
     ['Card action', () => pick(face ? face.rows : [], false, !PAPER.noWeak)], ['Fallback', () => pick(PAPER_FALLBACK, false)],
     ['Last resort', () => pick(PAPER_FALLBACK, true) || open[0]]];

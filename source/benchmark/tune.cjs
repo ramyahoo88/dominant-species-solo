@@ -349,7 +349,7 @@ async function nnData(args, pool, animals) {
   const read = file => JSON.parse(readFileSync(file, 'utf8').replace(/^\uFEFF/, ''));
   const file = args.weights ? read(args.weights) : {};
   const weights = complete(pool.defaults, file.best ?? file);
-  const opts = {k: +args.k, m: +args.m, rate: +args.rate};
+  const opts = {k: +args.k, m: +args.m, rate: +args.rate, raw: !!args.raw};
   // One game per task, so a free worker always takes the next game (games differ a lot in playout count).
   const batch = pool.size * 4, limit = Date.now() + 60000 * +args.minutes;
   let start = +args.seed, games = 0, wins = 0, samples = 0, errors = [], stalled = 0;
@@ -364,7 +364,7 @@ async function nnData(args, pool, animals) {
       wins += g.win; stalled += g.stalled ? 1 : 0;
       for (const x of g.samples) {
         appendFileSync(args.out + '.bin', Buffer.from(Float32Array.from(x.features).buffer));
-        appendFileSync(args.out + '.jsonl', JSON.stringify({cands: x.cands, turn: x.turn, mode: scs[i].mode, bots: scs[i].bots, human: scs[i].human}) + '\n');
+        appendFileSync(args.out + '.jsonl', JSON.stringify({cands: x.cands, turn: x.turn, mode: scs[i].mode, bots: scs[i].bots, human: scs[i].human, ...(x.raw ? {raw: x.raw} : {})}) + '\n');
         samples++;
       }
     }
@@ -390,7 +390,7 @@ async function main(argv) {
   const args = parseArgs({args: argv, options: {
     tune: {type: 'boolean'}, evaluate: {type: 'boolean'}, selftest: {type: 'boolean'}, 'nn-data': {type: 'boolean'},
     net: {type: 'string'}, k: {type: 'string', default: '4'}, m: {type: 'string', default: '2'}, rate: {type: 'string', default: '.07'},
-    minutes: {type: 'string', default: '17'}, 'train-modes': {type: 'string'}, 'max-games': {type: 'string', default: '1000000'},
+    minutes: {type: 'string', default: '17'}, 'train-modes': {type: 'string'}, raw: {type: 'boolean'}, 'max-games': {type: 'string', default: '1000000'},
     workers: {type: 'string', default: String(availableParallelism())},
     'train-seed': {type: 'string', default: '210000'}, 'validate-seed': {type: 'string', default: '220000'},
     seed: {type: 'string', default: '230000'}, 'per-cell': {type: 'string', default: '90'},

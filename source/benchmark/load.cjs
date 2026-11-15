@@ -54,6 +54,18 @@ function load(ref, extra = []) {
           : referenceMatch(s, tile, actor, additions);
       // GPT re-audit E1: the frozen chooser could replace more than two opponents with Evolution. Keep its ranking,
       // but apply the shipped limit: at most two distinct opponents, one cube each, no more than the gene pool holds.
+      // Rival tie-break (paper.js, v0.4.0): when only paper rivals tie for the most matches, the one higher in the food chain
+      // is dominant. The pinned player must see it too (the same lesson as the B1 flat-matching adapter).
+      const referenceCone = cone;
+      cone = (s, tile) => {
+        const owner = referenceCone(s, tile);
+        if (owner || !s.paper?.rivalTie || !s.paperRivals) return owner;
+        const vals = s.ids.filter(id => s.tiles[tile]?.cubes[id]).map(id => [id, match(s, tile, id)]);
+        const best = Math.max(0, ...vals.map(v => v[1]));
+        if (!best) return null;
+        const top = vals.filter(v => v[1] === best).map(v => v[0]);
+        return top.length > 1 && top.every(id => s.paperRivals.includes(id)) ? top.sort((a, b) => rank(a) - rank(b))[0] : null;
+      };
       const referenceAction = (s, step) => {
         const choice = botAction(s, step);
         if (step.kind === 'effect' && step.name === 'Evolution' && choice?.hits) {

@@ -17,8 +17,8 @@ verify('GMT p. 4: six APs and 50 cubes include one VP marker and four starting s
   }
 `);
 
-verify('v0.1 through v0.3.8 save migration preserves inventory, pending choices, and random state', `
-  for (const version of ['0.1.0','0.2.0','0.3.0','0.3.1','0.3.2','0.3.3','0.3.4','0.3.5','0.3.6','0.3.7','0.3.8']) {
+verify('v0.1 through v0.3.9 save migration preserves inventory, pending choices, and random state', `
+  for (const version of ['0.1.0','0.2.0','0.3.0','0.3.1','0.3.2','0.3.3','0.3.4','0.3.5','0.3.6','0.3.7','0.3.8','0.3.9']) {
     const s = newGame('insects',['mammals','birds'],true,51);
     s.version = version;
     s.phase = 'execution';
@@ -182,7 +182,7 @@ verify('v0.3.6: paper-rules games add difficulty pawns, use the printed rules, a
   const app = newGame('insects',['birds','arachnids'],true,40);
   assert.equal(app.paper, undefined);
   const s = newGame('insects',['birds','arachnids','mammals'],true,40,{extra:1});
-  assert.deepEqual(s.paper, {extra:1});
+  assert.deepEqual(s.paper, {extra:1, rivalTie:true});
   for (const id of s.rivals) assert.equal(s.animals[id].ap, 6);
   assert.equal(s.animals.insects.ap, 5);
   validateState(JSON.parse(JSON.stringify(s)));
@@ -474,3 +474,38 @@ verify('Re-audit v0.3.9: paper Migration tie prefers a destination the rival doe
   s.tiles.C3.cubes.insects = 0;                                  // control: neither occupied -> top-left tie-break picks C3
   assert.deepEqual(paperMigration(s,'insects',1).moves.map(m => m.from + '>' + m.to), ['D3>C3']);
 `);
+
+verify('v0.4.0 rival tie-break: rivals tied for most matches -> the higher in the food chain is dominant; a tie with you is not', `
+  const s = newGame('mammals',['birds','insects'],true,7,{extra:1});
+  assert.equal(s.paper.rivalTie, true, 'new paper games record the rule');
+  for (const t of terrainIds(s)) for (const id of s.ids) s.tiles[t].cubes[id] = 0;
+  for (const k of Object.keys(s.corners)) delete s.corners[k];
+  VERTICES_OF.C4.slice(0,2).forEach(k => { s.corners[k] = 'grass'; });       // flat matching: Birds 2, Insects 2
+  s.tiles.C4.cubes.birds = 1; s.tiles.C4.cubes.insects = 1;
+  assert.equal(cone(s,'C4'), 'birds', 'Birds are higher in the food chain than Insects');
+  s.tiles.C4.cubes.mammals = 3; s.animals.mammals.added = [];                // you are there but match nothing: still the rivals' tie
+  assert.equal(match(s,'C4','mammals'), 0); assert.equal(cone(s,'C4'), 'birds');
+  s.animals.mammals.added = ['grass'];                                         // you match both Grass disks: a three-way tie at 2
+  assert.equal(match(s,'C4','mammals'), 2);
+  assert.equal(cone(s,'C4'), null, 'a tie that includes you leaves no dominant animal');
+  const old = newGame('mammals',['birds','insects'],true,7,{extra:1});
+  delete old.paper.rivalTie;                                                   // a game started before v0.4.0
+  for (const t of terrainIds(old)) for (const id of old.ids) old.tiles[t].cubes[id] = 0;
+  for (const k of Object.keys(old.corners)) delete old.corners[k];
+  VERTICES_OF.C4.slice(0,2).forEach(k => { old.corners[k] = 'grass'; });
+  old.tiles.C4.cubes.birds = 1; old.tiles.C4.cubes.insects = 1;
+  assert.equal(cone(old,'C4'), null, 'earlier saves keep the rule they started with');
+  validateState(JSON.parse(JSON.stringify(newGame('mammals',['birds','insects'],true,7,{extra:1}))));   // the recorded rule passes save checks
+`);
+
+test('v0.4.0 rival tie-break: the benchmark player sees the same dominant animal', () => {
+  const game = load('worktree', ['game']);
+  const player = load(PLAYER_REFERENCE, ['player']);
+  const state = game.run(`(() => { const s = newGame('mammals',['birds','insects'],true,7,{extra:1});
+    for (const t of terrainIds(s)) for (const id of s.ids) s.tiles[t].cubes[id] = 0;
+    for (const k of Object.keys(s.corners)) delete s.corners[k];
+    VERTICES_OF.C4.slice(0,2).forEach(k => { s.corners[k] = 'grass'; });
+    s.tiles.C4.cubes.birds = 1; s.tiles.C4.cubes.insects = 1; return JSON.stringify(s); })()`);
+  assert.equal(game.get('cone')(JSON.parse(state), 'C4'), 'birds');
+  assert.equal(player.get('cone')(JSON.parse(state), 'C4'), 'birds');
+});

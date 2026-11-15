@@ -536,11 +536,26 @@ newGame = function(human, rivals, short, seed, paper = null) {
   const extra = paper ? Number(paper.extra || 0) : Number(PAPER.extraAP || 0);
   for (const id of rivals) s.animals[id].ap += extra;
   s.paper = PAPER.flatMatch ? {extra} : {extra, detailed:true};
+  // v0.4.0: rival ties go to the food chain. Recorded in the save, so games started earlier keep the rule they began with.
+  if (PAPER.flatMatch && !PAPER.noRivalTie) s.paper.rivalTie = true;
   s.paperRivals = [...rivals];
   return s;
 };
 
 // ---------- Option: flat element matching for rivals ----------
+// Rival tie-break (v0.4.0). Flat matching makes rivals tie often, and a tie leaves a tile with no dominant animal, which
+// handed the player cards, Ice Age points and board control. When only paper rivals share the most matches on a tile,
+// the rival higher in the food chain is dominant. A tie that includes the player still leaves the tile undominated.
+const _appCone = cone;
+cone = function(s, tile) {
+  const owner = _appCone(s, tile);
+  if (owner || !s.paper?.rivalTie || !s.paperRivals) return owner;
+  const vals = s.ids.filter(id => s.tiles[tile]?.cubes[id]).map(id => [id, match(s,tile,id)]);
+  const best = Math.max(0, ...vals.map(v => v[1]));
+  if (!best) return null;
+  const top = vals.filter(v => v[1] === best).map(v => v[0]);
+  return top.length > 1 && top.every(id => s.paperRivals.includes(id)) ? top.sort((a,b) => rank(a) - rank(b))[0] : null;
+};
 const _appMatch = match;
 match = function(s, tile, actor, additions = s.animals[actor].added) {
   if (PAPER.flatMatch && s.paperRivals?.includes(actor)) return Math.min(ANIMALS[actor].affinity + additions.length, VERTICES_OF[tile].filter(k => s.corners[k]).length);

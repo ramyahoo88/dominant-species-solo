@@ -284,6 +284,15 @@ async function evaluate(args, pool, animals) {
     for (const k of ABLATIONS[group] ? ABLATIONS[group]() : groupKeys(pool.defaults, group)) setKey(w, k, getKey(pool.defaults, k));
     columns.push({label: 'no_' + group, policy: 'tuned', weights: w});
   }
+  // Column labels key the table rows and the pooled results, so they must be unique and must not reuse a row field
+  // (GPT v0.4.1 re-audit: a --compare named 'dominance' merged two samples; one named 'extraPawns' overwrote the pawns).
+  const labels = columns.map(c => c.label);
+  const ROW_FIELDS = ['rivals', 'rivalsAre', 'extraPawns', 'even', 'errors', 'stalled'];
+  for (const [i, label] of labels.entries()) {
+    assert(/^[A-Za-z][A-Za-z0-9_.-]*$/.test(label), 'Column label ' + JSON.stringify(label) + ' must start with a letter and use only letters, digits and _ . -');
+    assert(!ROW_FIELDS.includes(label), 'Column label ' + JSON.stringify(label) + ' is a table field (' + ROW_FIELDS.join(', ') + '); choose another.');
+    assert(labels.indexOf(label) === i, 'Column label ' + JSON.stringify(label) + ' is used twice; give each column its own label (--compare label=file).');
+  }
   const table = [];
   const games = Object.fromEntries(columns.map(c => [c.label, {}]));
   // Each cell's seeds stay the same whichever cells run. Cells of the earlier five tables (App, 0..3) keep their

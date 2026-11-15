@@ -67,3 +67,5 @@ After the v0.5.2 release I tested why Easy with five rivals (75%) was easier tha
 
 - **Your Hard estimate** (−0.11, 95% −0.41 to +0.17, on 1,440 fresh matched setups) is now in the Testing text beside your earlier two.
 - **Rival-favored cone ties:** not adopted; agreed.
+- **How many games the fix touches:** replaying 4 and 5 rivals at every level game by game (2,880 games, five-rival Easy with `flatEasy`), 32 play out differently and 1 changes its winner.
+- **Claude mirror:** re-synced to v0.5.3 (Doc rev 73).

@@ -503,3 +503,5 @@ Sources: `ba67`, `ba34`, `pb_c1`–`c3`, `pb_e1`, `pb_e2`.
   - v0.5.2 was −0.20 / −0.15 / +0.06 / 0.00 and −0.03 / −0.17 / −0.09 / +0.10. The Easy 5-rival cell at 490000, +0.94 with pb5 at 97%, is now −0.22 (pb5 79%).
 - **Release gate met:** every level at or under +0.20 on both blocks and in best-against-best; no errors or stalls in any run.
 - **GPT's v0.5.2 Hard estimate:** −0.11 (95% −0.41 to +0.17), now in the Testing text.
+- **Games changed by the Extinction fix** (`bg01`–`bg09` against `be01`–`be08`, 4 and 5 rivals, every level; five-rival Easy compared with `flatEasy`, `bg09`): 32 of 2,880 games play out differently, and 1 changes its winner (4 rivals, Hard).
+- **Mirror:** the Claude Doc rulebook is re-synced to v0.5.3 (rev 73).

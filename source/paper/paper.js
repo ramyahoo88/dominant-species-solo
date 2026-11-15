@@ -575,13 +575,15 @@ newGame = function(human, rivals, short, seed, paper = null) {
 const _appEnterSupply = enterSupply;
 enterSupply = function(s, values) {
   _appEnterSupply(s, values);
-  if (PAPER.extraFirst && s.paper && s.paper.extra > 0 && s.phase === 'planning') s.paper.pre = s.paper.extra * s.paperRivals.length;
+  // rivalsFirst (testing): each rival's first pawn is placed this way too, at every level.
+  const rounds = !s.paper || s.phase !== 'planning' ? 0 : (PAPER.extraFirst ? Math.max(0, s.paper.extra) : 0) + (PAPER.rivalsFirst ? 1 : 0);
+  if (rounds) { s.paper.pre = rounds * s.paperRivals.length; s.paper.preTotal = s.paper.pre; }
 };
 const _appCurrentPlanner = currentPlanner;
 currentPlanner = function(s) {
   if (!(s.paper?.pre > 0) || s.phase !== 'planning' || ALL_SLOTS.every(key => s.pawns[key])) return _appCurrentPlanner(s);
   const order = s.initiative.filter(id => s.paperRivals.includes(id));
-  const done = s.paper.extra * order.length - s.paper.pre;
+  const done = s.paper.preTotal - s.paper.pre;
   const actor = order[done % order.length];
   return s.animals[actor].remaining > 0 ? {actor, index: s.initiative.indexOf(actor)} : _appCurrentPlanner(s);
 };
@@ -591,7 +593,7 @@ place = function(s, key, bot = null) {
   _appPlace(s, key, bot);
   if (!pre) return;
   if (--s.paper.pre > 0 && s.phase === 'planning') return;
-  delete s.paper.pre;
+  delete s.paper.pre; delete s.paper.preTotal;
   if (s.phase === 'planning') { s.planning = 0; if (!_appCurrentPlanner(s)) { s.phase = 'execution'; s.cursor = 0; } }
 };
 

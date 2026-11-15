@@ -17,8 +17,8 @@ verify('GMT p. 4: six APs and 50 cubes include one VP marker and four starting s
   }
 `);
 
-verify('v0.1 through v0.3.9 save migration preserves inventory, pending choices, and random state', `
-  for (const version of ['0.1.0','0.2.0','0.3.0','0.3.1','0.3.2','0.3.3','0.3.4','0.3.5','0.3.6','0.3.7','0.3.8','0.3.9']) {
+verify('v0.1 through v0.4.0 save migration preserves inventory, pending choices, and random state', `
+  for (const version of ['0.1.0','0.2.0','0.3.0','0.3.1','0.3.2','0.3.3','0.3.4','0.3.5','0.3.6','0.3.7','0.3.8','0.3.9','0.4.0']) {
     const s = newGame('insects',['mammals','birds'],true,51);
     s.version = version;
     s.phase = 'execution';
@@ -519,4 +519,33 @@ verify('v0.4.0 levels: Easy -1, Standard 0, Hard +1, Expert +2; games started be
   const easy = newGame('mammals',['birds','insects'],true,7,{extra:-1});
   for (const id of easy.rivals) assert.equal(easy.animals[id].ap, s.animals[id].ap - 1);
   validateState(JSON.parse(JSON.stringify(easy)));
+`);
+
+verify('GPT v0.4.0 audit F1: older paper saves keep their level name, and a restart maps it to the current scale', `
+  const old = (version, extra, tie = false) => {
+    const s = newGame('amphibians',['birds','arachnids'],true,949381806,{extra});
+    if (!tie) delete s.paper.rivalTie;
+    s.version = version;
+    validateState(s);
+    return s;
+  };
+  const e36 = old('0.3.6', -1);
+  assert.equal(e36.paper.level, 'Easy'); assert.equal(paperLevel(e36.paper.extra, e36.paper), 'Easy'); assert.equal(paperExtraFor('Easy'), -1);
+  const s36 = old('0.3.6', 0);
+  assert.equal(paperLevel(s36.paper.extra, s36.paper), 'Standard'); assert.equal(paperExtraFor('Standard'), 0);
+  const s39 = old('0.3.9', 1);
+  assert.equal(paperLevel(s39.paper.extra, s39.paper), 'Standard');
+  const x39 = old('0.3.9', 3);
+  assert.equal(paperLevel(x39.paper.extra, x39.paper), 'Expert'); assert.equal(paperExtraFor('Expert'), 2);
+  // Re-saved by v0.4.0 (version overwritten): +1 could be v0.3.6 Hard or v0.3.7+ Standard, so the player must choose.
+  const amb = old('0.4.0', 1);
+  assert.equal(amb.paper.level, null); assert.equal(paperLevel(amb.paper.extra, amb.paper), 'Unknown level'); assert.equal(paperExtraFor(paperLevel(amb.paper.extra, amb.paper)), null);
+  assert.equal(old('0.4.0', -1).paper.level, 'Easy');
+  // New games (tie-break) keep using the current scale and record no level.
+  const now = newGame('amphibians',['birds','arachnids'],true,7,{extra:1});
+  validateState(now); assert.equal(now.paper.level, undefined); assert.equal(paperLevel(1, now.paper), 'Hard');
+  // A save can't carry an unknown level name.
+  const bad = old('0.3.9', 1); bad.paper.level = 'Legendary';
+  assert.throws(() => validateState(bad));
+  for (const s of [e36, s36, s39, x39, amb]) assert.equal(s.version, VERSION);
 `);

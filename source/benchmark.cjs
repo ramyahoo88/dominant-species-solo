@@ -188,7 +188,7 @@ async function main() {
   process.stdout.write(JSON.stringify(result, null, 2) + '\n');
 }
 
-const TUNER = ['--tune', '--evaluate', '--selftest'];
+const TUNER = ['--tune', '--evaluate', '--selftest', '--nn-data'];
 if (isMainThread && process.argv.some(a => TUNER.includes(a))) {
   // Self-tuning test player (source/benchmark/tune.cjs); separate from the published benchmark.
   require('./benchmark/tune.cjs').main(process.argv.slice(2)).catch(error => {console.error(error); process.exitCode = 1;});

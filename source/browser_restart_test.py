@@ -1,0 +1,43 @@
+"""Regression (GPT v0.4.0 audit F1): restarting from an older paper save keeps the level by name, and the setup
+can only start with a listed level. Usage: python3 source/browser_restart_test.py Dominant_Species_Solo.html"""
+import json, subprocess, sys
+from pathlib import Path
+from playwright.sync_api import sync_playwright
+HTML = Path(sys.argv[1]).resolve().as_uri()
+KEY = "dominant-species-solo-v1"
+ROOT = Path(__file__).resolve().parent.parent
+
+def old_save(version, extra):
+    js = f"""const {{load}} = require('{ROOT}/source/benchmark/load.cjs'); const r = load('worktree', ['game']);
+      process.stdout.write(r.run(`(() => {{ const s = newGame('amphibians',['birds','arachnids'],true,949381806,{{extra:{extra}}});
+      delete s.paper.rivalTie; s.version = '{version}'; return JSON.stringify(s); }})()`));"""
+    return json.loads(subprocess.check_output(["node", "-e", js]))
+
+def run(version, extra, expect_extra):
+    with sync_playwright() as pw:
+        b = pw.chromium.launch(args=["--no-sandbox"]); p = b.new_page(viewport={"width":390,"height":850}); errs=[]
+        p.on("pageerror", lambda e: errs.append(str(e)))
+        p.goto(HTML)
+        p.evaluate("([k,v]) => localStorage.setItem(k, v)", [KEY, json.dumps({"format": KEY, "game": old_save(version, extra)})])
+        p.reload()
+        p.locator('[data-do="menu"]').first.click()                       # Game menu -> Start a new game -> confirm
+        p.locator('[data-do="new"]').first.click()
+        p.locator('[data-do="new-confirm"]').first.click()
+        checked = p.evaluate("() => document.querySelector('input[name=extra]:checked')?.value ?? null")
+        p.locator("form[data-form=start] button[type=submit]").click()
+        g = json.loads(p.evaluate("k => localStorage.getItem(k)", KEY) or "{}").get("game")
+        result = {"save": f"v{version} extra {extra}", "radio": checked, "started": bool(g), "rival_ap": g and {r: g["animals"][r]["ap"] for r in g["rivals"]},
+                  "notice": "Choose a difficulty level" in p.locator("body").inner_text(), "errors": errs}
+        if expect_extra is None:
+            assert checked is None and not g and result["notice"], result     # must ask for a level
+            p.locator('input[name=extra][value="0"]').check(); p.locator("form[data-form=start] button[type=submit]").click()
+            g = json.loads(p.evaluate("k => localStorage.getItem(k)", KEY))["game"]
+            assert g["paper"]["extra"] == 0, g["paper"]
+        else:
+            assert checked == str(expect_extra) and g and g["paper"]["extra"] == expect_extra, result
+        assert not errs, errs
+        b.close()
+        return result
+
+for case in [("0.3.6", -1, -1), ("0.3.6", 0, 0), ("0.3.9", 1, 0), ("0.3.9", 3, 2), ("0.4.0", 1, None)]:
+    print("PASS", run(*case))

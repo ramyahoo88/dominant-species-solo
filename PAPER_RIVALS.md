@@ -4,7 +4,7 @@ Table-playable rules for the rival animals (two to five), so Dominant Species ca
 
 - Rules as code: [`source/paper/paper.js`](source/paper/paper.js), shipped in the app build and inactive unless a game turns it on. Every decision uses only what a person can count at the table.
 - One version only (November 2026): flat element matching, a fixed Dominance Card list, always the card's reverse (No) face, simple Adaptation, full Speciation, Migration without rank-gain checks (it still avoids losing a rank where it leaves), Glaciation without the tundra bonus, Barren Earth, and **Block the leader** (deny the leader's Domination). The earlier detailed rules (card checks, card scoring, rank checks) were retired; `--paper-options full` restores them only to reproduce old results.
-- Benchmark: `node source/benchmark.cjs --base main --candidate worktree --paper N [--bots 2..5]` plays the app's rivals (base) against paper rivals with N extra action pawns (candidate) on the same seeds: 0 Easy, 1 Standard, 2 Hard, 3 Expert.
+- Benchmark: `node source/benchmark.cjs --base main --candidate worktree --paper N [--bots 2..5]` plays the app's rivals (base) against paper rivals with N extra action pawns (candidate) on the same seeds: `--paper=-1` Easy, `--paper 0` Standard, `--paper 1` Hard, `--paper 2` Expert (v0.4.0 levels). The tuner (`--evaluate --modes=app,-1,0,1,2`) uses the same names and reports `extraPawns` with each row.
 
 ## Difficulty (v0.4.0, seed block 200000, 360 games per cell; scripted player's win rate, lower is tougher)
 
@@ -23,7 +23,10 @@ No game stalled. Games started before v0.4.0 keep their rules and pawn counts.
 - Chasing Dominance Cards is still the strongest simple strategy: at Standard it won 44%, 38%, 19% and 15% (2–5 rivals), against 2–25% for the other two.
 - The self-tuned test player (`source/benchmark/tune.cjs`) found the bigger hole: fighting for turn order and the Domination spaces.
   - Against v0.3.9 rivals, the first tuned player beat the card-chaser by +40 points at +1 pawn (now Hard), where the app's rivals allowed +20.
-  - With the tie-break, a player re-tuned against the new rule (v3; 1,800 held-out tables, seed 330000) wins 48% at Hard against 18% for the card-chaser: +30. Against the app's rivals on the same tables it gets +28, and without the tie-break it would get +51 at Hard. At Standard its margin is +39.
+  - With the tie-break, the player re-tuned against the new rule (checkpoint v3, `source/benchmark/tuned_weights_v3.json`) was measured twice:
+    - player-bot held-out run (1,800 tables, seed 330000): at Hard 48% against 18% for the card-chaser (+30); App +28; Standard +39. Without the tie-break, +51 at Hard.
+    - GPT's v0.4.0 audit (240 matched setups per cell, seeds 732000–735059): Hard +35, App +25, Standard +44.
+  - So at Hard, v3's margin is 2–10 points above its margin against the app's rivals. A simple habit (Initiative whenever not first) adds about 5 points at Standard.
   - Its edge still comes from Initiative (about 10 points) and Domination weights (about 7). Details: `source/benchmark/TUNED_PLAYER.md` (player-bot branch).
 - Counters tried and dropped:
   - Holding Initiative against you backfired: rivals waste a pawn each turn.

@@ -1,5 +1,16 @@
 # Release notes
 
+## v0.4.1 · November 14, 2026 · fixes for the GPT v0.4.0 audit
+
+- **Older paper saves keep their level:** a game saved in v0.3.6–v0.3.9 now shows its original level name, and "Start a new game" picks the same level on the current scale. If an old save's level can't be recovered, you choose one; the setup can no longer start at an unlisted difficulty.
+- **Tuner:** uses the v0.4.0 level names (Easy −1 … Expert +2) and reports the pawn offset with each result (the player-bot agent's tuner, merged).
+- **Rulebook:**
+  - New setup step: place the starting cones with the paper rules.
+  - The strategy note names the tuned checkpoint and both test samples.
+  - The Fallback line no longer splits across pages.
+- **App:** "App rivals" without "strongest"; the help explains the levels and the rival tie-break.
+- **Tests:** a new rules test (36 in total) and `source/browser_restart_test.py`. See [AUDIT_RESPONSE_v0.4.0.md](AUDIT_RESPONSE_v0.4.0.md).
+
 ## v0.4.0 · November 14, 2026 · rival tie-break and new levels
 
 - **Rival tie-break (paper rules):** when only rivals tie for the most matches on a tile, the rival higher in the food chain is dominant. If you tie with them, no one is dominant, as in the normal rules.

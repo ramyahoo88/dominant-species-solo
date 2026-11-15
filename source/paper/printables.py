@@ -102,7 +102,7 @@ h1{font-size:24pt;margin:0 0 4px}h2{font-size:15pt;margin-top:22px;border-bottom
 h3{font-size:12pt;margin-top:16px}table{border-collapse:collapse;width:100%;margin:8px 0;font-size:9.5pt;page-break-inside:avoid}
 th,td{border:1px solid #b7c1b6;padding:4px 6px;vertical-align:top;text-align:left}th{background:#eef1ea}
 code{font-size:9pt;background:#f1f3ee;padding:0 3px}li{margin:2px 0}
-@media print{body{margin:0;max-width:none}h2,h3{page-break-after:avoid;break-after:avoid}}
+@media print{body{margin:0;max-width:none}h2,h3{page-break-after:avoid;break-after:avoid}li,p{page-break-inside:avoid;break-inside:avoid}}
 """
 
 

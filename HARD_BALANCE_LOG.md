@@ -102,3 +102,36 @@ The anchor reproduces v4 exactly (Hard 745/1440 v3, 269/1440 dominance).
 - Domination-side Planning rules do nothing on their own: rivals place after a player who is first.
 - Turn-order rules cut the excess by half or more. They also make the game easier for the dominance player (rivals spend pawns), so the levels would need re-measuring.
 - Batch 2: holdYou variants (Direct, VP), climbPast, holdYou + tieToRival, holdYou + extraFirst; also an App baseline at seed 460000 for confirmation.
+
+### Results, batch 2 (to 00:05)
+
+**Summary metric.**
+- **X35** = mean edgeX over Standard/Hard/Expert and 3–5 rivals. **X2** = the same at 2 rivals.
+- Noise is about ±0.08 between candidates (1σ), plus a common App offset of about ±0.10.
+
+| Run | X35 | X2 | Std v3/dom | Hard v3/dom | Exp v3/dom |
+|---|---|---|---|---|---|
+| ba01 anchor | +0.80 | 0.00 | 65.8/28.1 | 51.7/18.7 | 44.0/12.4 |
+| ba02 extraFirst | +0.31 | −0.55 | = | 27.3/10.6 | 11.0/6.5 |
+| ba03 initClimb | +0.46 | −0.61 | 59.4/31.3 | 45.4/19.7 | 37.8/16.0 |
+| **ba04 holdYou** | **+0.29** | −0.47 | 62.5/32.6 | 49.5/24.5 | 38.1/18.5 |
+| ba05 leadDom | +0.85 | +0.02 | 66.2/27.9 | 51.1/18.8 | 44.0/11.6 |
+| ba06 blockHuman | +0.90 | +0.07 | 68.1/28.5 | 52.2/18.8 | 44.1/11.6 |
+| ba07 initClimb+leadDom | +0.33 | −0.58 | 58.6/31.6 | 44.4/20.6 | 37.1/15.8 |
+| ba08 holdYou+leadDom | +0.40 | −0.44 | 61.3/31.7 | 48.3/22.2 | 39.9/17.4 |
+| ba09 tieToRival | +0.58 | +0.12 | 59.5/25.5 | 47.5/15.6 | 39.8/12.0 |
+| ba10 extraFirst+leadDom | +0.24 | −0.55 | 66.2/27.9 | 27.4/10.3 | 10.9/6.5 |
+| ba11 tieToRival+initClimb | +0.43 | −0.50 | 54.0/26.4 | 41.3/16.6 | 34.1/12.6 |
+| ba12 holdYouDirect | +0.34 | −0.54 | 62.8/35.9 | 51.5/24.1 | 40.8/18.8 |
+| ba13 climbPast | +0.42 | −0.49 | 55.4/27.2 | 39.6/16.9 | 30.5/11.7 |
+| ba14 holdYouVP | +0.54 | −0.28 | 62.8/31.8 | 49.9/21.2 | 41.3/14.9 |
+| ba15 holdYou+tieToRival | +0.55 | −0.61 | 58.6/27.4 | 46.5/19.7 | 37.6/15.8 |
+
+**Local checks under holdYou (Hard, 3 rivals, 200 games):**
+- With the player as Insects (first at the start) or Mammals (last at the start): v3 wins 64.5% vs 42.5%, and dominance 30.5% vs 12%.
+- The log-odds edge is similar (1.42 vs 1.69), so the seat matters for everyone and it isn't a strategy hole.
+
+**Plan (00:05).**
+1. Confirm holdYou on fresh seeds: ba23 anchor at 460000, ba24 holdYou at 460000, ba17 App at 460000.
+2. Re-tune from v3 against holdYou: ba25–27 (`results/ba_hy.ckpt.json`; train seed 370000, validate 380000).
+3. Still queued: ba16 holdYou+extraFirst, ba18 holdYou ablations, ba19 App ablations, ba20 cardVP, ba21 holdYou+cardVP, ba22 holdYou+initClimb.

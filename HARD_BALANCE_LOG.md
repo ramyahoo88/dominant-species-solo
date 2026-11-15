@@ -234,6 +234,6 @@ X35 / X2 against the pooled App baseline.
   - The cost: at 2 rivals a strong player's edge is somewhat smaller than against App rivals (about 6 points at Standard). That's no exploit.
   - The alternative (rivalsFirst only with 3+ rivals) keeps 2-rival play as in v0.4.1 but needs level offsets per rival count.
 - **Re-tune stage 1 (ba30, 13 generations):** validation win 0.388 → 0.405. A small gain, so no big new hole so far.
-- **Release shape:**  now has only the rule. It is on by default (benchmark too);  turns it off.
+- **Release shape:** `paper.js` now has only the rule. It is on by default (benchmark too); `noPlanFirst` turns it off.
   - The screened candidates remain on this branch at commit f104c5b.
-  - **Not yet on the PC:** the PC keeps the research  until the ladder jobs finish.
+  - **Not yet on the PC:** the PC keeps the research `paper.js` until the ladder jobs finish.

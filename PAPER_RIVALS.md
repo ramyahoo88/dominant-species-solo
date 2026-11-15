@@ -16,7 +16,7 @@ v0.5.0 adds **rivals plan first**: at the start of each Planning, before anyone 
 | 2 (33%) | 66% | 42% | 26% | 16% | 20% |
 | 3 (25%) | 56% | 31% | 21% | 8% | 15% |
 | 4 (20%) | 59% | 24% | 9% | 4% | 9% |
-| 5 (17%) | 74% | 28% | 6% | 4% | 8% |
+| 5 (17%) | 75% | 28% | 6% | 4% | 8% |
 
 One of 7,200 paper games stalled (five rivals at Standard, a short game, the expansion strategy). It passed 30 turns without Ice Age and was scored as it stood. The tuned-player evaluation had one more (five rivals at Easy, 1 of 1,800 games in that cell). Games started before v0.5.0 keep their rules, pawn counts and Planning order.
 

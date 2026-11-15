@@ -352,3 +352,9 @@ Checklist item 5 is resolved: there is no excess at +1 with 4–5 rivals.
 - the save-migration test includes 0.4.1;
 - the player's code doesn't read `currentPlanner` or `s.planning` (grep), so the re-tune isn't blind to the order;
 - `final_eval.py` notes that labels changed (compare by `extraPawns`).
+
+### 03:35 — v0.5.0 released to main (759af34); follow-ups
+
+- **Released:** main 759af34, build fe36f6c6. The online rulebook mirror is updated (rev 40). COORDINATION is updated, and the worker is assigned the independent held-out check (assignment 7).
+- **ba68** (shipped code, 5 rivals, Easy ladder cell): 74.7%, against 74.4% for the research code. The table now shows 75%.
+- **Queued ba69:** 2 rivals with `noPlanFirst` (v4/v3/fixed, seed 470000). It gives the numbers for the open choice of applying the rule only with 3+ rivals.

@@ -549,3 +549,20 @@ verify('GPT v0.4.0 audit F1: older paper saves keep their level name, and a rest
   assert.throws(() => validateState(bad));
   for (const s of [e36, s36, s39, x39, amb]) assert.equal(s.version, VERSION);
 `);
+
+verify('GPT v0.4.1 follow-up R2: an Easy save re-exported by v0.3.7-v0.3.9 is still recovered as Easy', `
+  const old = (version, extra) => {
+    const s = newGame('amphibians',['birds','arachnids'],true,949381806,{extra});
+    delete s.paper.rivalTie;
+    s.version = version;
+    validateState(s);
+    return s;
+  };
+  // -1 was only ever the v0.3.6 Easy setting, and +3 only the v0.3.7-v0.3.9 Expert setting, whoever saved the file last.
+  for (const v of ['0.3.6','0.3.7','0.3.8','0.3.9','0.4.0']) assert.equal(old(v, -1).paper.level, 'Easy', v);
+  for (const v of ['0.3.7','0.3.9','0.4.0']) assert.equal(old(v, 3).paper.level, 'Expert', v);
+  assert.equal(paperExtraFor(old('0.3.9', -1).paper.level), -1);
+  // The documented limit: a v0.3.6 Standard (0) re-saved by v0.3.9 is identical to a v0.3.9 Easy game.
+  assert.equal(old('0.3.9', 0).paper.level, 'Easy');
+  assert.equal(old('0.4.0', 0).paper.level, null);
+`);

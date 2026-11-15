@@ -552,6 +552,8 @@ newGame = function(human, rivals, short, seed, paper = null) {
   s.paper = PAPER.flatMatch ? {extra} : {extra, detailed:true};
   // v0.4.0: rival ties go to the food chain. Recorded in the save, so games started earlier keep the rule they began with.
   if (PAPER.flatMatch && !PAPER.noRivalTie) s.paper.rivalTie = true;
+  // Candidate (testing, off by default): tieToRival. A tie for the most matches that includes you goes to the highest rival in it.
+  if (PAPER.tieToRival && s.paper.rivalTie) s.paper.tieToRival = true;
   s.paperRivals = [...rivals];
   return s;
 };
@@ -593,7 +595,9 @@ cone = function(s, tile) {
   const best = Math.max(0, ...vals.map(v => v[1]));
   if (!best) return null;
   const top = vals.filter(v => v[1] === best).map(v => v[0]);
-  return top.length > 1 && top.every(id => s.paperRivals.includes(id)) ? top.sort((a,b) => rank(a) - rank(b))[0] : null;
+  if (top.length < 2) return null;
+  const rivalsIn = top.filter(id => s.paperRivals.includes(id));
+  return rivalsIn.length === top.length || s.paper.tieToRival && rivalsIn.length ? rivalsIn.sort((a,b) => rank(a) - rank(b))[0] : null;
 };
 const _appMatch = match;
 match = function(s, tile, actor, additions = s.animals[actor].added) {

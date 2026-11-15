@@ -42,10 +42,13 @@ function paperLevel(extra, paper = null) {
 }
 function recordPaperLevel(s) {
   if (!s?.paper || s.paper.rivalTie || s.paper.level !== undefined) return;
+  // Before v0.4.0, -1 existed only on the v0.3.6 scale (Easy) and +3 only on the v0.3.7-v0.3.9 scale (Expert). These two
+  // endpoints are recovered whichever version saved the file last (GPT v0.4.1 follow-up R2).
+  if (s.paper.extra === -1 || s.paper.extra === 3) { s.paper.level = s.paper.extra === -1 ? 'Easy' : 'Expert'; return; }
   const scale = s.version === '0.3.6' ? PAPER_LEVELS_V036 : ['0.3.7','0.3.8','0.3.9'].includes(s.version) ? PAPER_LEVELS_V03 : null;
   if (scale) s.paper.level = (scale.find(([n]) => n === s.paper.extra) || [0, null])[1];
   // Saved again by v0.4.0, which overwrote the version: only -1 (v0.3.6 Easy) and +3 (v0.3.7+ Expert) are unambiguous.
-  else if (s.version === '0.4.0') s.paper.level = s.paper.extra === -1 ? 'Easy' : s.paper.extra === 3 ? 'Expert' : null;
+  else if (s.version === '0.4.0') s.paper.level = null; // any other offset re-saved by v0.4.0 is ambiguous
 }
 // The pawn offset for a level name on the current scale, or null if the name is unknown.
 function paperExtraFor(name) { return PAPER_LEVELS.find(([,n]) => n === name)?.[0] ?? null; }

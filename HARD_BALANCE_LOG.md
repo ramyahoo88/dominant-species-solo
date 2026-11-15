@@ -264,3 +264,41 @@ X35 / X2 against the pooled App baseline.
 - ba33/34 final evaluation at seed 470000;
 - ba35–54 ladder;
 - ba55 +1 at 4–5 rivals with 4× games (seed 480000).
+
+### 02:15 — RESULT: the re-tuned player passes on fresh seeds
+
+**Re-tune (ba30–32):**
+- 39 generations from v3 against rivalsFirst; `ba_rf.ckpt.json`, best at generation 27.
+- Validation win went from 0.34 to 0.425; that is the best of 13 checks, so some winner's curse is expected.
+
+**Final evaluation, seed block 470000 (never used before).**
+- Paper levels come from ba33, App from ba34.
+- Level names below are the tuner's **old-scale** labels: Easy = −1, Standard = 0, Hard = +1, Expert = +2.
+
+| Level | re-tuned | v3 | dominance | majority | expansion |
+|---|---|---|---|---|---|
+| −1 | 66.1 | 63.0 | 44.4 | 25.0 | 26.1 |
+| 0 | 44.8 | 41.9 | 22.9 | 11.5 | 9.6 |
+| +1 | 28.5 | 26.9 | 11.6 | 5.1 | 6.4 |
+| +2 | 19.7 | 19.9 | 8.3 | 5.1 | 4.7 |
+| App | 45.7 | 41.5 | 17.5 | 10.7 | 11.0 |
+
+**Measures:**
+- **Re-tune recovery** (re-tuned minus v3): −1 +3.1, 0 +2.9, +1 +1.6, +2 −0.2; **App +4.2**. The re-tune gained *more* against App rivals than against paper rivals, so it found no new paper hole.
+- **edgeX of the re-tuned player** (edge over the best fixed policy, minus the better App edge of re-tuned and v3, same rival count):
+
+  | Level | 2 rivals | 3 | 4 | 5 | X35 |
+  |---|---|---|---|---|---|
+  | −1 | −1.06 | −0.26 | −0.52 | −0.34 | **−0.37** |
+  | 0 | −1.02 | −0.23 | −0.20 | +0.21 | **−0.07** |
+  | +1 | −0.68 | −0.08 | −0.15 | −0.11 | **−0.11** |
+  | +2 | −0.55 | −0.45 | −0.97 | +0.77 | **−0.22** (floor: best fixed 1–9%) |
+
+- **Pass at every level (X35 ≤ +0.2).** Before tonight the same measure was +0.85 to +0.95 for v3.
+- **Ablations of the re-tuned player** (pp; −1/0/+1/+2):
+  - Initiative: −4.9 / −7.9 / −4.2 / −2.5 (against App, v3's was −5.6);
+  - Domination: −1.2 / −5.2 / −1.9 / −1.6 (against App, −1.1).
+  - Nothing it leans on stands out the way Initiative + Domination did (−11.9 / −8.0 at old Hard).
+- **2 rivals:** a strong player's edge is smaller than against App rivals (−0.55 to −1.06). That is accepted (see 01:20).
+
+**Decision: ship rivalsFirst as v0.5.0**, once the ladder (ba35–54) fixes the level offsets.

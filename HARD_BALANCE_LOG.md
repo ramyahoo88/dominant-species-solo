@@ -43,7 +43,23 @@ Also: in Planning the extra difficulty pawn is placed last, after everyone else 
 - `holdYou`: a rival ahead of you on the Initiative track takes the open Initiative space, so you can't climb past it. Re-test under v0.4.1; the old verdicts predate the tie-break and v3.
 - `leadDom`: race for Domination space 1 when you dominate an unscored tile and a card is available.
 - `blockHuman`: Block the leader aims at you rather than the VP leader.
+- `tieToRival` (added 23:30): a tie for the most matches that includes you goes to the highest rival in it. This targets the Domination channel directly and adds no pawns; it could replace the extra pawn as a difficulty step.
 - Combinations of a turn-order rule and a Domination rule.
+
+**Constraint:** paper rivals are run by hand at the table, so each rule must be executable from the printed rulebook and cards.
+
+## Diagnosis notes (local, seed 452000, 300 games, Hard, 3 rivals)
+
+| | v3 | dominance |
+|---|---|---|
+| Win % | 56.7 | 16.7 |
+| First in Initiative (turns) | 58% | 16% |
+| Domination pawns per game | 5.3 (space 1: 2.6) | 1.4 (space 1: 0.6) |
+| Cards via its own Domination | 4.9 | 1.2 |
+| Wanderlust VP | 24 | 5 |
+
+- v3 climbs to first, grabs Domination space 1 (it resolves first) and claims cards.
+- At Hard the extra rival pawn is placed last, onto leftovers (Fallback starts with Domination). So rivals take more Domination 3–5, Migration and Competition, and games are shorter (5.7 turns vs 6.8 at App, 4 rivals).
 
 ## GPT v0.4.1 follow-up audit (ba1c69e): pass for playtesting
 
@@ -55,4 +71,10 @@ Also: in Planning the extra difficulty pawn is placed last, after everyone else 
 
 ## Jobs and results
 
-(PC prefix `ba`, which sorts before `pb_`.)
+(PC prefix `ba`, which sorts before `pb_`.) All are v3 and dominance at Standard, Hard and Expert, 2–5 rivals, 360 games per cell, seed 450000. App rows come from `v4_hardapp`. Analysis: `matched.py` (v3 at the paper difficulty where dominance matches App, minus v3 against App).
+
+- **ba01_anchor** (no switches). Hard must equal v4's Hard rows.
+- ba02 extraFirst · ba03 initClimb · ba04 holdYou · ba05 leadDom · ba06 blockHuman · ba07 initClimb+leadDom · ba08 holdYou+leadDom
+- ba09 tieToRival · ba10 extraFirst+leadDom · ba11 tieToRival+initClimb
+
+Also done on this branch: GPT's R1 (Help notice for legacy saves) and R2 (−1/+3 recovered; rules test 37, mutation-checked). R3 is the worker's `tune.cjs` 6104ce5, already taken here.

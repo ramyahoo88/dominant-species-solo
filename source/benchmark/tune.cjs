@@ -339,12 +339,13 @@ async function nnData(args, pool, animals) {
   const file = args.weights ? read(args.weights) : {};
   const weights = complete(pool.defaults, file.best ?? file);
   const opts = {k: +args.k, m: +args.m, rate: +args.rate};
-  const batch = pool.size * 2, limit = Date.now() + 60000 * +args.minutes;
+  // One game per task, so a free worker always takes the next game (games differ a lot in playout count).
+  const batch = pool.size * 4, limit = Date.now() + 60000 * +args.minutes;
   let start = +args.seed, games = 0, wins = 0, samples = 0, errors = [], stalled = 0;
   const t0 = Date.now();
   while (Date.now() < limit && games < +args['max-games']) {
     const scs = scenarios(start++, batch, animals, null, parseModes(args['train-modes'] || MODES.join(','))).map(sc => ({...sc, policy: 'nn'}));
-    const [res] = await pool.run([{weights, scenarios: scs, nn: opts}]);
+    const res = (await pool.run(scs.map(sc => ({weights, scenarios: [sc], nn: opts})))).map(r => r[0]);
     for (let i = 0; i < res.length; i++) {
       const g = res[i];
       games++;

@@ -19,3 +19,7 @@ Each setup pre-shuffles the physical Dominance deck and three eight-tile terrain
 A pawn is counted once at execution. A declined action had a legal way to proceed at that point, even if the move would have been harmful or scored nothing. An action with no target could not proceed at that point, for example when the gene pool was empty. Queued Glaciation pawns count if they reach Execution. A separate count records explicitly selected denial placements. VP ties follow the game’s food chain tiebreaker. The interval is a normal approximation from paired human-win differences, clustered by shared physical setup across the three policies.
 
 The harness validates state every step, preserves a trace on request, and stops on an invalid or nonterminating game. It uses the app’s model and effect resolutions. The results compare versions against the stated scripts. Small-board assertions check selected rules separately, and physical play is still needed to assess human difficulty and balance.
+
+## Self-tuning test player (opt-in)
+
+`node source/benchmark.cjs --tune | --evaluate | --selftest` runs `source/benchmark/tune.cjs` with the tunable player in `tuned.js`. Plain benchmark runs never load them, so published numbers are unaffected. See the header of `tune.cjs` for options. `tuned_weights_v1.json` holds the first tuned weights. `ablation/` holds the variants used to find what drives its wins: Initiative and turn order about 21 points, Domination stacking about 11.

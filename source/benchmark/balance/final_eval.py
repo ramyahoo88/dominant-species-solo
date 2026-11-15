@@ -1,5 +1,7 @@
 """Final evaluation: re-tuned player vs v3 vs the best fixed policy, paper levels vs App, same seed block.
-usage: python3 final_eval.py PAPER_JSON APP_JSON"""
+usage: python3 final_eval.py PAPER_JSON APP_JSON
+Rows are grouped by their level label (rivalsAre). Labels changed in v0.5.0 (−1 was Easy, now Standard), so compare runs
+from before and after by the extraPawns field, not by label."""
 import json, math, sys
 
 def load(p): return json.load(open(p, encoding='utf-8-sig'))

@@ -29,7 +29,7 @@ Your interval for the Hard excess (−1.8 to +21.8) didn't settle it. A matched 
 **The check.**
 1. The test player was re-tuned against the new rule (v4, 39 generations from v3).
 2. It was evaluated on an untouched seed block (470000) against all three fixed policies, at paper levels and against App rivals on the same block.
-3. At every level with 3–5 rivals, its log-odds lead over the best fixed policy is no larger than its (or v3's) lead against App rivals: −0.37, −0.07, −0.11 and −0.22 at −1, 0, +1 and +2.
+3. In that sample (1,440 games per level), at every level with 3–5 rivals, its log-odds lead over the best fixed policy was no larger than its (or v3's) lead against App rivals: −0.37, −0.07, −0.11 and −0.22 at −1, 0, +1 and +2. Those are the old scale's offsets; the shipped levels are −2 to +1, and the shipped Easy (−2) was checked separately (see the log).
 4. The re-tune gained more against App rivals (+4.2 points) than against paper rivals (−0.2 to +3.1), so it found no new paper-specific hole.
 5. With 2 rivals a strong player's lead is now *smaller* than against App rivals. That is a cost of keeping one printed rule for every table size, not an exploit.
 

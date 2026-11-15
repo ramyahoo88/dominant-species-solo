@@ -6,7 +6,7 @@
   - **Why:** a strong player who stayed first on the Initiative track got first pick of the action display every turn, and paper rivals never contested it.
     - Against 3–5 rivals, the self-tuned test player beat paper rivals much more easily than the app's rivals, at every level.
     - At the old Hard it led the card-chaser by 33 points, against 23 for App rivals (1,440 paired games each).
-  - **Result:** the test player was re-tuned against the new rule (checkpoint v4) and measured on fresh seeds. Its lead over the best simple strategy is now no larger than against the app's rivals at every level with 3–5 rivals. With 2 rivals its lead is smaller.
+  - **Result:** the test player was re-tuned against the new rule (checkpoint v4) and measured on fresh seeds (1,440 games per level). In that sample, its lead over the best simple strategy was no larger than against the app's rivals at every level with 3–5 rivals. With 2 rivals its lead was smaller.
   - **What else was tried:** more than twenty candidate rules overnight, logged in `HARD_BALANCE_LOG.md`.
     - Holding the Initiative space against you halved the excess.
     - Domination-race, blocking and card rules did nothing or backfired.

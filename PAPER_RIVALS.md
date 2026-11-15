@@ -31,10 +31,10 @@ One of 7,200 paper games stalled (five rivals at Standard, a short game, the exp
 - **The check:**
   - The test player was re-tuned against the new rule (checkpoint v4, 39 generations from v3).
   - It was evaluated on an untouched seed block (470000) against all three fixed policies, at paper levels and against App rivals on the same block.
-  - At every level with 3–5 rivals, its lead over the best fixed policy is no larger than its lead against App rivals: log-odds differences of −0.37, −0.07, −0.11 and −0.22 at −1, 0, +1 and +2.
+  - In that sample (1,440 games per level), at every level with 3–5 rivals, its lead over the best fixed policy was no larger than its lead against App rivals: log-odds differences of −0.37, −0.07, −0.11 and −0.22 at offsets −1, 0, +1 and +2 (the shipped levels are −2…+1; the shipped Easy was checked separately).
   - With 4× the games at +1 (4–5 rivals, seed 480000): −0.15 and −0.11.
   - The re-tune gained more against App rivals (+4.2 points) than against paper rivals (−0.2 to +3.1), so it found no new paper-specific hole.
-  - With 2 rivals a strong player's lead is now smaller than against App rivals. That is the cost of one printed rule for every table size.
+  - With 2 rivals a strong player's lead was smaller than against App rivals. That is the cost of one printed rule for every table size.
 - **Strategy balance:** chasing Dominance Cards is still the strongest simple strategy. At Standard it wins 56%, 54%, 37% and 37% (2–5 rivals), against 15–37% for the other two.
 
 ### v0.4.0 difficulty (rival tie-break; superseded)

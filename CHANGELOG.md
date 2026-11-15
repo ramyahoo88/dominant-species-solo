@@ -1,5 +1,23 @@
 # Release notes
 
+## v0.5.3 · November 15, 2026 · Mammals' Extinction tie, printed tie order for every row, scaled Easy; fixes for GPT's v0.5.2 re-audit
+
+- **Mammals' Extinction save (paper rules; GPT's v0.5.2 re-audit):** a Mammals rival now saves its endangered species on the tile with the highest first-place value, then in board order, as printed.
+  - **Why:** paper mode handed this choice to the app's own rival, which kept the first equal tile in the order Mammals reached them. On GPT's seed 960021 it saved at C2 instead of B2; in GPT's tundra position it scored 1 Survival VP instead of 3.
+  - **Saved games:** applies to every Paper game, saved ones included, like board order.
+- **Printed tie order (GPT's wording):** Terms → Ties now covers tiles; corners and empty spots use board order after each row's own priorities, and each row now says what it compares: Abundance and Habitat (the highest first-place value of any touching tile), Depletion, Speciation (the sum of the matched tiles' values), Wanderlust (spot, stack and corner), Blight, Migration, Mass Exodus, Competition and Arachnids' free Competition, Fertile, Mammals' save, which space in a row, and element losses (Regression, Disease, Immigrants, Metamorphosis). The app already played these choices; only the text changed.
+- **Scaled Easy (paper rules):** with five rivals, Easy is now −1 pawn for each rival and +1 for you (2 against your 4), instead of −2 for each rival (1 against your 3). Other table sizes and levels are unchanged.
+  - **Why:** the base count with five rivals is 3, so Easy's −2 left each rival a single pawn. Five Easy rivals together placed fewer pawns a turn than four did, so Easy got easier as rivals were added (75% with five against 56% with four), and every strategy won equally often.
+  - **Saved games:** pawn counts are saved, so five-rival Easy games started earlier keep theirs. The setup screen (level picker and pawn line), Help and rulebook state the rule.
+- **Effect on the numbers** (same seeds as v0.5.2):
+  - **Difficulty table:** the Extinction fix changes four cells by one win each, and two of them by a rounded point (Easy with 3 rivals 60% → 61%, Expert with 3 rivals 7% → 8%). Scaled Easy takes Easy with 5 rivals from 75% to 47%, so Easy is now 64/61/56/47% from two to five rivals, and strategy matters again there (card-chaser 57.5%, 69 of 120; majorities 44%, spreading out 40%). No game stalled.
+  - **Tuned-player check** (X35, Easy / Standard / Hard / Expert): −0.78 / −0.40 / +0.03 / −0.11 on seeds 470000 and −0.59 / −0.43 / −0.24 / −0.08 on 490000; best against best with the other agent's player, −0.21 / −0.15 / +0.06 / 0.00 and −0.42 / −0.16 / −0.09 / +0.07. All within the +0.20 target.
+- **Testing text:** GPT's fresh Hard estimate for v0.5.2 (−0.11, 95% −0.41 to +0.17) joins the earlier two. The stall note now reads "7,200 ladder games (5,760 against paper rivals and 1,440 against the app's)".
+- **Rulebook layout:** long tables now break between rows with the header repeated, so the longer card table no longer leaves most of a page blank (still 11 pages).
+- **Tests:** the Extinction choice on a constructed position and on GPT's two saves (B2; C3 with 3 Survival VP; v0.5.2 saves load); scaled Easy at every table size and level, the testing switch and older saves. `--paper-options oldExtinction` restores the v0.5.2 Extinction choice and `flatEasy` the flat −2 (testing only).
+- Reproducible build: SHA-256 8a0a7d17… (full hash in `HANDOFF.md`); accepts v0.1–v0.5.2 saves.
+- See [AUDIT_RESPONSE_v0.5.2.md](AUDIT_RESPONSE_v0.5.2.md).
+
 ## v0.5.2 · November 15, 2026 · Board order for every rival tie; fix for GPT's v0.5.1 re-audit
 
 - **Board order (paper rules; GPT finding E1):** when a rival's choice still ties, it now takes the tile, corner or empty spot furthest left on the board, then the highest. This is stated once, under Terms → Ties, and every rule that said "top-left" now says "board order".

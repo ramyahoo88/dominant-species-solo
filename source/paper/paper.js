@@ -522,6 +522,14 @@ function paperLoss(s, actor, options, amount) {
   return {elements,label:pLabel('remove ' + elements.map(elementName).join(' and ') + '.')};
 }
 const _appBotAction = botAction;
+// Mammals' save in Extinction: the endangered tile with the highest first-place value, ties in board order (GPT v0.5.2
+// audit). The app's chooser broke ties by the order Mammals reached the tiles. PAPER.oldExtinction (testing) restores
+// it, and so does PAPER.oldCornerOrder, so that switch still replays v0.5.1 exactly.
+function paperExtinction(s, step) {
+  if (PAPER.oldExtinction || PAPER.oldCornerOrder || !step.actor) return _appBotAction(s,step);
+  const tiles = extinctionOptions(s, step.actor);
+  return {saved: tiles.length ? pBy(tiles, t => pFirstVP(s,t)) : null};
+}
 botAction = function(s, step) {
   const {actor,kind} = step;
   if (!paperOn(s) || PAPER[kind] === false) return _appBotAction(s,step);
@@ -541,7 +549,7 @@ botAction = function(s, step) {
       return {tile,label:pLabel(addLabel(s,{[tile]:1}))};
     }
     case 'loss': return paperLoss(s,actor,step.due.threats,step.due.drops);
-    case 'extinction': return _appBotAction(s,step); // already a table rule: save on the highest first-place tile
+    case 'extinction': return paperExtinction(s,step);
     case 'claim': return paperClaim(s,actor,step.tile);
     case 'effect': {
       if (PAPER['effect:' + step.name] === false) return _appBotAction(s,step);
@@ -558,8 +566,15 @@ newGame = function(human, rivals, short, seed, paper = null) {
   const s = _appNewGame(human, rivals, short, seed);
   if (!PAPER.place && !paper) return s;
   const extra = paper ? Number(paper.extra || 0) : Number(PAPER.extraAP || 0);
-  for (const id of rivals) s.animals[id].ap += extra;
+  // v0.5.3 scaled Easy: with five rivals the base is 3 pawns, so Easy's −2 would leave each rival 1 (a third of yours).
+  // There, Easy is −1 for each rival and +1 for you (2 against your 4, as with four rivals). Recorded in the save as
+  // scaledEasy; the pawn counts themselves are saved, so games started earlier keep theirs. PAPER.flatEasy (testing)
+  // or setup {flatEasy} keeps −2 at every table size.
+  const scaled = extra === -2 && rivals.length === 5 && !(paper ? paper.flatEasy : PAPER.flatEasy);
+  for (const id of rivals) s.animals[id].ap += scaled ? -1 : extra;
+  if (scaled) s.animals[human].ap += 1;
   s.paper = PAPER.flatMatch ? {extra} : {extra, detailed:true};
+  if (scaled) s.paper.scaledEasy = true;
   // v0.4.0: rival ties go to the food chain. Recorded in the save, so games started earlier keep the rule they began with.
   if (PAPER.flatMatch && !PAPER.noRivalTie) s.paper.rivalTie = true;
   // v0.5.0: rivals plan first. Recorded in the save, so a game keeps the Planning order it began with.

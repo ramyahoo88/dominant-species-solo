@@ -68,10 +68,13 @@ def pawns(n):
     return "Base count" if n == 0 else f"Base count {'−' if n < 0 else '+'}{abs(n)}"
 
 
+EASY_FIVE = " (with five rivals: −1 for each rival, and you take 1 extra pawn)"
+
+
 def difficulty(ladder):
     off = ladder["offsets"]
     return ("| Level | Each rival's pawns | Use it when |\n| --- | --- | --- |\n"
-            + "".join(f"| {name} | {pawns(off[key])} | {ladder[key]} |\n" for key, name in
+            + "".join(f"| {name} | {pawns(off[key])}{EASY_FIVE if key == 'easy' else ''} | {ladder[key]} |\n" for key, name in
                       [("easy", "Easy"), ("standard", "Standard"), ("hard", "Hard"), ("expert", "Expert")]) + "\n"
             "**Playing in the app instead:** the app can run these exact rules, so you don't need to print anything. "
             "On the setup screen choose **Paper rules** and a level. The app draws each rival's card, names the Planning step "
@@ -105,7 +108,7 @@ def testing(ladder):
 CSS = """
 body{font:11pt/1.45 Georgia,serif;color:#1d2420;max-width:780px;margin:24px auto;padding:0 18px}
 h1{font-size:24pt;margin:0 0 4px}h2{font-size:15pt;margin-top:22px;border-bottom:1px solid #c9d2c8;padding-bottom:3px}
-h3{font-size:12pt;margin-top:16px}table{border-collapse:collapse;width:100%;margin:8px 0;font-size:9.5pt;page-break-inside:avoid}
+h3{font-size:12pt;margin-top:16px}table{border-collapse:collapse;width:100%;margin:8px 0;font-size:9.5pt}tr{page-break-inside:avoid;break-inside:avoid}thead{display:table-header-group}
 th,td{border:1px solid #b7c1b6;padding:4px 6px;vertical-align:top;text-align:left}th{background:#eef1ea}
 code{font-size:9pt;background:#f1f3ee;padding:0 3px}li{margin:2px 0}
 @media print{body{margin:0;max-width:none}h2,h3{page-break-after:avoid;break-after:avoid}li,p{page-break-inside:avoid;break-inside:avoid}}

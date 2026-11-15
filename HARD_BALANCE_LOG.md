@@ -482,8 +482,24 @@ Sources: `ba67`, `ba34`, `pb_c1`–`c3`, `pb_e1`, `pb_e2`.
 
 - **Cause: the level is a flat pawn change on a base that shrinks with the table.** Setup gives each animal 4 pawns with 4 rivals and 3 with 5. Easy's −2 leaves a rival 2 pawns (half of yours) with 4 rivals but 1 (a third of yours) with 5. Five Easy rivals place about 6.6 pawns a turn between them, fewer than four Easy rivals (9.6).
 - **Not game length:** 6.3 turns against 5.9.
-- **Not rival behaviour:** at the same pawns per rival, 5 rivals is much harder than 4: 2 pawns each, 56% (4 rivals, Easy) against 25% (5, Standard); 3 each, 21% (4, Standard) against 7% (5, Hard). Indexed by rival pawns ÷ your pawns, the 5-rival cells sit at or below the 4-rival line (at 2/3, about 33% interpolated for 4 rivals against 25% for 5).
+- **Not rival behaviour:** at the same pawns per rival, 5 rivals is much harder than 4: 2 pawns each, 56% (4 rivals, Easy) against 25% (5, Standard); 3 each, 21% (4, Standard) against 7% (5, Hard). Indexed by rival pawns ÷ your pawns, 5 rivals is at or below 4 rivals at the two points that can be compared: 2/3 (about 33% interpolated for 4 rivals against 25% for 5) and 1 (11% against 7%). Easy with 5 rivals (1/3) has no 4-rival cell to compare with; a 4-rival run with one pawn each (`be09`, `--paper=-3`) is refused by the save check, which allows at most two pawns fewer.
 - **Standard's 21 against 25** is about 1.3 standard errors, so within noise; the same cause in a milder form (rivals at 3/4 of your pawns with 4 rivals, 2/3 with 5).
-- **Easy with 5 rivals stops rewarding play:** card-chaser 76%, expansion 72%, majority 77%. With 4 rivals the card-chaser leads, 70% against 48–49%. It is also the cell where pb5 reached 93% (log above).
+- **Easy with 5 rivals stops rewarding play:** card-chaser 76%, expansion 72%, majority 77%. With 4 rivals the card-chaser leads, 70% against 48–49%. pb5 won 97% there at 490000, against 91% with 4 rivals (`bd41`).
 - **Blocking:** more blocking would not fix this cell, since one-pawn rivals have little to block with. Earlier blocking variants (`ba06` blockHuman: no effect; `ba04` holdYou: dropped for rivals planning first) were tested at Hard before planning-first. The `blocks` column counts only the app bot's denial placements, so it is zero for paper rivals by construction.
 - **Options for the user:** leave it (the printed table already shows 75%), or make Easy scale with the table, for example with 5 rivals Easy = rivals −1 and you +1 pawn (2 against 4, the 4-rival ratio). A change would need a branch test, then the ladder row, the printables and the app's level; it would ship after GPT's v0.5.2 audit.
+
+### 13:55 — v0.5.3: Mammals' Extinction tie, printed tie priorities, scaled Easy (GPT's v0.5.2 re-audit)
+
+- **Extinction fix:** paper Mammals save on `pBy(extinctionOptions, first-place value)`, so ties go by board order (the app's chooser kept placement order). `oldExtinction` restores v0.5.2; `oldCornerOrder` restores it too, so the v0.4.x anchor still gives 745/269 (`bf01`). With `oldExtinction`, `bf02` (3 rivals Hard) and `bf03` (5 rivals Easy, run before scaled Easy existed) replay `bd16`/`bd22` identically; on the release build the 5-rival Easy replay needs `oldExtinction,flatEasy` (`bf50`).
+- **Scaled Easy (the user's call after the 12:56 diagnosis):** with five rivals, Easy is −1 for each rival and +1 for you (2 against 4). `flatEasy` keeps −2; `bf26` with it equals `bf22` exactly. Note: `bf22` ran on the Extinction-only build (it started 6 s before the scaled build reached the PC), so the published 5-rival Easy cell is `bf27`.
+- **Ladder** (`bf10`–`bf25`, `bf27`): the Extinction fix changes four cells by one win each; two change their rounded percentage (3 rivals Easy 217 → 218, 60% → 61%; Expert 26 → 27, 7% → 8%), two do not (2 rivals Easy 230 → 231; 4 rivals Hard 39 → 38). Scaled Easy: 5 rivals 269 (75%) → 170 (47%); card-chaser 69/120 (57.5%), majority 53/120 (44%), expansion 48/120 (40%) (before 76/77/72%). Easy is now 64/61/56/47%. No stalls.
+- **X35** (`bf30`/`bf31`), Easy / Standard / Hard / Expert:
+  - 470000: −0.78 / −0.40 / +0.03 / −0.11 (v0.5.2: −0.88 / −0.38 / +0.03 / −0.11);
+  - 490000: −0.59 / −0.43 / −0.24 / −0.08 (v0.5.2: −0.67 / −0.43 / −0.24 / −0.07).
+  - Easy rises because the 5-rival Easy cell is no longer at the ceiling (v4 at 5 rivals: 87 → 74% and 89 → 80%).
+- **Best against best** with pb5 (`bf40`/`bf41`), X35:
+  - 470000: −0.21 / −0.15 / +0.06 / 0.00.
+  - 490000: −0.42 / −0.16 / −0.09 / +0.07.
+  - v0.5.2 was −0.20 / −0.15 / +0.06 / 0.00 and −0.03 / −0.17 / −0.09 / +0.10. The Easy 5-rival cell at 490000, +0.94 with pb5 at 97%, is now −0.22 (pb5 79%).
+- **Release gate met:** every level at or under +0.20 on both blocks and in best-against-best; no errors or stalls in any run.
+- **GPT's v0.5.2 Hard estimate:** −0.11 (95% −0.41 to +0.17), now in the Testing text.

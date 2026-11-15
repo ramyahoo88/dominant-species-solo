@@ -17,8 +17,8 @@ verify('GMT p. 4: six APs and 50 cubes include one VP marker and four starting s
   }
 `);
 
-verify('v0.1 through v0.5.1 save migration preserves inventory, pending choices, and random state', `
-  for (const version of ['0.1.0','0.2.0','0.3.0','0.3.1','0.3.2','0.3.3','0.3.4','0.3.5','0.3.6','0.3.7','0.3.8','0.3.9','0.4.0','0.4.1','0.5.0','0.5.1']) {
+verify('v0.1 through v0.5.2 save migration preserves inventory, pending choices, and random state', `
+  for (const version of ['0.1.0','0.2.0','0.3.0','0.3.1','0.3.2','0.3.3','0.3.4','0.3.5','0.3.6','0.3.7','0.3.8','0.3.9','0.4.0','0.4.1','0.5.0','0.5.1','0.5.2']) {
     const s = newGame('insects',['mammals','birds'],true,51);
     s.version = version;
     s.phase = 'execution';
@@ -611,9 +611,9 @@ verify('v0.5.0 candidate: rivals plan first; the rule is in the save and survive
   enterSupply(park, nextSupply(park, sp, 11));
   assert.equal(park.animals[first].remaining, park.animals[first].ap - 1);
   if (park.animals[first].remaining === 0) assert.ok(!park.paper.pre.includes(first));
-  const tight = newGame(human, ['mammals','birds','reptiles','amphibians','arachnids'], true, 12, {extra:-2});
+  const tight = newGame(human, ['mammals','birds','reptiles','amphibians','arachnids'], true, 12, {extra:-2, flatEasy:true});
   const r1 = tight.initiative.find(id => tight.rivals.includes(id));
-  assert.equal(tight.animals[r1].ap, 1, 'five rivals at Easy have one pawn each');
+  assert.equal(tight.animals[r1].ap, 1, 'five rivals at the old flat Easy have one pawn each');
   tight.pawns['wanderlust-0'] = {actor:r1, card:null, focus:null};
   enterSupply(tight, nextSupply(tight, makeSupplies(tight, 12), 12));
   assert.equal(tight.animals[r1].remaining, 0);
@@ -648,6 +648,84 @@ test('v0.5.2 board order: a corner tie goes to the leftmost corner, then the upp
     PAPER.oldCornerOrder = true;
     assert.equal(pBy([{tile:'-7,-3'},{tile:'-10,-4'},{tile:'-11,-3'}]).tile, '-10,-4', 'testing switch: the v0.5.1 string order');
     delete PAPER.oldCornerOrder;
+  })()`);
+});
+
+verify('v0.5.3 scaled Easy: with five rivals each rival has 2 pawns and you have 4; other table sizes keep Easy at -2', `
+  const five = ['mammals','birds','reptiles','amphibians','arachnids'];
+  const s = newGame('insects', five, true, 21, {extra:-2});
+  assert.deepEqual(five.map(id => s.animals[id].ap), [2,2,2,2,2]);
+  assert.equal(s.animals.insects.ap, 4);
+  assert.equal(s.paper.scaledEasy, true);
+  assert.equal(s.paper.level, 'Easy');
+  validateState(s);
+  for (const [rivals, base] of [[five.slice(0,4), 4], [five.slice(0,3), 5], [five.slice(0,2), 6]]) {
+    const g = newGame('insects', rivals, true, 21, {extra:-2});
+    assert.ok(rivals.every(id => g.animals[id].ap === base - 2) && g.animals.insects.ap === base && !g.paper.scaledEasy, rivals.length + ' rivals');
+  }
+  for (const extra of [-1, 0, 1]) {
+    const g = newGame('insects', five, true, 21, {extra});
+    assert.ok(five.every(id => g.animals[id].ap === 3 + extra) && g.animals.insects.ap === 3 && !g.paper.scaledEasy, 'level ' + extra);
+  }
+  const flat = newGame('insects', five, true, 21, {extra:-2, flatEasy:true});
+  assert.ok(five.every(id => flat.animals[id].ap === 1) && flat.animals.insects.ap === 3, 'testing switch: the flat -2');
+  // A five-rival Easy game saved before v0.5.3 keeps its pawn counts.
+  const old = JSON.parse(JSON.stringify(flat)); old.version = '0.5.2'; delete old.paper.scaledEasy;
+  validateState(old);
+  assert.ok(five.every(id => old.animals[id].ap === 1) && old.animals.insects.ap === 3);
+`);
+
+test('v0.5.3 Mammals Extinction save: equal first-place values go to board order, not the order Mammals reached the tiles', () => {
+  const g = load('worktree', ['game']);
+  g.get('globalThis').assert = assert;
+  g.run(`(() => {
+    Object.assign(PAPER, {place:true, all:true, extraAP:-1});
+    const s = newGame('birds',['mammals','insects'],true,7,{extra:-1});
+    // Two Sea tiles with endangered Mammals: C4 is further left than E4, but Mammals reached E4 first.
+    for (const t of ['C4','E4']) { s.tiles[t].terrain = 'sea'; for (const k of VERTICES_OF[t]) delete s.corners[k]; }
+    const options = extinctionOptions(s,'mammals');
+    assert.ok(options.indexOf('E4') < options.indexOf('C4'), 'fixture: E4 comes first in placement order');
+    assert.equal(botAction(s,{kind:'extinction',actor:'mammals'}).saved, 'C4');
+    // A higher first-place value still comes first: make E4 the only Sea.
+    s.tiles.C4.terrain = 'wetland';
+    assert.equal(botAction(s,{kind:'extinction',actor:'mammals'}).saved, 'E4');
+    s.tiles.C4.terrain = 'sea';
+    // Testing switches: the app's chooser (placement order), as in v0.5.2 and earlier.
+    PAPER.oldExtinction = true;
+    assert.equal(botAction(s,{kind:'extinction',actor:'mammals'}).saved, 'E4');
+    delete PAPER.oldExtinction; PAPER.oldCornerOrder = true;
+    assert.equal(botAction(s,{kind:'extinction',actor:'mammals'}).saved, 'E4');
+    delete PAPER.oldCornerOrder;
+    // No Mammals at the table: nothing to save.
+    assert.equal(botAction(s,{kind:'extinction',actor:null}).saved, null);
+  })()`);
+});
+
+test('v0.5.3 Mammals Extinction save on GPT\'s v0.5.2 positions: B2 over C2 (seed 960021), and C3 over D3 for 3 Survival VP', () => {
+  const g = load('worktree', ['game']);
+  Object.assign(g.get('globalThis'), {assert, played:FIX('gpt-v052-extinction-played.json'), tie:FIX('gpt-v052-extinction-tie.json')});
+  g.run(`(() => {
+    const check = (s, released, expected) => {
+      validateState(s);
+      assert.equal(s.version, VERSION, 'a v0.5.2 save loads');
+      const step = nextStep(s);
+      assert.equal(step.kind, 'extinction');
+      PAPER.oldExtinction = true; assert.equal(botAction(s,step).saved, released, 'v0.5.2 choice'); delete PAPER.oldExtinction;
+      const choice = botAction(s,step);
+      assert.equal(choice.saved, expected);
+      runStep(s,step,choice);
+      validateState(s);
+      return s;
+    };
+    // Seed 960021, turn 5 (Reptiles against five Paper Hard rivals): two endangered Sea tiles; B2 is further left.
+    check(copy(played), 'C2', 'B2');
+    // Two tundra tiles; one D3 Mammal is protected by Hibernation. Saving the C3 cube keeps Mammals on both tundra tiles.
+    const before = tie.animals.mammals.vp;
+    const s = check(copy(tie), 'D3', 'C3');
+    assert.equal(s.animals.mammals.vp - before, 3, 'Survival: 3 VP');
+    // The app's own rivals keep the app's chooser.
+    const app = copy(tie); delete app.paper; delete app.paperRivals;
+    assert.equal(botAction(app,nextStep(app)).saved, 'D3');
   })()`);
 });
 
@@ -706,7 +784,7 @@ test('v0.5.1 Empty Earth: with no species on Earth a rival may take Abundance an
       validateState(old);
       assert.ok(paperLegal(old,'mammals','abundance',0) && paperPawn(old, step).corner === choice.corner, 'saved ' + old.version + ' game');
     }
-    for (const v of ['0.5.0', '0.5.1']) {
+    for (const v of ['0.5.0', '0.5.1', '0.5.2']) {
       const saved = JSON.parse(JSON.stringify(s)); saved.version = v;
       validateState(saved);
       assert.equal(saved.version, VERSION, 'a v' + v + ' Paper save loads');

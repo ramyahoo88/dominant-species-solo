@@ -4,7 +4,7 @@
   "standard": "A little easier than an even game",
   "hard": "About as strong as the app's rivals",
   "expert": "Tougher than the app's rivals",
-  "method": "Each cell is 360 games on seeds (block 200000) not used to tune the rules, played with v0.5.2 (rivals plan first, rival tie-break, Empty Earth, board order). Lower means tougher rivals. In a perfectly even game the player would win 33% against two rivals, 25% against three, 20% against four and 17% against five.",
+  "method": "Each cell is 360 games on seeds (block 200000) not used to tune the rules, played with v0.5.3 (rivals plan first, rival tie-break, Empty Earth, board order, scaled Easy). Lower means tougher rivals. In a perfectly even game the player would win 33% against two rivals, 25% against three, 20% against four and 17% against five.",
   "rows": [
     {
       "rivals": 2,
@@ -18,10 +18,10 @@
     {
       "rivals": 3,
       "even": 25,
-      "easy": 60,
+      "easy": 61,
       "standard": 33,
       "hard": 14,
-      "expert": 7,
+      "expert": 8,
       "app": 15
     },
     {
@@ -36,15 +36,15 @@
     {
       "rivals": 5,
       "even": 17,
-      "easy": 75,
+      "easy": 47,
       "standard": 25,
       "hard": 7,
       "expert": 4,
       "app": 8
     }
   ],
-  "strategy": "**Strategy balance.** Chasing Domination cards is still the strongest simple approach: at Standard it wins 32–56% against 12–38% for spreading out or chasing majorities. Rivals plan first since v0.5.0. Before that, a self-tuned test player that held first place on the Initiative track and took the first Domination spaces beat these rivals far more easily than the app's rivals: against three to five rivals its lead over the card-chaser was well above its lead against the app's rivals at every level (at the old Hard, 33 points against 23, in 1,440 paired games each). Re-tuned against v0.5.0 (checkpoint v4) and measured with v0.5.2 on two seed blocks not used for tuning (1,440 games per level in each), its lead over the best simple strategy, compared with its lead against the app's rivals, met the target of at most +0.20 on a log-odds scale, averaged across three, four and five rivals, at every level in both samples (Easy −0.88 and −0.67, Standard −0.38 and −0.43, Hard +0.03 and −0.24, Expert −0.11 and −0.07). Single table sizes vary more. Independent audits on their own seeds found Hard at +0.19 (v0.5.0) and at −0.51, 95% about −0.76 to −0.20 (v0.5.1). With two rivals its lead was smaller than against the app's rivals. Against Hard it won 44% and against the app's rivals 46% in the first sample (1,440 games each).",
-  "stalls": "Before v0.5.1, one of 7,200 test games stalled (five rivals at Standard, a short game): every species and element disk had left Earth, and it passed 30 turns without reaching Ice Age. The Empty Earth rule (Planning step 2) fixes this; in the v0.5.2 run every test game reached Ice Age. If the action display fills before every rival has placed, Planning simply ends and the extra pawns wait for the next turn.",
+  "strategy": "**Strategy balance.** Chasing Domination cards is still the strongest simple approach: at Standard it wins 32–56% against 12–38% for spreading out or chasing majorities. Rivals plan first since v0.5.0. Before that, a self-tuned test player that held first place on the Initiative track and took the first Domination spaces beat these rivals far more easily than the app's rivals: against three to five rivals its lead over the card-chaser was well above its lead against the app's rivals at every level (at the old Hard, 33 points against 23, in 1,440 paired games each). Re-tuned against v0.5.0 (checkpoint v4) and measured with v0.5.3 on two seed blocks not used for tuning (1,440 games per level in each), its lead over the best simple strategy, compared with its lead against the app's rivals, met the target of at most +0.20 on a log-odds scale, averaged across three, four and five rivals, at every level in both samples (Easy −0.78 and −0.59, Standard −0.40 and −0.43, Hard +0.03 and −0.24, Expert −0.11 and −0.08). Single table sizes vary more. Independent audits on their own seeds found Hard at +0.19 (v0.5.0), at −0.51, 95% about −0.76 to −0.20 (v0.5.1), and at −0.11, 95% about −0.41 to +0.17 (v0.5.2). With two rivals its lead was smaller than against the app's rivals. Against Hard it won 44% and against the app's rivals 46% in the first sample (1,440 games each).",
+  "stalls": "Before v0.5.1, one of 7,200 ladder games (5,760 against paper rivals and 1,440 against the app's) stalled (five rivals at Standard, a short game): every species and element disk had left Earth, and it passed 30 turns without reaching Ice Age. The Empty Earth rule (Planning step 2) fixes this; in the v0.5.3 run every test game reached Ice Age. If the action display fills before every rival has placed, Planning simply ends and the extra pawns wait for the next turn.",
   "offsets": {
     "easy": -2,
     "standard": -1,

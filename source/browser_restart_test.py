@@ -1,5 +1,5 @@
-"""Regression (GPT v0.4.0 audit F1): restarting from an older paper save keeps the level by name, and the setup
-can only start with a listed level. Usage: python3 source/browser_restart_test.py Dominant_Species_Solo.html"""
+"""Regression (GPT v0.4.0 audit F1, v0.4.1 follow-ups R1/R2): restarting from an older paper save keeps the level by name,
+the setup can only start with a listed level, and Help marks the older tie rule in a resumed legacy game. Usage: python3 source/browser_restart_test.py Dominant_Species_Solo.html"""
 import json, subprocess, sys
 from pathlib import Path
 from playwright.sync_api import sync_playwright
@@ -39,5 +39,23 @@ def run(version, extra, expect_extra):
         b.close()
         return result
 
-for case in [("0.3.6", -1, -1), ("0.3.6", 0, 0), ("0.3.9", 1, 0), ("0.3.9", 3, 2), ("0.4.0", 1, None)]:
+def help_text(save):
+    with sync_playwright() as pw:
+        b = pw.chromium.launch(args=["--no-sandbox"]); p = b.new_page(viewport={"width":390,"height":850}); errs=[]
+        p.on("pageerror", lambda e: errs.append(str(e)))
+        p.goto(HTML)
+        if save: p.evaluate("([k,v]) => localStorage.setItem(k, v)", [KEY, json.dumps({"format": KEY, "game": save})]); p.reload()
+        p.locator('[data-do="help"]').first.click()
+        text = p.locator("#modal").inner_text()
+        assert not errs, errs
+        b.close()
+        return text
+
+for case in [("0.3.6", -1, -1), ("0.3.6", 0, 0), ("0.3.9", 1, 0), ("0.3.9", 3, 2), ("0.4.0", 1, None), ("0.3.9", -1, -1)]:
     print("PASS", run(*case))
+# R1: a legacy save's Help names its level and the old tie result; a new game's Help has no such notice.
+legacy = help_text(old_save("0.3.6", 0))
+assert "This saved game was started before v0.4.0" in legacy and "Standard (+0 pawns per rival)" in legacy and "In Paper games started in v0.4.0 or later" in legacy, legacy
+fresh = help_text(None)
+assert "This saved game" not in fresh and "In Paper games started in v0.4.0 or later" in fresh, fresh
+print("PASS Help notice for a legacy Paper save")

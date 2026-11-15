@@ -4,7 +4,7 @@
 
 - **Rival tie-break (paper rules):** when only rivals tie for the most matches on a tile, the rival higher in the food chain is dominant. If you tie with them, no one is dominant, as in the normal rules.
   - Why: flat matching made rivals tie constantly, leaving tiles undominated, and that handed the player cards, Ice Age points and board control.
-  - It halves the edge of the strongest player we could build (a self-tuned test player): from +40 points over the best simple strategy to +20 at Standard, the same margin the app's rivals allow.
+  - It cuts the edge of the strongest player we could build (a self-tuned test player, re-tuned against the new rule) at Hard from about +51 points over the best simple strategy to +30, the same margin it gets against the app's rivals (+28). At Standard the margin is larger (+39), so strong players should choose Hard or Expert.
 - **Difficulty levels move down one pawn**, because the rivals are now about one pawn stronger: Easy −1, Standard +0, Hard +1, Expert +2. Standard is about an even game with 2–4 rivals, Hard matches the app's rivals and Expert is tougher. New table in the rulebook and `PAPER_RIVALS.md`.
 - **Saved games** started before v0.4.0 keep their rules and pawn counts, and show their original level name.
 - **Testing:** the self-tuned test player is in `source/benchmark/tune.cjs` (opt-in; `--tune`, `--evaluate`, `--selftest`). Five more rules tests (35 in total).

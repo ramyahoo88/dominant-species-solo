@@ -22,9 +22,9 @@ No game stalled. Games started before v0.4.0 keep their rules and pawn counts.
 **Strategy balance.**
 - Chasing Dominance Cards is still the strongest simple strategy: at Standard it won 44%, 38%, 19% and 15% (2–5 rivals), against 2–25% for the other two.
 - The self-tuned test player (`source/benchmark/tune.cjs`) found the bigger hole: fighting for turn order and the Domination spaces.
-  - It beat v0.3.9 paper rivals by +40 points over the card-chaser at Standard. The app's rivals allow +20.
-  - The tie-break cut that to +20 at Standard and +13 at Hard (720 games per cell).
-  - A re-tuned, stronger player (v2) confirmed it: +24 at Standard, +15 at Hard.
+  - Against v0.3.9 rivals, the first tuned player beat the card-chaser by +40 points at +1 pawn (now Hard), where the app's rivals allowed +20.
+  - With the tie-break, a player re-tuned against the new rule (v3; 1,800 held-out tables, seed 330000) wins 48% at Hard against 18% for the card-chaser: +30. Against the app's rivals on the same tables it gets +28, and without the tie-break it would get +51 at Hard. At Standard its margin is +39.
+  - Its edge still comes from Initiative (about 10 points) and Domination weights (about 7). Details: `source/benchmark/TUNED_PLAYER.md` (player-bot branch).
 - Counters tried and dropped:
   - Holding Initiative against you backfired: rivals waste a pawn each turn.
   - Blocking with more Domination pawns just made rivals tougher for everyone.

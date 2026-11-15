@@ -1,5 +1,19 @@
 # Release notes
 
+## v0.5.2 · November 15, 2026 · Board order for every rival tie; fix for GPT's v0.5.1 re-audit
+
+- **Board order (paper rules; GPT finding E1):** when a rival's choice still ties, it now takes the tile, corner or empty spot furthest left on the board, then the highest. This is stated once, under Terms → Ties, and every rule that said "top-left" now says "board order".
+  - **Why:** the printed rule said "closest to the top-left", but the app broke ties between corners by the text of their coordinates, and the Empty Earth and Habitat fallbacks took the first corner in storage order. A player following the printed rules could place an element on a different corner from the app.
+  - **Where it applies:** every corner tie (Abundance, Depletion, Speciation's disk, Wanderlust's element, Habitat), the Empty Earth and Habitat fallbacks, Aquatic's corner, Blight's kept disk and Migration's origin (which went by the order tiles were placed). Tiles already went by board order (A1, A2 … B1 …); that order is now the one rule for corners too.
+  - **Saved games:** applies to every Paper game, saved ones included.
+- **Effect on the numbers:** ties now go by board position from turn 1, so most test games play out differently from v0.5.1, but the results barely move.
+  - **Difficulty table** (re-measured, same seeds): pooled over table sizes every level is slightly harder (Easy −0.3, Standard −1.4, Hard −1.6, Expert −1.5 points of 1,440 games). 13 of 16 printed cells change, by −7 to +4 points; the largest are Hard with 3 rivals (21% → 14%), Easy with 3 rivals (56% → 60%) and Expert with 2 rivals (16% → 12%). Hard still sits with the app's rivals (24/14/11/7% against 20/15/9/8%). No game stalled.
+  - **Tuned-player check** (X35, Easy / Standard / Hard / Expert): −0.88 / −0.38 / +0.03 / −0.11 on seeds 470000 and −0.67 / −0.43 / −0.24 / −0.07 on 490000. All within the +0.20 target; Hard on 470000 is the closest.
+- **Testing text:** the Hard claim now carries both independent estimates (+0.19 in the v0.5.0 audit; −0.51, 95% about −0.76 to −0.20, in the v0.5.1 re-audit).
+- **Tests:** board order from coordinates (corner ties, Aquatic, Blight, Migration's origin, the testing switch); Empty Earth on GPT's turn-31 fixture (storage and board order differ there); the archived turn-31 position reaches Ice Age; v0.5.1 saves load. `--paper-options oldCornerOrder` restores the v0.5.1 order exactly (anchor 745/269).
+- Reproducible build: SHA-256 62b145b0… (full hash in `HANDOFF.md`); accepts v0.1–v0.5.1 saves.
+- See [AUDIT_RESPONSE_v0.5.1.md](AUDIT_RESPONSE_v0.5.1.md).
+
 ## v0.5.1 · November 15, 2026 · Empty Earth rule; fixes for GPT's v0.5.0 audit
 
 - **Empty Earth (paper rules; GPT finding G1):** if no species of any animal are left on Earth, a rival's Abundance may use any empty corner (top-left first, as for Habitat), so species can return.

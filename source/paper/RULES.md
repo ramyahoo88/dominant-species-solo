@@ -17,7 +17,7 @@ These rules run the rival animals at the table without the app, against two to f
 - **Uses an element:** the element is on the rival's animal display (printed or added).
 - **Matches (rivals only):** a rival matches a tile with its printed element count (2, or 3 for Amphibians) plus its number of added elements, capped at the number of element disks on that tile. The element types don't matter. Use this count wherever the game asks how many elements a rival matches (dominance, Extinction, and every "matches" in these rules). Adaptation, Regression and Disease still change the count. You count your own animal normally.
 - **Rival ties:** if only rivals tie for the most matches on a tile, the rival higher in the food chain is dominant. If you tie with them, no one is dominant there, as in the normal rules.
-- **Ties:** when a rule still ties, take the higher first-place value, then the tile or space closest to the top-left of the board.
+- **Ties:** when a rule still ties, take the higher first-place value, then **board order**: the tile, corner or empty spot furthest left on the board, and of those the highest. For tiles this runs down the leftmost column, then the next column.
 
 ## Setup and difficulty
 
@@ -83,7 +83,7 @@ When a rival's pawn is reached, resolve it with the rule below. If the rule find
 | Initiative | Advances one place on the Initiative track, then moves this pawn to an open space later in this turn's order, chosen by Planning steps 1–3, 5 and 6 (no card). If no such space is open, it still advances and the pawn returns to the rival (this is also the rule for you) |
 | Adaptation | Takes its own printed element if the box offers it; otherwise the leftmost element |
 | Regression | Nothing to decide; see Losing an element under Other decisions |
-| Abundance | Takes the leftmost box element it uses (else the leftmost). Places it on the empty corner touching the most tiles it occupies. Empty Earth (no species on Earth): on any empty corner, top-left first |
+| Abundance | Takes the leftmost box element it uses (else the leftmost). Places it on the empty corner touching the most tiles it occupies. Empty Earth (no species on Earth): on any empty corner, the first in board order (furthest left, then highest) |
 | Wasteland | Removes the leftmost box element it uses. If it uses none, forfeits |
 | Depletion | Removes a disk of a box element it does not use: the disk touching the most tiles the leader dominates, then the most tiles any opponent dominates |
 | Glaciation | Among legal tiles, prefers those with none of its species. Picks the most opposing species; then fewest of its own species |
@@ -110,14 +110,14 @@ When a rival's pawn is reached, resolve it with the rule below. If the rule find
 
 | Card | The rival chooses |
 | --- | --- |
-| Aquatic | If the bag has an element and any sea or wetland tile has a free corner, only those tiles are candidates (the element is part of the card). Among them, the tile where 4 species (with its element on a free corner) make it first; else where they gain a rank. It must match the tile. It takes its printed element if in the bag |
+| Aquatic | If the bag has an element and any sea or wetland tile has a free corner, only those tiles are candidates (the element is part of the card). Among them, the tile where 4 species (with its element on the tile's free corner first in board order) make it first; else where they gain a rank. It must match the tile. It takes its printed element if in the bag |
 | Biomass | On each crowded tile, a species of the first opponent in VP order present there, else its own |
 | Blight | The tile and kept disk that leave the most opposing species on surrounding tiles without a match, counting its own as −2 each |
 | Catastrophe | Keeps its own species on the tile, else the lowest-VP opponent's. On each adjacent tile, removes the first opponent in VP order present, its own only if alone. Picks the tile removing the most opposing species, its own counting −2 |
-| Evolution | Replaces one species of each of two opponents (fewer if its gene pool is short), taking opponents in VP order. Only tiles it matches: skip an opponent with no species on such a tile and try the next. For each opponent, score every such tile: 2× its first-place value if the swap moves the rival into first place, 1× if it otherwise gains a rank or enters the ranking, 0 otherwise; add 3 if the rival ends dominant there. Take the highest score (tie: higher first-place value, then top-left) |
+| Evolution | Replaces one species of each of two opponents (fewer if its gene pool is short), taking opponents in VP order. Only tiles it matches: skip an opponent with no species on such a tile and try the next. For each opponent, score every such tile: 2× its first-place value if the swap moves the rival into first place, 1× if it otherwise gains a rank or enters the ranking, 0 otherwise; add 3 if the rival ends dominant there. Take the highest score (tie: higher first-place value, then board order) |
 | Fecundity | Tiles it matches first, then by first-place value |
 | Fertile | Its tile with the most species of all animals; it scores 1 VP for every species there, its own and everyone else's |
-| Habitat | Its printed element; if the bag has none, an element it added (earliest first); if none of those either, the first element in the bag in this order: Meat, Sun, Seed, Water, Grub, Grass. On the empty corner touching the most tiles it occupies, then the higher first-place value; if it occupies no tile with an empty corner, any empty corner (top-left first) |
+| Habitat | Its printed element; if the bag has none, an element it added (earliest first); if none of those either, the first element in the bag in this order: Meat, Sun, Seed, Water, Grub, Grass. On the empty corner touching the most tiles it occupies, then the higher first-place value; if it occupies no tile with an empty corner, the first empty corner in board order |
 | Hibernation | A tile it matches: tundra first, then a tile it is not on, then where the returned species gain a rank |
 | Ice Sheet | As the Glaciation action |
 | Instinct | An open space not yet resolved this turn, by Planning steps 1–3, 5 and 6. If none is open, an open space that already resolved: the pawn waits there for next turn (not on the final turn) |

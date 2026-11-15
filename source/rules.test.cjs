@@ -17,8 +17,8 @@ verify('GMT p. 4: six APs and 50 cubes include one VP marker and four starting s
   }
 `);
 
-verify('v0.1 through v0.5.0 save migration preserves inventory, pending choices, and random state', `
-  for (const version of ['0.1.0','0.2.0','0.3.0','0.3.1','0.3.2','0.3.3','0.3.4','0.3.5','0.3.6','0.3.7','0.3.8','0.3.9','0.4.0','0.4.1','0.5.0']) {
+verify('v0.1 through v0.5.1 save migration preserves inventory, pending choices, and random state', `
+  for (const version of ['0.1.0','0.2.0','0.3.0','0.3.1','0.3.2','0.3.3','0.3.4','0.3.5','0.3.6','0.3.7','0.3.8','0.3.9','0.4.0','0.4.1','0.5.0','0.5.1']) {
     const s = newGame('insects',['mammals','birds'],true,51);
     s.version = version;
     s.phase = 'execution';
@@ -621,10 +621,63 @@ verify('v0.5.0 candidate: rivals plan first; the rule is in the save and survive
   assert.notEqual(currentPlanner(tight).actor, r1);
 `);
 
-// GPT v0.5.0 audit G1. Fresh runtimes: switching paper rules on must not leak into the shared runtime above.
-test('v0.5.1 Empty Earth: with no species on Earth a rival may take Abundance and seed any empty corner (top-left first)', () => {
+// GPT v0.5.0 audit G1 and v0.5.1 re-audit E1. Fresh runtimes: switching paper rules on must not leak into the shared
+// runtime above. Expected corners are computed from the "x,y" board coordinates, never from storage order.
+const FIX = name => JSON.parse(require('node:fs').readFileSync(require('node:path').join(__dirname, 'fixtures', name), 'utf8')).game;
+const boardFirst = keys => [...keys].sort((a, b) => { const [ax, ay] = a.split(',').map(Number), [bx, by] = b.split(',').map(Number); return ax - bx || ay - by; })[0];
+
+test('v0.5.2 board order: a corner tie goes to the leftmost corner, then the uppermost (not storage or string order)', () => {
   const g = load('worktree', ['game']);
   g.get('globalThis').assert = assert;
+  g.get('globalThis').boardFirst = boardFirst;
+  g.run(`(() => {
+    // String order would pick "-10,-4"; board order picks the left tip "-11,-3" (A1 corner 4), then "-10,-4" above "-10,-2".
+    assert.equal(pBy([{tile:'-7,-3'},{tile:'-10,-4'},{tile:'-11,-3'},{tile:'-10,-2'}]).tile, '-11,-3');
+    assert.equal(pBy([{tile:'-7,-3'},{tile:'-10,-2'},{tile:'-10,-4'}]).tile, '-10,-4');
+    assert.equal(pBy(['B2','A3','A1']), 'A1', 'tiles: leftmost column, then top');
+    const s = newGame('birds',['mammals','insects'],true,7,{extra:-1});
+    // Aquatic's free corner on a tile: board order, not the clockwise storage order that starts at the right tip.
+    for (const t of terrainIds(s)) {
+      const free = VERTICES_OF[t].filter(k => !s.corners[k]);
+      if (free.length) assert.equal(pFreeCorner(s,t), boardFirst(free), t);
+    }
+    // Blight: equal options on one tile fall to the kept disk in board order.
+    assert.equal(pBy([{tile:'A1',keep:'-7,-3'},{tile:'A1',keep:'-11,-3'}]).keep, '-11,-3');
+    // Migration: equal moves to one destination fall to the origin in board order (not the order tiles were placed).
+    assert.equal(pBy([{tile:'C3',from:'D2'},{tile:'C3',from:'B3'},{tile:'C3',from:'C2'}]).from, 'B3');
+    PAPER.oldCornerOrder = true;
+    assert.equal(pBy([{tile:'-7,-3'},{tile:'-10,-4'},{tile:'-11,-3'}]).tile, '-10,-4', 'testing switch: the v0.5.1 string order');
+    delete PAPER.oldCornerOrder;
+  })()`);
+});
+
+test('v0.5.1 Empty Earth: with no species on Earth a rival may take Abundance and seed any empty corner, in board order', () => {
+  const g = load('worktree', ['game']);
+  g.get('globalThis').assert = assert;
+  g.get('globalThis').boardFirst = boardFirst;
+  // GPT's re-audit fixture: seed 200074 at turn 31, no species or disks on Earth, Mammals to resolve Abundance.
+  g.get('globalThis').FIXTURE = FIX('gpt-v050-empty-abundance.json');
+  g.run(`(() => {
+    const s = validateState(FIXTURE);
+    const step = nextStep(s);
+    assert.equal(step.actor, 'mammals');
+    assert.ok(paperEmptyEarth(s));
+    const vacant = activeCorners(s).filter(k => !s.corners[k]);
+    const expected = boardFirst(vacant);
+    assert.notEqual(expected, vacant[0], 'storage order and board order differ here');
+    const choice = paperPawn(s, step);
+    assert.equal(choice.corner, expected, 'leftmost empty corner, then uppermost');
+    assert.match(choice.label, /Empty Earth/);
+    // Habitat's fallback (it occupies no tile with an empty corner) uses the same order.
+    assert.equal(paperEffect(s, {kind:'effect', name:'Habitat', actor:'mammals'}).corner, expected);
+    // Once that corner is taken, the next rival Abundance takes the next empty corner in board order.
+    runStep(s, step, choice);
+    validateState(s);
+    assert.ok(s.corners[expected], 'the element is on that corner');
+    const next = nextStep(s);
+    if (next.row === 'abundance' && next.actor !== s.human && paperEmptyEarth(s))
+      assert.equal(paperPawn(s, next).corner, boardFirst(activeCorners(s).filter(k => !s.corners[k])));
+  })()`);
   g.run(`(() => {
     const s = newGame('birds',['mammals','insects'],true,7,{extra:-1});
     s.turn = 5;
@@ -636,28 +689,28 @@ test('v0.5.1 Empty Earth: with no species on Earth a rival may take Abundance an
     assert.ok(paperEmptyEarth(s) && paperBarren(s));
     assert.ok(paperLegal(s,'mammals','abundance',0), 'a rival with no species has a target on an empty Earth');
     const choice = paperPawn(s, step);
-    assert.equal(choice.corner, activeCorners(s)[0], 'the top-left empty corner');
+    assert.equal(choice.corner, boardFirst(activeCorners(s).filter(k => !s.corners[k])));
     assert.equal(choice.pick, 0, 'Mammals use neither element, so the leftmost');
-    assert.match(choice.label, /Empty Earth/);
     // One species anywhere on Earth: the normal rule (an empty corner of a tile the rival occupies) applies again.
     s.tiles[terrainIds(s)[0]].cubes.insects = 1;
     assert.ok(!paperEmptyEarth(s));
     assert.ok(!paperLegal(s,'mammals','abundance',0));
     assert.ok(paperPawn(s, step).pass);
-    // Saved games from earlier versions get the rule too: a v0.4.1-shaped game (no planFirst, no level name) and a
-    // pre-v0.4.0 game (no tie-break), each loaded through validateState.
     s.tiles[terrainIds(s)[0]].cubes.insects = 0;
+    // Saved games from earlier versions get the rule too: v0.4.1-shaped (no planFirst, no level name) and pre-v0.4.0
+    // (no tie-break), each loaded through validateState; and a v0.5.0 save.
     for (const strip of [['planFirst','level'], ['planFirst','level','rivalTie']]) {
       const old = JSON.parse(JSON.stringify(s));
       for (const k of strip) delete old.paper[k];
       old.version = strip.length === 2 ? '0.4.1' : '0.3.9';
       validateState(old);
-      assert.ok(paperLegal(old,'mammals','abundance',0) && paperPawn(old, step).corner === activeCorners(old)[0], 'saved ' + old.version + ' game');
+      assert.ok(paperLegal(old,'mammals','abundance',0) && paperPawn(old, step).corner === choice.corner, 'saved ' + old.version + ' game');
     }
-    const v050 = JSON.parse(JSON.stringify(s)); v050.version = '0.5.0';
-    validateState(v050);
-    assert.equal(v050.version, VERSION, 'a v0.5.0 Paper save loads');
-    assert.ok(paperLegal(v050,'mammals','abundance',0));
+    for (const v of ['0.5.0', '0.5.1']) {
+      const saved = JSON.parse(JSON.stringify(s)); saved.version = v;
+      validateState(saved);
+      assert.equal(saved.version, VERSION, 'a v' + v + ' Paper save loads');
+    }
     // The testing switch restores the v0.5.0 rule.
     PAPER.noEmptyEarth = true;
     assert.ok(!paperLegal(s,'mammals','abundance',0));
@@ -665,15 +718,33 @@ test('v0.5.1 Empty Earth: with no species on Earth a rival may take Abundance an
   })()`);
 });
 
-test('v0.5.1 Empty Earth regression: the audit stall (seed 200074, Birds against five Standard rivals) now finishes', () => {
+test('v0.5.1 Empty Earth regression: the audited stall (seed 200074) finishes, and so does its turn-31 position', () => {
   const g = load('worktree', ['game']);
   const p = load(PLAYER_REFERENCE, ['player']);
   const strategy = {place: p.get('playerPlacement'), choose: p.get('playerChoice')};
   const sc = {human:'birds', rivals:['mammals','reptiles','amphibians','arachnids','insects'], seed:200074, short:true, policy:'expansion'};
-  g.run('Object.assign(PAPER, {place:true, all:true, extraAP:-1})');
+  // With the v0.5.1 corner order the game follows the audited path: it stalls without Empty Earth and finishes with it.
+  g.run('Object.assign(PAPER, {place:true, all:true, extraAP:-1, oldCornerOrder:true})');
   const fixed = g.get('playBenchmark')(sc, strategy);
   assert.equal(fixed.stalled, undefined, 'reaches Ice Age within 30 turns');
   assert.ok(fixed.turns < 15, 'turn ' + fixed.turns);
   g.run('PAPER.noEmptyEarth = true');
   assert.equal(g.get('playBenchmark')(sc, strategy).stalled, true, 'without the rule this game stalls (the audited case)');
+  // GPT's saved turn-31 position (no species, no disks) under the current rules: Ice Age is reached.
+  g.run('delete PAPER.noEmptyEarth; delete PAPER.oldCornerOrder');
+  g.get('globalThis').FIXTURE = FIX('gpt-v050-stall-200074-turn31.json');
+  g.get('globalThis').STRATEGY = strategy;
+  const end = JSON.parse(g.run(`(() => {
+    const s = validateState(FIXTURE), supply = {cards:[], stacks:[[],[],[]]};
+    for (let n = 0; n < 6000 && s.phase !== 'finished' && s.turn <= 60; n++) {
+      if (s.phase === 'supply') { enterSupply(s, nextSupply(s, supply, s.seed)); continue; }
+      if (s.phase === 'planning') { const {actor} = currentPlanner(s); if (actor === s.human) place(s, STRATEGY.place(s, actor, 'expansion')); else botPlacement(s); continue; }
+      const step = nextStep(s);
+      const choice = step.kind === 'symbiosis' ? symbioticDraw(s, step, s.seed) : step.actor === s.human ? STRATEGY.choose(s, step, 'expansion') : botAction(s, step);
+      runStep(s, step, copy(choice));
+      validateState(s);
+    }
+    return JSON.stringify({phase: s.phase, turn: s.turn, iceAge: s.usedCards.includes('Ice Age')});
+  })()`));
+  assert.ok(end.phase === 'finished' && end.iceAge, JSON.stringify(end));
 });

@@ -423,3 +423,14 @@ Sources: `ba67`, `ba34`, `pb_c1`–`c3`, `pb_e1`, `pb_e2`.
   - tuned evaluations on 470000 and 490000 (`bb03`, `bb04`): every win count matches except one majority win at Easy; X35 unchanged.
 - **B1/B2:** `tune.cjs` rejects repeated rival counts and mode aliases; `final_eval.py` prints X35 only with 3, 4 and 5 present.
 - Details: `AUDIT_RESPONSE_v0.5.0.md`.
+
+### 12:15 — v0.5.2: board order (GPT's v0.5.1 re-audit, E1)
+
+- **Defect:** printed ties say "top-left", but the app broke corner ties by the text of the "x,y" keys, the Empty Earth and Habitat fallbacks took storage order, and Migration broke equal origins by tile placement order.
+- **Fix:** one board order, furthest left then highest, for corners and origins as for tiles. It is in `pBy`, the two fallbacks, Aquatic's corner, Blight's kept disk and Migration's origin. `oldCornerOrder` restores v0.5.1 (anchor 745/269, `bd01`).
+- **Ladder** (`bd10`–`bd25`): most games change path. Pooled, every level is slightly harder (Easy −0.3, Standard −1.4, Hard −1.6, Expert −1.5 points). 13 of 16 cells move, by −7 to +4. No stalls.
+- **X35** (`bd30`/`bd31`), Easy / Standard / Hard / Expert:
+  - 470000: −0.88 / −0.38 / +0.03 / −0.11;
+  - 490000: −0.67 / −0.43 / −0.24 / −0.07.
+  - All inside +0.20. Hard at 470000 is the closest; its 5-rival cell alone is +0.31.
+- **GPT's fresh v0.5.1 Hard:** −0.51 (−0.76 to −0.20).

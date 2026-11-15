@@ -111,10 +111,25 @@ function pLeader(s, actor) { // opponent highest on the VP track; ties to food c
   return s.ids.filter(id => id !== actor).sort((a,b) => s.animals[b].vp - s.animals[a].vp || rank(a) - rank(b))[0];
 }
 function pOrderOpps(s, actor) { return s.ids.filter(id => id !== actor).sort((a,b) => s.animals[b].vp - s.animals[a].vp || rank(a) - rank(b)); }
-function pBy(list, ...keys) { // sort descending by keys, then the tie-break order; return first
+// Board order, the printed last tie-break (Terms, Ties): leftmost first, then uppermost. Tile ids already read that way
+// (columns A-G left to right, numbers top to bottom). Corner keys are "x,y" board coordinates, so they are compared as
+// numbers (GPT v0.5.1 re-audit E1: string order of the keys is not board order). PAPER.oldCornerOrder (testing) restores
+// the v0.5.1 tie order (corners by key text, Blight's kept disk and Migration's origin by storage order).
+const P_CORNER = /^-?\d+,-?\d+$/;
+function pPlaceCmp(a, b) {
+  a = String(a); b = String(b);
+  if (!PAPER.oldCornerOrder && P_CORNER.test(a) && P_CORNER.test(b)) {
+    const [ax,ay] = a.split(',').map(Number), [bx,by] = b.split(',').map(Number);
+    return ax - bx || ay - by;
+  }
+  return a.localeCompare(b);
+}
+function pBoardOrder(keys) { return PAPER.oldCornerOrder ? [...keys] : [...keys].sort(pPlaceCmp); } // old: storage order
+function pBy(list, ...keys) { // sort descending by keys, then board order; return first
   return [...list].sort((a,b) => { for (const k of keys) { const d = k(b) - k(a); if (d) return d; }
-    const A = String(a.tile ?? a), B = String(b.tile ?? b);
-    return A.localeCompare(B); })[0];
+    if (PAPER.oldCornerOrder) return pPlaceCmp(a.tile ?? a, b.tile ?? b);
+    // Then the second place an option names: Blight's kept disk, Migration's origin (v0.5.1 left both to storage order).
+    return pPlaceCmp(a.tile ?? a, b.tile ?? b) || (a.keep && b.keep ? pPlaceCmp(a.keep, b.keep) : 0) || (a.from && b.from ? pPlaceCmp(a.from, b.from) : 0); })[0];
 }
 function pTypes(s, actor) { return unique([ANIMALS[actor].el, ...s.animals[actor].added]); }
 function pCornersNear(s, actor, type) { // corners of this type on tiles the animal occupies
@@ -130,6 +145,8 @@ function pVacantMyCorners(s, actor) { // vacant corners touching my tiles, with 
     .map(k => ({corner:k, mine:CORNER_TILES[k].filter(t => s.tiles[t]?.cubes[actor]).length, vp:Math.max(...CORNER_TILES[k].filter(t => s.tiles[t]).map(t => pFirstVP(s,t)))}));
 }
 function pLabel(text) { return 'Paper rule: ' + text; }
+// A tile's free corner in board order (Aquatic); v0.5.1 took the first in clockwise storage order.
+function pFreeCorner(s, t) { return pBoardOrder(VERTICES_OF[t].filter(k => !s.corners[k]))[0] || null; }
 // Full table instructions: every location, element, quantity and pawn the decision changes.
 function pAt(s, key) { const t = CORNER_TILES[key].find(id => s.tiles[id]); return 'the corner shared by ' + cornerLabel(s,key) + ' (corner ' + cornerIndex(t,key) + ' on ' + t + ')'; }
 
@@ -155,7 +172,7 @@ function paperPawn(s, step) {
     case 'abundance': {
       const picks = indexed(s.boxes.abundance);
       const corners = pVacantMyCorners(s,actor);
-      const empty = !corners.length && paperEmptyEarth(s) ? activeCorners(s).filter(k => !s.corners[k]) : [];
+      const empty = !corners.length && paperEmptyEarth(s) ? pBoardOrder(activeCorners(s).filter(k => !s.corners[k])) : [];
       if (!picks.length || !corners.length && !empty.length) return {...PASS};
       const mine = picks.filter(p => pTypes(s,actor).includes(p.type));
       const p = (mine.length ? mine : picks)[0];
@@ -356,7 +373,7 @@ function paperEffect(s, step) {
       const n = Math.min(4,me.pool);
       const type0 = bagTypes.length ? myType() : null;
       const score = t => { // first-place VP you would gain by adding n species there (with your element if a corner is free)
-        const free = VERTICES_OF[t].find(k => !s.corners[k]);
+        const free = pFreeCorner(s,t);
         if (free && type0) s.corners[free] = type0;
         const ok = match(s,t,actor) > 0;
         const before = pRank(s,t,actor);
@@ -365,7 +382,7 @@ function paperEffect(s, step) {
         return ok ? (after === 0 && before !== 0 ? 2 : after < before || before < 0 ? 1 : 0) * pFirstVP(s,t) : -1;
       };
       const tile = PAPER.simpleCards ? pBy(wet, t => match(s,t,actor) > 0 ? 1 : 0, t => pFirstVP(s,t)) : pBy(wet, score, t => pFirstVP(s,t));
-      const corner = bagTypes.length ? VERTICES_OF[tile].find(k => !s.corners[k]) || null : null;
+      const corner = bagTypes.length ? pFreeCorner(s,tile) : null;
       const type = corner ? type0 : null;
       return {tile,corner,type,n,label:pLabel('Aquatic at ' + tileLabel(s,tile) + ': ' + (type ? 'take ' + elementName(type) + ' from the bag and place it at corner ' + cornerIndex(tile,corner) + ' of ' + tile + '. ' : 'no element can be placed. ') + addLabel(s,{[tile]:n}))};
     }
@@ -434,7 +451,7 @@ function paperEffect(s, step) {
     case 'Habitat': {
       if (!bagTypes.length) return {skip:true,label:pLabel('empty bag.')};
       const corners = pVacantMyCorners(s,actor);
-      const any = activeCorners(s).filter(k => !s.corners[k]);
+      const any = pBoardOrder(activeCorners(s).filter(k => !s.corners[k]));
       if (!corners.length && !any.length) return {skip:true,label:pLabel('no vacant corner.')};
       const c = corners.length ? pBy(corners.map(c => ({...c,tile:c.corner})), c => c.mine, c => c.vp).corner : any[0];
       return {corner:c,type:myType(),label:pLabel('Habitat: take ' + elementName(myType()) + ' from the bag and place it at ' + pAt(s,c) + '.')};

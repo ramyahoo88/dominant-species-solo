@@ -1,5 +1,32 @@
 # Release notes
 
+## v0.5.4 · November 15, 2026 · Migration placement test, rival ties by most species, five card skips, wider Empty Earth; fixes for GPT's v0.5.3 re-audit
+
+- **Migration placement (paper rules):** a rival now places on Migration only if Migration would let it move: a rescue, or a species from a tile where it has 2 or more (losing no rank there) to a matched tile it is not on yet.
+  - **Why:** the old test only asked whether a matched neighbour existed. Rivals often placed there and then had no allowed move, so 24% of rival Migration pawns did nothing.
+  - **Result:** wasted Migration pawns fell to 12% (measured with all four changes against v0.5.3).
+  - **Saved games:** applies to every Paper game, saved ones included.
+- **Rival ties (paper rules):** when only rivals tie for the most matches on a tile, the rival with the most species there is dominant; if still tied, the one higher in the food chain. Before, the food chain alone decided, which favoured Mammals.
+  - **Result:** with all four changes against v0.5.3, Mammals' share of rival wins fell from 39% to 29% and Insects' rose from 9% to 20%; the other four sit at 16–27%.
+  - **Saved games:** new games only (saved as `speciesTie`). Games started earlier keep the food-chain tie, and Help says which rule a saved game uses.
+- **Card skips (paper rules):** a rival skips five cards when they would do nothing for it: Metamorphosis (no added element, or an empty bag), Disease (no opponent with more elements and at least one added), Niche Biomes (no opponent ahead on VP), Nocturnal (already first in Initiative) and Hibernation (no eliminated species). If every available card would be skipped, it takes the first anyway. "Taking a card" lists them.
+  - **Result:** cards taken for no effect, with all four changes against v0.5.3: Disease 34% → 12%, Nocturnal 20% → 2%, Hibernation 8% → 3%, Metamorphosis 50% → 26%, Niche Biomes 31% → 23%. Most of what is left happens when every available card would be skipped.
+  - **Saved games:** applies to every Paper game, saved ones included.
+- **Empty Earth (paper rules):** now applies when no rival species are left on Earth, even if yours remain. Before, it applied only when no species of any animal were left.
+  - **Why:** one five-rival Hard game in the tuned-player check stalled for 120 turns: only the player's species remained and no element disks were on Earth, so the rivals could not return. It now finishes on turn 11. v0.5.3 had the same gap.
+  - **Which games change:** that game only. The 5,760 difficulty-table games replay identically with and without this change, and every other tuned-player result is unchanged.
+  - **Saved games:** applies to every Paper game, saved ones included.
+- **Opening instructions (GPT finding A1):** a scaled five-rival Easy game now tells you that each rival returns 1 pawn and you take 1 extra, and spells out the result (2 for each rival, 4 for you). The text follows the saved game's `scaledEasy` flag, so older Easy saves keep their old wording and counts.
+- **Printed priorities (GPT finding P1, GPT's wording):** Wanderlust takes the leftmost box element it uses; Metamorphosis prefers its printed type, then Meat, Sun, Seed, Water, Grub, Grass; Immigrants discards the type whose second copy was added earliest; Aquatic uses Habitat's element priority; Catastrophe keeps the lower food-chain animal at equal lowest VP. The app already played these; only the text changed.
+- **Levels:** the rulebook's level table now gives only each level's pawn count. The descriptions ("a little easier than an even game", "about as strong as the app's rivals" and so on) are gone; the measured table in Testing shows how each level plays.
+- **Effect on the numbers** (same seeds as v0.5.3):
+  - **Difficulty table:** rivals are stronger, mostly at Easy, Standard and Hard (pooled over table sizes: Easy −55, Standard −74, Hard −39, Expert −3 wins of 1,440). Easy 63/56/54/40%, Standard 34/28/18/20%, Hard 20/13/7/4%, Expert 15/8/2/2% from two to five rivals (app's rivals 20/15/9/8%). No game stalled.
+  - **Tuned-player check** (X35, Easy / Standard / Hard / Expert): −0.82 / −0.50 / −0.32 / −0.19 on seeds 470000 and −0.78 / −0.52 / −0.25 / −0.42 on 490000; best against best with the other agent's player, −0.37 / −0.23 / −0.22 / −0.02 and −0.34 / −0.27 / −0.16 / −0.17. All within the +0.20 target.
+- **Testing text:** GPT's fresh Hard estimate for v0.5.3 (−0.41, 95% −0.66 to −0.10) joins the earlier three; the stall note describes the new Empty Earth case. The rulebook is now 12 pages (was 11), because of the card skips and the new priorities.
+- **Tests:** Migration placement matches the first move Migration would make; species ties; each card skip; the stalled seed (3880436785) finishes; GPT's scaled and legacy five-rival Easy saves show the right opening text in the browser; v0.5.3 saves load without `speciesTie`. Testing switches `oldMigTest`, `oldRivalTie`, `noCardSkip` and `oldEmptyEarth` restore the v0.5.3 rules; with all four, ladder cells replay v0.5.3 exactly.
+- Reproducible build: SHA-256 4ed8110d… (full hash in `HANDOFF.md`); accepts v0.1–v0.5.3 saves.
+- See [AUDIT_RESPONSE_v0.5.3.md](AUDIT_RESPONSE_v0.5.3.md).
+
 ## v0.5.3 · November 15, 2026 · Mammals' Extinction tie, printed tie order for every row, scaled Easy; fixes for GPT's v0.5.2 re-audit
 
 - **Mammals' Extinction save (paper rules; GPT's v0.5.2 re-audit):** a Mammals rival now saves its endangered species on the tile with the highest first-place value, then in board order, as printed.

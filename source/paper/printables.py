@@ -73,8 +73,8 @@ EASY_FIVE = " (with five rivals: −1 for each rival, and you take 1 extra pawn)
 
 def difficulty(ladder):
     off = ladder["offsets"]
-    return ("| Level | Each rival's pawns | Use it when |\n| --- | --- | --- |\n"
-            + "".join(f"| {name} | {pawns(off[key])}{EASY_FIVE if key == 'easy' else ''} | {ladder[key]} |\n" for key, name in
+    return ("| Level | Each rival's pawns |\n| --- | --- |\n"
+            + "".join(f"| {name} | {pawns(off[key])}{EASY_FIVE if key == 'easy' else ''} |\n" for key, name in
                       [("easy", "Easy"), ("standard", "Standard"), ("hard", "Hard"), ("expert", "Expert")]) + "\n"
             "**Playing in the app instead:** the app can run these exact rules, so you don't need to print anything. "
             "On the setup screen choose **Paper rules** and a level. The app draws each rival's card, names the Planning step "

@@ -505,3 +505,31 @@ Sources: `ba67`, `ba34`, `pb_c1`–`c3`, `pb_e1`, `pb_e2`.
 - **GPT's v0.5.2 Hard estimate:** −0.11 (95% −0.41 to +0.17), now in the Testing text.
 - **Games changed by the Extinction fix** (`bg01`–`bg09` against `be01`–`be08`, 4 and 5 rivals, every level; five-rival Easy compared with `flatEasy`, `bg09`): 32 of 2,880 games play out differently, and 1 changes its winner (4 rivals, Hard).
 - **Mirror:** the Claude Doc rulebook is re-synced to v0.5.3 (rev 73).
+
+### 16:50 — v0.5.4: Migration placement test, rival ties by most species, card skips, wider Empty Earth (GPT's v0.5.3 re-audit)
+
+- **User's calls:** fix Migration (placement asks whether a move is allowed), do the card check, and break rival-only ties by most species on the tile, then the food chain. After the card check: add the five card skips. After the stall: widen Empty Earth. After the results: remove the level descriptions (names and pawn counts stay).
+- **GPT's follow-ups:** A1 (the turn-1 instruction now reads `scaledEasy` and spells out the final counts) and P1 (five priorities printed in GPT's wording; no change to play).
+- **Two-change ladder** (`bj10`–`bj25`; Migration and species tie), Hard wins of 360 for 2–5 rivals: 77/50/27/12, against v0.5.3's 85/50/38/26. Migration alone (`bj30`–`bj33`) gave 77/57/37/22, the tie alone (`bj34`–`bj37`) 90/54/31/20. The two work together: alone they cost 6 and 4 of the 33 lost wins.
+- **Three- and four-change ladder** (`bk10`–`bk25` and `bm10`–`bm25`; byte-identical). Pooled change against v0.5.3: Easy −55, Standard −74, Hard −39, Expert −3 of 1,440. Table: Easy 63/56/54/40%, Standard 34/28/18/20%, Hard 20/13/7/4%, Expert 15/8/2/2%; app's rivals 20/15/9/8%. No stalls.
+- **Side effects:**
+  - wasted rival Migration pawns 24.0% → 12.2%;
+  - rival win share: Mammals 38.7% → 28.5%, Insects 9.4% → 20.1%;
+  - cards taken for no effect (`cardcheck.py`, `bh` against `bk`): Disease 34 → 12%, Nocturnal 20 → 2%, Hibernation 8 → 3%, Metamorphosis 50 → 26%, Niche Biomes 31 → 23%;
+  - at Standard the card-chaser wins 28–48% against 9–30% (v0.5.3: 32–56% against 12–38%).
+- **Stall** (`bj41`): five rivals, Hard, seed 3880436785, the majority player as Mammals. The rivals were wiped out, only the player's species remained and no disks were on Earth; v0.5.3's Empty Earth needed every animal gone, so it never fired. The fix applies Empty Earth when no rival species are on Earth (`oldEmptyEarth` restores v0.5.3). The game finishes on turn 11. In `bm` it is the only change: the ladder is byte-identical to `bk`, `bm40`, `bm50` and `bm51` are byte-identical to `bj`, and `bm41` differs from `bj41` only by that game (majority Hard 107 → 106 wins).
+- **Checks:**
+  - anchor `bm01` 745/269 with the old switches;
+  - `bm02`/`bm03` with `oldMigTest,oldRivalTie,noCardSkip,oldEmptyEarth` replay `bf16` (50) and `bf27` (170).
+- **X35** (`bm40`/`bm41`), Easy / Standard / Hard / Expert:
+  - 470000: −0.82 / −0.50 / −0.32 / −0.19 (v0.5.3: −0.78 / −0.40 / +0.03 / −0.11);
+  - 490000: −0.78 / −0.52 / −0.25 / −0.42 (v0.5.3: −0.59 / −0.43 / −0.24 / −0.08).
+  - v4's pooled Hard win rate is 36% (v0.5.3: 44%).
+- **Best against best** (`bm50`/`bm51`):
+  - 470000: −0.37 / −0.23 / −0.22 / −0.02;
+  - 490000: −0.34 / −0.27 / −0.16 / −0.17.
+- **Release gate met:** every level at or under +0.20 on both blocks and in best against best; no errors or stalls in the final runs.
+- **GPT's scripts on v0.5.4:**
+  - `remaining-ties`, `check-new-element-wording`, `board-order` and `focused` give identical evidence; `recovery` passes;
+  - the browser `remaining-ties` and `focused` checks pass once their version checks say 0.5.4;
+  - for scaled Easy, `focused` now captures the corrected instruction.

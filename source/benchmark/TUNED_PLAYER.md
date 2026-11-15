@@ -182,3 +182,45 @@ and `noRivalTie` is the old rule set.
 
 **Stalls:** 3 games hit the turn-30 cap, all with the tie-break off (4 rivals at Standard, 5 at Easy).
 None did with it on, out of 18,000 games.
+
+## v0.5.0 independent check (15 Nov 2026, assignment 7) and re-tune pb5
+
+Shipped v0.5.0 code (main 759af34: rivals plan first; levels Easy −2, Standard −1, Hard 0, Expert +1), held-out
+seed block 490000, 360 tables per cell (2–5 rivals), 0 errors. Jobs `pb_c1` (paper levels), `pb_c2`/`pb_c3`
+(App, split by rival count). The simple human is re-fit by the same recipe as before: the dominance player plus
+v4's three Initiative weights (`simple_human_v4_weights.json`).
+
+Pooled win % (1,440 tables per row; `pb5` from `pb_e1`, on the same tables):
+
+| | pb5 | v4 | v3 | simple human | dominance | majority | expansion |
+|---|---|---|---|---|---|---|---|
+| Easy | 93.5 | 88.6 | 87.5 | 79.0 | 79.7 | 62.6 | 56.8 |
+| Standard | 70.4 | 64.7 | 61.5 | 46.5 | 42.2 | 24.9 | 25.6 |
+| Hard | 45.8 | 42.6 | 39.9 | 23.8 | 21.2 | 11.3 | 12.0 |
+| Expert | 29.1 | 29.7 | 25.3 | 12.3 | 12.2 | 6.9 | 6.0 |
+| App | 41.6 | 48.2 | 42.5 | 24.9 | 18.4 | 10.8 | 11.5 |
+
+The balance check (`balance/final_eval.py`, `edge_check.py`): a player's logit edge over the best fixed policy at
+a paper level, minus the edge against App rivals at the same rival count; X35 is the mean over 3–5 rivals.
+The line is +0.2. One run's X35 is about ±0.3 (95%); a single 5-rival cell about ±0.6.
+
+| X35 | Easy | Standard | Hard | Expert |
+|---|---|---|---|---|
+| v4 (final_eval.py) | −0.64 | −0.47 | −0.23 | −0.13 |
+| v4, pooled with the balance agent's 470000 run | −0.78 | −0.41 | −0.15 | −0.12 |
+| pb5, against its own App edge | +0.12 | +0.06 | +0.07 | +0.02 |
+| best paper edge of (v4, v3, pb5) minus best App edge of the three | −0.14 | −0.20 | −0.14 | −0.13 |
+
+**pb5** is an independent re-tune: v3 re-tuned against v0.5.0 rivals on new seeds (train 510000, validate
+520000), 39 generations, all feature groups, trained on App and the four shipped levels (v4 trained on App and
+−1..+2, so it never saw Easy). Validation win rose from 0.525 to 0.588, best at the last generation.
+
+- Against paper rivals it beats v4 by +4.9 (Easy), +5.7 (Standard) and +3.2 (Hard) points, level at Expert (−0.6);
+  against App rivals it is 6.6 points weaker. The two tunes found different trade-offs between App and paper play.
+- Measured against its own (weaker) App edge, pb5 is slightly above zero at every level, but no level reaches +0.2.
+  The fair comparison is best against best: the strongest paper edge any of the three players found, minus the
+  strongest App edge. That stays below zero at every level (−0.13 to −0.20), so there is no flag, but the margin
+  is thinner than v4 alone suggests, mostly at Easy and Standard.
+- Largest moves from v3: later Migration (+2.1) and Depletion (+2.0), Glaciation and Competition rows down (−2.1,
+  −2.0), Predator and Aquatic cards up (+2.6, +1.9). Initiative weights rose (initFirst +0.8, initOther +1.3,
+  late Initiative +1.3).

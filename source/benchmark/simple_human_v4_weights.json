@@ -1,0 +1,9 @@
+{
+ "focus": "dominance",
+ "initFirst": 2.296,
+ "initOther": 9.905,
+ "late": {
+  "initiative": 0.563
+ },
+ "note": "Simple human re-fit to v0.5.0: the fixed 'dominance' player (all default weights) plus only v4's Initiative weights (initFirst, initOther, late.initiative). Same recipe as simple_human_weights.json (v3). Assignment 7 in COORDINATION.md."
+}

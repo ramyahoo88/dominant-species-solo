@@ -113,7 +113,7 @@ function readSupplyDraft(s, raw) {
 function validateState(s) {
   function assert(ok) { if (!ok) throw new Error('This is not a valid Dominant Species companion save.'); }
   recordPaperLevel(s); // before the version is replaced: the level scale depends on it
-  if (s && ['0.1.0', '0.2.0', '0.3.0', '0.3.1', '0.3.2', '0.3.3', '0.3.4', '0.3.5', '0.3.6', '0.3.7', '0.3.8', '0.3.9', '0.4.0', '0.4.1', '0.5.0', '0.5.1', '0.5.2'].includes(s.version)) s.version = VERSION;
+  if (s && ['0.1.0', '0.2.0', '0.3.0', '0.3.1', '0.3.2', '0.3.3', '0.3.4', '0.3.5', '0.3.6', '0.3.7', '0.3.8', '0.3.9', '0.4.0', '0.4.1', '0.5.0', '0.5.1', '0.5.2', '0.5.3'].includes(s.version)) s.version = VERSION;
   const keys = value => value && typeof value === 'object' ? Object.keys(value) : [];
   assert(s && s.version === VERSION && ['supply','planning','execution','finished'].includes(s.phase) &&
     num(s.turn) && s.turn > 0 && num(s.rng) && s.rng <= 0xffffffff && num(s.seed) && s.seed <= 0xffffffff);
@@ -337,7 +337,9 @@ function showSupply() {
     [field('Wanderlust stack ' + (i+1),select('stack-'+i,LARGE_TERRAIN.map(t=>[t,terrainName(t)])))] : []).join('');
   const instruction = game.turn === 1 ?
     'For each animal, set out ' + ['','','','six','five','four','three'][game.ids.length] + ' action pawns and ' + SETUP_BY_PLAYERS[game.ids.length][1] + ' cubes. Use one cube to mark VP, put four on the map and leave ' + (SETUP_BY_PLAYERS[game.ids.length][1] - 5) + ' in the gene pool.' +
-    (game.paper?.extra ? ' Each rival ' + (game.paper.extra > 0 ? 'takes ' + game.paper.extra + ' extra' : 'returns ' + -game.paper.extra) + ' action pawn' + (Math.abs(game.paper.extra) === 1 ? '' : 's') + ' (paper rules, ' + paperLevel(game.paper.extra, game.paper) + ').' : '') +
+    // GPT v0.5.3 re-audit (medium): scaled Easy (five rivals) is −1 for each rival and +1 for you, not −2.
+    (game.paper?.extra ? (([rd, yd]) => ' Each rival ' + (rd > 0 ? 'takes ' + rd + ' extra' : 'returns ' + -rd) + ' action pawn' + (Math.abs(rd) === 1 ? '' : 's') +
+      (yd ? ' and you take ' + yd + ' extra' : '') + ' (paper rules, ' + paperLevel(game.paper.extra, game.paper) + ').')(game.paper.scaledEasy ? [-1, 1] : [game.paper.extra, 0]) : '') +
     ' Match the Earth map with Wetland at the top.' :
     'Slide the physical action display as usual. Refill the three draw rows, turn up any face-down tile stacks, and fill the open card spaces.';
   return '<div class="block-head"><h2 id="turn-focus" tabindex="-1">Enter board draws</h2><span class="phase-badge">' + (game.turn === 1 ? 'Setup' : 'Reseed') +

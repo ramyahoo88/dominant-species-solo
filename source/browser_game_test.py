@@ -34,6 +34,14 @@ def run(n_rivals, seed=1, max_steps=4000, shots=None, paper=None, full=False):
         g = saved(p)["game"]
         out["paper"] = g.get("paper"); out["eyebrow"] = p.locator('.eyebrow').first.inner_text(); out["supply_text"] = p.locator('.instruction').first.inner_text()[:300]
         out["ids"] = g["ids"]; out["ap"] = {k: v["ap"] for k, v in g["animals"].items()}; out["pool"] = {k: v["pool"] for k, v in g["animals"].items()}
+        if paper is not None:
+            # GPT v0.5.3 re-audit (medium): the setup screen and the turn-1 instruction must state the pawns the game uses.
+            base = {2: 6, 3: 5, 4: 4, 5: 3}[n_rivals]
+            rd, yd = (-1, 1) if paper == -2 and n_rivals == 5 else (paper, 0)
+            assert all(out["ap"][r] == base + rd for r in g["rivals"]) and out["ap"][g["human"]] == base + yd, out["ap"]
+            if rd: assert ("returns " + str(-rd) if rd < 0 else "takes " + str(rd) + " extra") + " action pawn" in out["supply_text"], out["supply_text"]
+            assert (" and you take 1 extra" in out["supply_text"]) == bool(yd), out["supply_text"]
+            if rd: assert "with " + str(base + rd) + " pawns for each rival" in out["setup_text"], out["setup_text"]
         last_sig = None; same = 0
         for step in range(max_steps):
             out["steps"] = step

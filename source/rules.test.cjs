@@ -17,8 +17,8 @@ verify('GMT p. 4: six APs and 50 cubes include one VP marker and four starting s
   }
 `);
 
-verify('v0.1 through v0.5.2 save migration preserves inventory, pending choices, and random state', `
-  for (const version of ['0.1.0','0.2.0','0.3.0','0.3.1','0.3.2','0.3.3','0.3.4','0.3.5','0.3.6','0.3.7','0.3.8','0.3.9','0.4.0','0.4.1','0.5.0','0.5.1','0.5.2']) {
+verify('v0.1 through v0.5.3 save migration preserves inventory, pending choices, and random state', `
+  for (const version of ['0.1.0','0.2.0','0.3.0','0.3.1','0.3.2','0.3.3','0.3.4','0.3.5','0.3.6','0.3.7','0.3.8','0.3.9','0.4.0','0.4.1','0.5.0','0.5.1','0.5.2','0.5.3']) {
     const s = newGame('insects',['mammals','birds'],true,51);
     s.version = version;
     s.phase = 'execution';
@@ -822,7 +822,7 @@ test('v0.5.1 Empty Earth: with no species on Earth a rival may take Abundance an
       validateState(old);
       assert.ok(paperLegal(old,'mammals','abundance',0) && paperPawn(old, step).corner === choice.corner, 'saved ' + old.version + ' game');
     }
-    for (const v of ['0.5.0', '0.5.1', '0.5.2']) {
+    for (const v of ['0.5.0', '0.5.1', '0.5.2', '0.5.3']) {
       const saved = JSON.parse(JSON.stringify(s)); saved.version = v;
       validateState(saved);
       assert.equal(saved.version, VERSION, 'a v' + v + ' Paper save loads');

@@ -446,7 +446,7 @@ dialog::backdrop{background:#132d2c88}
 <noscript>This companion needs JavaScript. Open the downloaded HTML file in a browser.</noscript>
 <script>'use strict';
 
-const VERSION = '0.5.3';
+const VERSION = '0.5.4';
 const SAVE_KEY = 'dominant-species-solo-v1';
 // GMT rules p. 4: of the 50 gathered cubes, one marks VP.
 const THREE_PLAYER_CUBES = 50;
@@ -2116,7 +2116,11 @@ function paperLegal(s, actor, row, index) {
     case 'glaciation': return glazeTargets(s).some(t => !s.tiles[t].cubes[actor] && s.ids.some(id => s.tiles[t].cubes[id]));
     case 'speciation': return s.animals[actor].pool > 0 && paperSpeciationTiles(s,actor,index).length > 0;
     case 'wanderlust': return s.stacks.some(stack => stack.face) && frontTiles(s).some(t => NEIGHBORS[t].some(id => s.tiles[id]?.cubes[actor]));
-    case 'migration': return occupied(s,actor).some(tile => legalNeighbors(s,tile,actor).some(to => match(s,to,actor) > 0));
+    // v0.5.4: the same first move Execution may make (a rescue, or a spare species to a matched tile it is not on yet).
+    // Before, any move to a matched tile qualified, and 29% of rival Migration pawns then found no allowed move.
+    // PAPER.oldMigTest (testing) restores the old test.
+    case 'migration': return PAPER.oldMigTest ? occupied(s,actor).some(tile => legalNeighbors(s,tile,actor).some(to => match(s,to,actor) > 0))
+      : paperMigration(s,actor,1).moves.length > 0;
     case 'competition': return competitionChoices(s,actor,['tundra',COMPETITION_EDGES[index],COMPETITION_EDGES[index+1]]).length > 0;
     case 'domination': return terrainIds(s).some(tile => !s.scored.includes(tile) && s.tiles[tile].cubes[actor]);
   }
@@ -2674,6 +2678,9 @@ newGame = function(human, rivals, short, seed, paper = null) {
   // v0.5.0: rivals plan first. Recorded in the save, so a game keeps the Planning order it began with.
   // PAPER.noPlanFirst (testing) or setup {noPlanFirst} turns it off.
   if (s.paper.rivalTie && !(paper ? paper.noPlanFirst : PAPER.noPlanFirst)) s.paper.planFirst = true;
+  // v0.5.4: rival-only ties go to the most species, then the food chain. Recorded, so earlier games keep the food chain alone.
+  // PAPER.oldRivalTie (testing) or setup {oldRivalTie} keeps the food chain alone.
+  if (s.paper.planFirst && !(paper ? paper.oldRivalTie : PAPER.oldRivalTie)) s.paper.speciesTie = true;
   // A game started from the app records its level name (v0.5.0), so a later change of scale can't misread it.
   if (paper && s.paper.planFirst && typeof PAPER_LEVELS !== 'undefined') { const lv = PAPER_LEVELS.find(([n]) => n === extra); if (lv) s.paper.level = lv[1]; }
   s.paperRivals = [...rivals];
@@ -2715,6 +2722,8 @@ place = function(s, key, bot = null) {
 // Rival tie-break (v0.4.0). Flat matching makes rivals tie often, and a tie leaves a tile with no dominant animal, which
 // handed the player cards, Ice Age points and board control. When only paper rivals share the most matches on a tile,
 // the rival higher in the food chain is dominant. A tie that includes the player still leaves the tile undominated.
+// v0.5.4 (speciesTie, recorded in the save): the rival with the most species on the tile first, then the food chain.
+// The food chain alone always favoured Mammals and never Insects (a Mammals rival won 36% of its games, Insects 6%).
 const _appCone = cone;
 cone = function(s, tile) {
   const owner = _appCone(s, tile);
@@ -2723,7 +2732,8 @@ cone = function(s, tile) {
   const best = Math.max(0, ...vals.map(v => v[1]));
   if (!best) return null;
   const top = vals.filter(v => v[1] === best).map(v => v[0]);
-  return top.length > 1 && top.every(id => s.paperRivals.includes(id)) ? top.sort((a,b) => rank(a) - rank(b))[0] : null;
+  const c = s.tiles[tile].cubes;
+  return top.length > 1 && top.every(id => s.paperRivals.includes(id)) ? top.sort((a,b) => (s.paper.speciesTie ? c[b] - c[a] : 0) || rank(a) - rank(b))[0] : null;
 };
 const _appMatch = match;
 match = function(s, tile, actor, additions = s.animals[actor].added) {
@@ -2847,7 +2857,7 @@ function readSupplyDraft(s, raw) {
 function validateState(s) {
   function assert(ok) { if (!ok) throw new Error('This is not a valid Dominant Species companion save.'); }
   recordPaperLevel(s); // before the version is replaced: the level scale depends on it
-  if (s && ['0.1.0', '0.2.0', '0.3.0', '0.3.1', '0.3.2', '0.3.3', '0.3.4', '0.3.5', '0.3.6', '0.3.7', '0.3.8', '0.3.9', '0.4.0', '0.4.1', '0.5.0', '0.5.1', '0.5.2'].includes(s.version)) s.version = VERSION;
+  if (s && ['0.1.0', '0.2.0', '0.3.0', '0.3.1', '0.3.2', '0.3.3', '0.3.4', '0.3.5', '0.3.6', '0.3.7', '0.3.8', '0.3.9', '0.4.0', '0.4.1', '0.5.0', '0.5.1', '0.5.2', '0.5.3'].includes(s.version)) s.version = VERSION;
   const keys = value => value && typeof value === 'object' ? Object.keys(value) : [];
   assert(s && s.version === VERSION && ['supply','planning','execution','finished'].includes(s.phase) &&
     num(s.turn) && s.turn > 0 && num(s.rng) && s.rng <= 0xffffffff && num(s.seed) && s.seed <= 0xffffffff);
@@ -2858,6 +2868,7 @@ function validateState(s) {
     (s.paper.level === undefined || s.paper.level === null || PAPER_LEVEL_NAMES.includes(s.paper.level)) &&
     Array.isArray(s.paperRivals) && s.paperRivals.length === s.rivals.length && s.paperRivals.every(id => s.rivals.includes(id)) &&
     (s.paper.planFirst === undefined || s.paper.planFirst === true && s.paper.rivalTie === true) &&
+    (s.paper.speciesTie === undefined || s.paper.speciesTie === true && s.paper.planFirst === true) &&
     (s.paper.pre === undefined || s.phase === 'planning' && s.paper.planFirst === true && Array.isArray(s.paper.pre) && s.paper.pre.length > 0 &&
       unique(s.paper.pre).length === s.paper.pre.length && s.paper.pre.every(id => s.paperRivals.includes(id) && s.animals[id].remaining > 0))));
   assert(Array.isArray(s.initiative) && s.initiative.length === s.ids.length && unique(s.initiative).length === s.ids.length && s.initiative.every(id => s.ids.includes(id)) &&
@@ -3070,7 +3081,9 @@ function showSupply() {
     [field('Wanderlust stack ' + (i+1),select('stack-'+i,LARGE_TERRAIN.map(t=>[t,terrainName(t)])))] : []).join('');
   const instruction = game.turn === 1 ?
     'For each animal, set out ' + ['','','','six','five','four','three'][game.ids.length] + ' action pawns and ' + SETUP_BY_PLAYERS[game.ids.length][1] + ' cubes. Use one cube to mark VP, put four on the map and leave ' + (SETUP_BY_PLAYERS[game.ids.length][1] - 5) + ' in the gene pool.' +
-    (game.paper?.extra ? ' Each rival ' + (game.paper.extra > 0 ? 'takes ' + game.paper.extra + ' extra' : 'returns ' + -game.paper.extra) + ' action pawn' + (Math.abs(game.paper.extra) === 1 ? '' : 's') + ' (paper rules, ' + paperLevel(game.paper.extra, game.paper) + ').' : '') +
+    // GPT v0.5.3 re-audit (medium): scaled Easy (five rivals) is −1 for each rival and +1 for you, not −2.
+    (game.paper?.extra ? (([rd, yd]) => ' Each rival ' + (rd > 0 ? 'takes ' + rd + ' extra' : 'returns ' + -rd) + ' action pawn' + (Math.abs(rd) === 1 ? '' : 's') +
+      (yd ? ' and you take ' + yd + ' extra' : '') + ' (paper rules, ' + paperLevel(game.paper.extra, game.paper) + ').')(game.paper.scaledEasy ? [-1, 1] : [game.paper.extra, 0]) : '') +
     ' Match the Earth map with Wetland at the top.' :
     'Slide the physical action display as usual. Refill the three draw rows, turn up any face-down tile stacks, and fill the open card spaces.';
   return '<div class="block-head"><h2 id="turn-focus" tabindex="-1">Enter board draws</h2><span class="phase-badge">' + (game.turn === 1 ? 'Setup' : 'Reseed') +
@@ -3771,8 +3784,9 @@ function renderModal() {
     '<li>Place your own pawns. Reveal a card for each rival placement and mirror the indicated slot on your action display.</li>' +
     '<li>Apply each action to the physical board and confirm it here. The Earth map uses the starting wetland as north. Corner 1 points right, and corners 2–6 follow clockwise. The map shows a shared corner once.</li>' +
     '<li>Follow the app’s Extinction and Survival prompts. After Ice Age, complete the turn and compare the final scores.</li></ol>' +
-    '<h3>Bot cards</h3><p>Each rival shuffles its own eight-card deck, checks one condition per placement and starts on the corresponding face. The action list guides the pawn placement. The bot can take another open space when it sees a stronger opportunity. Targets are chosen when the pawn resolves.</p><p>With <b>Paper rules</b>, the rivals follow the printed Paper Rivals rulebook exactly: always the reverse face of the card, simple counting rules, and a pawn adjustment for difficulty (' + PAPER_LEVELS.map(([n,name]) => name + ' ' + (n < 0 ? '−' + -n : n ? '+' + n : '0')).join(', ') + '; from v0.5.3, Easy with five rivals is −1 for each rival and +1 for you). In Paper games started in v0.5.0 or later, the rivals plan first: at the start of each Planning, they place one pawn each before anyone else, in Initiative order. In Paper games started in v0.4.0 or later, when only rivals tie for the most matches on a tile, the rival higher in the food chain is dominant; a tie that includes you leaves the tile with no dominant animal. In every Paper game (from v0.5.1, saved games included), if no species of any animal are left on Earth, a rival\'s Abundance may use any empty corner, so species can return. Use it to learn the printed rules, or to play them without printing anything.</p>' +
+    '<h3>Bot cards</h3><p>Each rival shuffles its own eight-card deck, checks one condition per placement and starts on the corresponding face. The action list guides the pawn placement. The bot can take another open space when it sees a stronger opportunity. Targets are chosen when the pawn resolves.</p><p>With <b>Paper rules</b>, the rivals follow the printed Paper Rivals rulebook exactly: always the reverse face of the card, simple counting rules, and a pawn adjustment for difficulty (' + PAPER_LEVELS.map(([n,name]) => name + ' ' + (n < 0 ? '−' + -n : n ? '+' + n : '0')).join(', ') + '; from v0.5.3, Easy with five rivals is −1 for each rival and +1 for you). In Paper games started in v0.5.0 or later, the rivals plan first: at the start of each Planning, they place one pawn each before anyone else, in Initiative order. In Paper games started in v0.4.0 or later, when only rivals tie for the most matches on a tile, one of them is dominant: from v0.5.4 the rival with the most species there, then the one higher in the food chain (earlier games: the food chain alone); a tie that includes you leaves the tile with no dominant animal. In every Paper game (from v0.5.1, saved games included), if no species of any animal are left on Earth, a rival\'s Abundance may use any empty corner, so species can return. Use it to learn the printed rules, or to play them without printing anything.</p>' +
     (game?.paper && !game.paper.planFirst ? '<p><b>This saved game</b> was started before ' + (game.paper.rivalTie ? 'v0.5.0' : 'v0.4.0') + ' and keeps these rules from then: ' + esc(paperLevel(game.paper.extra, game.paper)) + ' (' + (game.paper.extra < 0 ? '−' + -game.paper.extra : '+' + game.paper.extra) + ' pawn' + (Math.abs(game.paper.extra) === 1 ? '' : 's') + ' per rival), the rivals place in normal Initiative order' + (game.paper.rivalTie ? '' : ', and a tie between rivals leaves the tile with no dominant animal') + '.</p>' : '') +
+    (game?.paper?.planFirst && !game.paper.speciesTie ? '<p><b>This saved game</b> was started before v0.5.4 and keeps its rival tie rule from then: when only rivals tie for the most matches on a tile, the one higher in the food chain is dominant.</p>' : '') +
     '<h3>Board tracking</h3><p>The companion checks cones automatically. When a protected Hibernation cube shares a tile with other cubes of the same animal, the app moves or removes the ordinary cubes first. Confirm each physical move to save it. Undo is available until you close or reload the page. Export a save before switching browsers or devices.</p>' +
     '<p><a href="'+RULEBOOK+'" target="_blank" rel="noopener noreferrer">GMT rulebook</a> · <a href="'+PHOTO+'" target="_blank" rel="noopener noreferrer">Portage Glacier photo, USGS</a></p>';
   if (modalKind === 'decks') content='<div class="deck-tabs" role="group" aria-label="Animal deck">' + FOOD.map(id=>button(nameOf(id),'deck-tab','sm',

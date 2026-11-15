@@ -197,3 +197,27 @@ X35 / X2 against the pooled App baseline.
 **Queue changes (00:55).**
 - ba30–32 were retargeted to **re-tune against rivalsFirst**. The file names still say `hy`; the checkpoint is `results/ba_rf.ckpt.json`.
 - Added ba29y1: rivalsFirst at seed 460000 (confirmation).
+
+### 01:00 — Checklist (advisor) before any release
+
+1. **Judge only the re-tuned player** (`ba_rf.ckpt.json`). v3 is mis-tuned for the new Planning order.
+2. **Final evaluation on an untouched seed block (470000):**
+   - all fixed policies (dominance, majority, expansion);
+   - the edge over the *best* fixed policy per cell;
+   - App cells for both the re-tuned player and v3, on the same block (ba34);
+   - recovery: how much the re-tune gains over v3 under rivalsFirst;
+   - its paper edge minus the *better* of its and v3's App edges;
+   - its ablations (Initiative, Domination).
+   - **Pass:** within about 0.2 at the shipped levels, at 3–5 rivals.
+3. **Re-anchor:** Hard at 450000 with no switches must give 745/269 after all the `paper.js` edits (ba29y2).
+4. **2 rivals:** X2 is −0.3 to −0.9 with rivalsFirst (baseline +0.18). Decide explicitly: all tables, or rivalsFirst only with 3+ rivals.
+5. **+1 at 4–5 rivals:** dominance wins only 3–4%, so the edge there can't be read. Run it with four times the games, or say so.
+6. **Saves:**
+   - record the rule in the save (`s.paper.planFirst`, like `rivalTie`), not only in the global switch;
+   - a v0.4.1 game must keep its old Planning order;
+   - a save made mid pre-round must survive export, reload and validation.
+7. **Level names:**
+   - new offsets make v0.4.0–v0.4.1 saves legacy too. They carry `rivalTie`, so `paperLevel` and the R1 notice must not read them on the new scale (F1 again);
+   - write the level name into every new save from now on.
+8. **Worker:** told not to collect data against v0.4.1 rivals (COORDINATION, 01:00).
+9. **Cut-off:** if nothing has passed a re-tune by about 04:00, don't start a release; leave the branch and the report.

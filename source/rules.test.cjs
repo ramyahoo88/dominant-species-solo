@@ -444,3 +444,17 @@ verify('Re-audit v0.3.8: paper Immigrants removes an unplaced pawn first, else t
   s.animals.birds.ap = 3;
   assert.equal(paperImmigrant(s,'birds').slot, null);
 `);
+
+verify('Re-audit v0.3.9: paper Migration tie prefers a destination the rival does not occupy, then the fullest origin', `
+  const s = newGame('mammals',['insects','birds'],true,314159,{extra:0});
+  for (const t of terrainIds(s)) for (const id of s.ids) s.tiles[t].cubes[id] = 0;
+  for (const k of Object.keys(s.corners)) delete s.corners[k];
+  // C3 and C4 are both Forest and both next to D3. D3 has no disk, so Insects there are a rescue.
+  s.tiles.C3.terrain = 'forest'; s.tiles.C4.terrain = 'forest';
+  for (const t of ['C3','C4']) s.corners[VERTICES_OF[t].find(k => !CORNER_TILES[k].includes('D3'))] = 'grass';
+  s.tiles.D3.cubes.insects = 1; s.tiles.C3.cubes.insects = 1;   // Insects already on C3 (earlier top-left), not on C4
+  const {moves} = paperMigration(s,'insects',1);
+  assert.deepEqual(moves.map(m => m.from + '>' + m.to), ['D3>C4'], 'equal value: the unoccupied destination wins');
+  s.tiles.C3.cubes.insects = 0;                                  // control: neither occupied -> top-left tie-break picks C3
+  assert.deepEqual(paperMigration(s,'insects',1).moves.map(m => m.from + '>' + m.to), ['D3>C3']);
+`);

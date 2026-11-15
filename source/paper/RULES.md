@@ -4,7 +4,7 @@
 
 ## Overview
 
-These rules run the rival animals at the table without the app, against two to five rivals. Each rival draws from its own eight-card deck. Every decision after that is made by counting things on the board, with no scoring or judgment calls. Extra action pawns set the difficulty.
+These rules run the rival animals at the table without the app, against two to five rivals. Each rival draws from its own eight-card deck. Every decision after that is made by counting things on the board, with no scoring or judgment calls. The rivals place their first pawn of each turn before you do, and the number of pawns they get sets the difficulty.
 
 **You need:** the base game, and for each rival eight cards numbered 1–8 (or a d8; rolling repeats numbers that a shuffled deck would not, which the difficulty tests did not measure). The decks are listed under Rival decks.
 
@@ -24,7 +24,7 @@ These rules run the rival animals at the table without the app, against two to f
 Set up a normal game for your player count: you plus two to five rival animals, with the base game's pawns and cubes for that count (6 pawns and 50 cubes with two rivals, 5 and 45 with three, 4 and 40 with four, 3 and 35 with five). Then:
 
 1. Shuffle each rival's eight deck cards face down. When a deck runs out, reshuffle its discards.
-2. Choose a difficulty and adjust **each rival's** action pawns from the base count. Extra pawns come from the unused pawns in the box.
+2. Choose a difficulty and adjust **each rival's** action pawns from the base count. Extra pawns come from the unused pawns in the box; removed pawns go back to it.
 3. Before the first Planning, place the dominance cones using these rules: rivals use the paper matching count, and rival ties go to the food chain (Terms used). Only an animal that is present and matches at least one element can be dominant. Update the cones whenever the result changes.
 
 {{DIFFICULTY}}
@@ -40,6 +40,8 @@ Two people can add one paper rival as the third animal to get a full three-playe
 - Start at Standard. The difficulty measurements in Testing assume one person against the rivals, so they don't carry over directly.
 
 ## Planning: placing a pawn
+
+**Rivals plan first.** At the start of each Planning, before anyone else places, each rival places one pawn, in Initiative order. Then Planning goes around the Initiative order as usual, starting from the top, until everyone has placed all their pawns. (Without this, a player who stays first on the Initiative track gets first pick of the action display every turn, which these rivals never contest.)
 
 When it is a rival's turn to place, first draw the top card of its deck (it is discarded after this placement even if an earlier step decides). Then take the first step below that gives a space.
 

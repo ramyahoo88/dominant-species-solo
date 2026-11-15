@@ -40,6 +40,10 @@ def report(app_file, cand_file, player='tuned', base='dominance'):
         a = app.get(b)
         if not a:
             continue
+        xs = [x for x, _ in pts]
+        if not (min(xs) - 0.25 <= logit(a[base] / 100) <= max(xs) + 0.25):  # App's difficulty is outside the paper levels
+            out['byRivals'][b] = {'appDom': a[base], 'appV3': a[player], 'matchedV3': None, 'excess': None, 'levels': {r['rivalsAre']: (r[base], r[player]) for r in rows if r['rivals'] == b}}
+            continue
         v3m = 100 * inv(interp(pts, logit(a[base] / 100)))
         out['byRivals'][b] = {'appDom': a[base], 'appV3': a[player], 'matchedV3': round(v3m, 1), 'excess': round(v3m - a[player], 1),
                               'levels': {r['rivalsAre']: (r[base], r[player]) for r in rows if r['rivals'] == b}}
@@ -54,4 +58,18 @@ if __name__ == '__main__':
         print('==', f.split('/')[-1], ' mean excess', r['meanExcess'])
         print('   levels (pooled %):', r['levels'])
         for b, x in r['byRivals'].items():
-            print('   %d rivals: App dom %s v3 %s | matched v3 %s | excess %+.1f | %s' % (b, x['appDom'], x['appV3'], x['matchedV3'], x['excess'], x['levels']))
+            print('   %d rivals: App dom %s v3 %s | matched v3 %s | excess %s | %s' % (b, x['appDom'], x['appV3'], x['matchedV3'], x['excess'], x['levels']))
+
+def edges(app_file, cand_file, player='tuned', base='dominance'):
+    """Log-odds edge of the player over the base policy, per rival count and level, minus the App edge."""
+    app = {r['rivals']: r for r in load(app_file)['table'] if r['rivalsAre'] == 'App'}
+    rows = [r for r in load(cand_file)['table'] if r['rivalsAre'] != 'App']
+    e = lambda r: logit(r[player] / 100) - logit(r[base] / 100)
+    out = {}
+    for r in rows:
+        a = app.get(r['rivals'])
+        if a: out.setdefault(r['rivalsAre'], {})[r['rivals']] = round(e(r) - e(a), 2)
+    return out
+
+if __name__ == '__main__' and '--edges' in sys.argv:
+    pass

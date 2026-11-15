@@ -237,3 +237,30 @@ X35 / X2 against the pooled App baseline.
 - **Release shape:** `paper.js` now has only the rule. It is on by default (benchmark too); `noPlanFirst` turns it off.
   - The screened candidates remain on this branch at commit f104c5b.
   - **Not yet on the PC:** the PC keeps the research `paper.js` until the ladder jobs finish.
+
+### 01:35 — Re-tune in progress; app and rulebook drafted
+
+**Re-tune (ba30–31, 25 of 39 generations):** validation win 0.388 at the start, 0.38–0.405 since. The tuner is finding very little against rivalsFirst so far.
+
+**Branch status (not released):**
+- `paper.js` has only the rule (`s.paper.planFirst`, on by default; `noPlanFirst` turns it off).
+- App, VERSION 0.5.0:
+  - provisional scale Easy −2 / Standard −1 / Hard 0 / Expert +1;
+  - level names are recorded in new saves;
+  - v0.4.x saves keep their name and old Planning order;
+  - Help describes the rule and both legacy cases.
+- Tests:
+  - 38 rules tests, including the mid pre-round save and the legacy Planning order;
+  - `browser_restart_test.py`: 8 save cases plus Help;
+  - `browser_test.py`;
+  - `browser_game_test.py` paper=−1 with 2, 3 and 5 rivals: full games, Undo, reload and import pass, no stalls.
+- Rulebook draft:
+  - the "Rivals plan first" paragraph;
+  - the overview line;
+  - a data-driven difficulty table (`ladder.json` `offsets`).
+
+**Queue:**
+- ba32 re-tune stage 3;
+- ba33/34 final evaluation at seed 470000;
+- ba35–54 ladder;
+- ba55 +1 at 4–5 rivals with 4× games (seed 480000).

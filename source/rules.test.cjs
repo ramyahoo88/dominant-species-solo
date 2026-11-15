@@ -406,6 +406,22 @@ test('Re-audit v0.3.8: player Initiative needs a destination while a space is op
   })()`);
 });
 
+verify('Re-audit v0.3.8: paper Migration: a tile that received species does not send any (constructed case)', `
+  const s = newGame('mammals',['insects','birds'],true,314159,{extra:0});
+  for (const t of terrainIds(s)) for (const id of s.ids) s.tiles[t].cubes[id] = 0;
+  for (const k of Object.keys(s.corners)) delete s.corners[k];
+  s.tiles.B3 = {terrain:'forest', cubes:Object.fromEntries(s.ids.map(id => [id,0]))};   // a tile next to C3 but not D3
+  s.corners[VERTICES_OF.C3.find(k => !CORNER_TILES[k].includes('D3'))] = 'grass';   // Insects match C3...
+  s.corners[VERTICES_OF.B3.find(k => !CORNER_TILES[k].includes('C3'))] = 'grass';   // ...and B3, but not D3
+  s.tiles.D3.cubes.insects = 1; s.tiles.C3.cubes.insects = 1;
+  // Move 1 rescues D3 -> C3 (C3 now has 2). C3 received, so it may not then send one on to B3.
+  const {moves} = paperMigration(s,'insects',2);
+  assert.deepEqual(moves.map(m => m.from + '>' + m.to + ' x' + m.n), ['D3>C3 x1']);
+  // Control: with 2 Insects already on C3 and nothing to rescue, C3 may send one to the new tile B3.
+  s.tiles.D3.cubes.insects = 0; s.tiles.C3.cubes.insects = 2;
+  assert.deepEqual(paperMigration(s,'insects',2).moves.map(m => m.from + '>' + m.to), ['C3>B3']);
+`);
+
 verify('Re-audit v0.3.8: paper Migration lets each tile either send or receive, never both', `
   for (let seed = 1; seed <= 40; seed++) {
     const s = newGame('mammals',['birds','insects'],seed % 2 === 0,seed,{extra:0});

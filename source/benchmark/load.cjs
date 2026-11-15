@@ -64,7 +64,9 @@ function load(ref, extra = []) {
         const best = Math.max(0, ...vals.map(v => v[1]));
         if (!best) return null;
         const top = vals.filter(v => v[1] === best).map(v => v[0]);
-        return top.length > 1 && top.every(id => s.paperRivals.includes(id)) ? top.sort((a, b) => rank(a) - rank(b))[0] : null;
+        // v0.5.4 speciesTie: the most species on the tile first, then the food chain.
+        const c = s.tiles[tile].cubes;
+        return top.length > 1 && top.every(id => s.paperRivals.includes(id)) ? top.sort((a, b) => (s.paper.speciesTie ? c[b] - c[a] : 0) || rank(a) - rank(b))[0] : null;
       };
       const referenceAction = (s, step) => {
         const choice = botAction(s, step);

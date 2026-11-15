@@ -182,7 +182,7 @@ verify('v0.3.6: paper-rules games add difficulty pawns, use the printed rules, a
   const app = newGame('insects',['birds','arachnids'],true,40);
   assert.equal(app.paper, undefined);
   const s = newGame('insects',['birds','arachnids','mammals'],true,40,{extra:1});
-  assert.deepEqual(s.paper, {extra:1, rivalTie:true, planFirst:true, level:'Expert'});
+  assert.deepEqual(s.paper, {extra:1, rivalTie:true, planFirst:true, speciesTie:true, level:'Expert'});
   for (const id of s.rivals) assert.equal(s.animals[id].ap, 6);
   assert.equal(s.animals.insects.ap, 5);
   validateState(JSON.parse(JSON.stringify(s)));
@@ -519,7 +519,7 @@ verify('v0.5.0 levels: Easy -2, Standard -1, Hard 0, Expert +1, recorded by name
   assert.equal(paperLevel(0, {extra:0, rivalTie:true, planFirst:true}), 'Hard');
   // A v0.4.1 save (tie-break, no planning first) records its name on load and restarts at that name on the new scale.
   const v041 = newGame('mammals',['birds','insects'],true,7,{extra:1});
-  delete v041.paper.planFirst; delete v041.paper.level; v041.version = '0.4.1';
+  delete v041.paper.planFirst; delete v041.paper.speciesTie; delete v041.paper.level; v041.version = '0.4.1';
   validateState(v041);
   assert.equal(v041.paper.level, 'Hard'); assert.equal(paperExtraFor(v041.paper.level), 0);
   assert.equal(v041.paper.planFirst, undefined, 'the saved game keeps its Planning order');
@@ -531,7 +531,7 @@ verify('v0.5.0 levels: Easy -2, Standard -1, Hard 0, Expert +1, recorded by name
 verify('GPT v0.4.0 audit F1: older paper saves keep their level name, and a restart maps it to the current scale', `
   const old = (version, extra, tie = false) => {
     const s = newGame('amphibians',['birds','arachnids'],true,949381806,{extra});
-    delete s.paper.level; delete s.paper.planFirst;
+    delete s.paper.level; delete s.paper.planFirst; delete s.paper.speciesTie;
     if (!tie) delete s.paper.rivalTie;
     s.version = version;
     validateState(s);
@@ -561,7 +561,7 @@ verify('GPT v0.4.0 audit F1: older paper saves keep their level name, and a rest
 verify('GPT v0.4.1 follow-up R2: an Easy save re-exported by v0.3.7-v0.3.9 is still recovered as Easy', `
   const old = (version, extra) => {
     const s = newGame('amphibians',['birds','arachnids'],true,949381806,{extra});
-    delete s.paper.rivalTie; delete s.paper.planFirst; delete s.paper.level;
+    delete s.paper.rivalTie; delete s.paper.planFirst; delete s.paper.speciesTie; delete s.paper.level;
     s.version = version;
     validateState(s);
     return s;
@@ -597,7 +597,7 @@ verify('v0.5.0 candidate: rivals plan first; the rule is in the save and survive
   assert.equal(currentPlanner(s).actor, human, 'then Planning starts again from the top of the Initiative order');
   // A game saved before the rule keeps the earlier order: the player places first.
   const old = newGame(human, rivals, true, 11, {extra:0});
-  delete old.paper.planFirst;
+  delete old.paper.planFirst; delete old.paper.speciesTie;
   enterSupply(old, nextSupply(old, makeSupplies(old, 11), 11));
   assert.equal(currentPlanner(old).actor, human);
   // A bad opening-round list is rejected.
@@ -673,6 +673,44 @@ verify('v0.5.3 scaled Easy: with five rivals each rival has 2 pawns and you have
   const old = JSON.parse(JSON.stringify(flat)); old.version = '0.5.2'; delete old.paper.scaledEasy;
   validateState(old);
   assert.ok(five.every(id => old.animals[id].ap === 1) && old.animals.insects.ap === 3);
+`);
+
+verify('v0.5.4 Migration placement: a rival takes Migration only when Execution allows a move (rescue, or a spare species to a new matched tile)', `
+  Object.assign(PAPER, {place:true, all:true, extraAP:0});
+  // Seed 1 start: Birds can only shuffle species between tiles they already hold, which Execution never allows.
+  const s = newGame('insects',['mammals','birds','reptiles'],true,1,{extra:0});
+  PAPER.oldMigTest = true; assert.ok(paperLegal(s,'birds','migration',0), 'the old test let Birds take Migration'); delete PAPER.oldMigTest;
+  assert.equal(paperMigration(s,'birds',7).moves.length, 0, 'and Execution then moves nothing');
+  assert.ok(!paperLegal(s,'birds','migration',0), 'the new test agrees with Execution');
+  // Everywhere: the test is exactly "Execution would make a first move" (checked over several starts and every rival).
+  for (let seed = 1; seed <= 12; seed++) {
+    const g = newGame('insects',['mammals','birds','reptiles','amphibians'],seed % 2 === 0,seed,{extra:0});
+    for (const a of g.rivals) assert.equal(paperLegal(g,a,'migration',0), paperMigration(g,a,1).moves.length > 0, seed + ' ' + a);
+  }
+`);
+
+verify('v0.5.4 rival ties: when only rivals tie on matches, the most species wins, then the food chain; older saves keep the food chain alone', `
+  Object.assign(PAPER, {place:true, all:true, extraAP:0});
+  const s = newGame('birds',['mammals','insects'],true,7,{extra:0});
+  assert.equal(s.paper.speciesTie, true);
+  const t = terrainIds(s).find(t => VERTICES_OF[t].filter(k => s.corners[k]).length >= 2);
+  for (const id of s.ids) s.tiles[t].cubes[id] = 0;
+  s.tiles[t].cubes.mammals = 1; s.tiles[t].cubes.insects = 2;
+  assert.equal(match(s,t,'mammals'), match(s,t,'insects'), 'fixture: equal flat matches');
+  assert.equal(cone(s,t), 'insects', 'more species wins, though lower in the food chain');
+  s.tiles[t].cubes.mammals = 2;
+  assert.equal(cone(s,t), 'mammals', 'equal species: the food chain');
+  s.tiles[t].cubes.mammals = 1;
+  const old = JSON.parse(JSON.stringify(s)); delete old.paper.speciesTie;
+  assert.equal(cone(old,t), 'mammals', 'a save without speciesTie keeps the food chain alone');
+  const v053 = newGame('birds',['mammals','insects'],true,7,{extra:0}); delete v053.paper.speciesTie; v053.version = '0.5.3';
+  validateState(v053); assert.equal(v053.paper.speciesTie, undefined, 'a v0.5.3 save loads and keeps its tie rule');
+  // A tie that includes the player still leaves the tile with no dominant animal.
+  s.tiles[t].cubes.birds = 2;
+  if (match(s,t,'birds') === match(s,t,'insects')) assert.equal(cone(s,t), null);
+  // Testing switch: new games without it.
+  PAPER.oldRivalTie = true; assert.equal(newGame('birds',['mammals','insects'],true,7).paper?.speciesTie, undefined); delete PAPER.oldRivalTie;
+  assert.equal(newGame('birds',['mammals','insects'],true,7,{extra:0, oldRivalTie:true}).paper.speciesTie, undefined);
 `);
 
 test('v0.5.3 Mammals Extinction save: equal first-place values go to board order, not the order Mammals reached the tiles', () => {
@@ -777,7 +815,7 @@ test('v0.5.1 Empty Earth: with no species on Earth a rival may take Abundance an
     s.tiles[terrainIds(s)[0]].cubes.insects = 0;
     // Saved games from earlier versions get the rule too: v0.4.1-shaped (no planFirst, no level name) and pre-v0.4.0
     // (no tie-break), each loaded through validateState; and a v0.5.0 save.
-    for (const strip of [['planFirst','level'], ['planFirst','level','rivalTie']]) {
+    for (const strip of [['planFirst','speciesTie','level'], ['planFirst','speciesTie','level','rivalTie']]) {
       const old = JSON.parse(JSON.stringify(s));
       for (const k of strip) delete old.paper[k];
       old.version = strip.length === 2 ? '0.4.1' : '0.3.9';
@@ -802,14 +840,15 @@ test('v0.5.1 Empty Earth regression: the audited stall (seed 200074) finishes, a
   const strategy = {place: p.get('playerPlacement'), choose: p.get('playerChoice')};
   const sc = {human:'birds', rivals:['mammals','reptiles','amphibians','arachnids','insects'], seed:200074, short:true, policy:'expansion'};
   // With the v0.5.1 corner order the game follows the audited path: it stalls without Empty Earth and finishes with it.
-  g.run('Object.assign(PAPER, {place:true, all:true, extraAP:-1, oldCornerOrder:true})');
+  // (v0.5.4: the old Migration test and food-chain rival ties too, so the path is the audited one.)
+  g.run('Object.assign(PAPER, {place:true, all:true, extraAP:-1, oldCornerOrder:true, oldMigTest:true, oldRivalTie:true})');
   const fixed = g.get('playBenchmark')(sc, strategy);
   assert.equal(fixed.stalled, undefined, 'reaches Ice Age within 30 turns');
   assert.ok(fixed.turns < 15, 'turn ' + fixed.turns);
   g.run('PAPER.noEmptyEarth = true');
   assert.equal(g.get('playBenchmark')(sc, strategy).stalled, true, 'without the rule this game stalls (the audited case)');
   // GPT's saved turn-31 position (no species, no disks) under the current rules: Ice Age is reached.
-  g.run('delete PAPER.noEmptyEarth; delete PAPER.oldCornerOrder');
+  g.run('delete PAPER.noEmptyEarth; delete PAPER.oldCornerOrder; delete PAPER.oldMigTest; delete PAPER.oldRivalTie');
   g.get('globalThis').FIXTURE = FIX('gpt-v050-stall-200074-turn31.json');
   g.get('globalThis').STRATEGY = strategy;
   const end = JSON.parse(g.run(`(() => {

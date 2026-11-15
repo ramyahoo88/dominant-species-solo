@@ -11,7 +11,7 @@ def old_save(version, extra, tie=False):
     keep = "" if tie else "delete s.paper.rivalTie;"
     js = f"""const {{load}} = require('{ROOT}/source/benchmark/load.cjs'); const r = load('worktree', ['game']);
       process.stdout.write(r.run(`(() => {{ const s = newGame('amphibians',['birds','arachnids'],true,949381806,{{extra:{extra}}});
-      {keep} delete s.paper.planFirst; delete s.paper.level; s.version = '{version}'; return JSON.stringify(s); }})()`));"""
+      {keep} delete s.paper.planFirst; delete s.paper.speciesTie; delete s.paper.level; s.version = '{version}'; return JSON.stringify(s); }})()`));"""
     return json.loads(subprocess.check_output(["node", "-e", js]))
 
 def run(version, extra, expect_extra, tie=False):

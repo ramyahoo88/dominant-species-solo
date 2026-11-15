@@ -16,7 +16,7 @@ These rules run the rival animals at the table without the app, against two to f
 - **First-place value:** the leftmost number on the Tile Scoring table: Sea 9, Wetland 8, Savannah 7, Jungle 6, Forest 5, Desert 4, Mountain 3, Tundra 1.
 - **Uses an element:** the element is on the rival's animal display (printed or added).
 - **Matches (rivals only):** a rival matches a tile with its printed element count (2, or 3 for Amphibians) plus its number of added elements, capped at the number of element disks on that tile. The element types don't matter. Use this count wherever the game asks how many elements a rival matches (dominance, Extinction, and every "matches" in these rules). Adaptation, Regression and Disease still change the count. You count your own animal normally.
-- **Rival ties:** if only rivals tie for the most matches on a tile, the rival higher in the food chain is dominant. If you tie with them, no one is dominant there, as in the normal rules.
+- **Rival ties:** if only rivals tie for the most matches on a tile, the rival with the most species there is dominant; if they still tie, the one higher in the food chain. If you tie with them, no one is dominant there, as in the normal rules.
 - **Ties:** break any remaining tie between tiles already on Earth by the higher first-place value, then **board order**, unless the rule gives a different priority. For corners and empty spots, use board order after the priorities listed for that choice. Board order means furthest left on the board, then highest; for tiles it runs down the leftmost column, then the next column.
 
 ## Setup and difficulty
@@ -25,7 +25,7 @@ Set up a normal game for your player count: you plus two to five rival animals, 
 
 1. Shuffle each rival's eight deck cards face down. When a deck runs out, reshuffle its discards.
 2. Choose a difficulty and adjust **each rival's** action pawns from the base count. Extra pawns come from the unused pawns in the box; removed pawns go back to it. **Easy with five rivals** is different: each rival has one pawn fewer (not two), and you take one extra pawn, so they have 2 each and you have 4 (the base of 3 would otherwise leave each rival only 1).
-3. Before the first Planning, place the dominance cones using these rules: rivals use the paper matching count, and rival ties go to the food chain (Terms used). Only an animal that is present and matches at least one element can be dominant. Update the cones whenever the result changes.
+3. Before the first Planning, place the dominance cones using these rules: rivals use the paper matching count, and rival ties go to the rival with the most species there, then the food chain (Terms used). Only an animal that is present and matches at least one element can be dominant. Update the cones whenever the result changes.
 
 {{DIFFICULTY}}
 
@@ -70,7 +70,7 @@ When it is a rival's turn to place, first draw the top card of its deck (it is d
 | Glaciation | A legal Glaciation tile holds opposing species and none of the rival's |
 | Speciation | The gene pool is not empty and a disk of that element is on earth |
 | Wanderlust | A tile is face up and an empty spot touches a tile the rival occupies |
-| Migration | A rival species can move to a tile the rival matches |
+| Migration | At least one move is allowed under Migration below: a rescue, or a species from a tile where it has 2+ (losing no rank there) to a matched tile it is not on yet |
 | Competition | A tile of that space's terrains, or tundra, holds the rival and an opponent |
 | Domination | An unscored tile holds a rival species |
 

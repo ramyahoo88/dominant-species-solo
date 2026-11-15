@@ -124,6 +124,7 @@ function validateState(s) {
     (s.paper.level === undefined || s.paper.level === null || PAPER_LEVEL_NAMES.includes(s.paper.level)) &&
     Array.isArray(s.paperRivals) && s.paperRivals.length === s.rivals.length && s.paperRivals.every(id => s.rivals.includes(id)) &&
     (s.paper.planFirst === undefined || s.paper.planFirst === true && s.paper.rivalTie === true) &&
+    (s.paper.speciesTie === undefined || s.paper.speciesTie === true && s.paper.planFirst === true) &&
     (s.paper.pre === undefined || s.phase === 'planning' && s.paper.planFirst === true && Array.isArray(s.paper.pre) && s.paper.pre.length > 0 &&
       unique(s.paper.pre).length === s.paper.pre.length && s.paper.pre.every(id => s.paperRivals.includes(id) && s.animals[id].remaining > 0))));
   assert(Array.isArray(s.initiative) && s.initiative.length === s.ids.length && unique(s.initiative).length === s.ids.length && s.initiative.every(id => s.ids.includes(id)) &&

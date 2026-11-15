@@ -22,7 +22,11 @@ function paperLegal(s, actor, row, index) {
     case 'glaciation': return glazeTargets(s).some(t => !s.tiles[t].cubes[actor] && s.ids.some(id => s.tiles[t].cubes[id]));
     case 'speciation': return s.animals[actor].pool > 0 && paperSpeciationTiles(s,actor,index).length > 0;
     case 'wanderlust': return s.stacks.some(stack => stack.face) && frontTiles(s).some(t => NEIGHBORS[t].some(id => s.tiles[id]?.cubes[actor]));
-    case 'migration': return occupied(s,actor).some(tile => legalNeighbors(s,tile,actor).some(to => match(s,to,actor) > 0));
+    // v0.5.4: the same first move Execution may make (a rescue, or a spare species to a matched tile it is not on yet).
+    // Before, any move to a matched tile qualified, and 29% of rival Migration pawns then found no allowed move.
+    // PAPER.oldMigTest (testing) restores the old test.
+    case 'migration': return PAPER.oldMigTest ? occupied(s,actor).some(tile => legalNeighbors(s,tile,actor).some(to => match(s,to,actor) > 0))
+      : paperMigration(s,actor,1).moves.length > 0;
     case 'competition': return competitionChoices(s,actor,['tundra',COMPETITION_EDGES[index],COMPETITION_EDGES[index+1]]).length > 0;
     case 'domination': return terrainIds(s).some(tile => !s.scored.includes(tile) && s.tiles[tile].cubes[actor]);
   }
@@ -580,6 +584,9 @@ newGame = function(human, rivals, short, seed, paper = null) {
   // v0.5.0: rivals plan first. Recorded in the save, so a game keeps the Planning order it began with.
   // PAPER.noPlanFirst (testing) or setup {noPlanFirst} turns it off.
   if (s.paper.rivalTie && !(paper ? paper.noPlanFirst : PAPER.noPlanFirst)) s.paper.planFirst = true;
+  // v0.5.4: rival-only ties go to the most species, then the food chain. Recorded, so earlier games keep the food chain alone.
+  // PAPER.oldRivalTie (testing) or setup {oldRivalTie} keeps the food chain alone.
+  if (s.paper.planFirst && !(paper ? paper.oldRivalTie : PAPER.oldRivalTie)) s.paper.speciesTie = true;
   // A game started from the app records its level name (v0.5.0), so a later change of scale can't misread it.
   if (paper && s.paper.planFirst && typeof PAPER_LEVELS !== 'undefined') { const lv = PAPER_LEVELS.find(([n]) => n === extra); if (lv) s.paper.level = lv[1]; }
   s.paperRivals = [...rivals];
@@ -621,6 +628,8 @@ place = function(s, key, bot = null) {
 // Rival tie-break (v0.4.0). Flat matching makes rivals tie often, and a tie leaves a tile with no dominant animal, which
 // handed the player cards, Ice Age points and board control. When only paper rivals share the most matches on a tile,
 // the rival higher in the food chain is dominant. A tie that includes the player still leaves the tile undominated.
+// v0.5.4 (speciesTie, recorded in the save): the rival with the most species on the tile first, then the food chain.
+// The food chain alone always favoured Mammals and never Insects (a Mammals rival won 36% of its games, Insects 6%).
 const _appCone = cone;
 cone = function(s, tile) {
   const owner = _appCone(s, tile);
@@ -629,7 +638,8 @@ cone = function(s, tile) {
   const best = Math.max(0, ...vals.map(v => v[1]));
   if (!best) return null;
   const top = vals.filter(v => v[1] === best).map(v => v[0]);
-  return top.length > 1 && top.every(id => s.paperRivals.includes(id)) ? top.sort((a,b) => rank(a) - rank(b))[0] : null;
+  const c = s.tiles[tile].cubes;
+  return top.length > 1 && top.every(id => s.paperRivals.includes(id)) ? top.sort((a,b) => (s.paper.speciesTie ? c[b] - c[a] : 0) || rank(a) - rank(b))[0] : null;
 };
 const _appMatch = match;
 match = function(s, tile, actor, additions = s.animals[actor].added) {

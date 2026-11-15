@@ -73,7 +73,9 @@ function paperPlacement(s, actor, cardIndex, openOverride = null) {
   // Option: deny the leader's Domination. If the leader (highest-VP opponent) dominates enough unscored tiles while a card is available,
   // take a Domination space (at most 2) so the leader can't use it.
   const leader = pLeader(s,actor);
-  const leaderDom = terrainIds(s).filter(t => !s.scored.includes(t) && cone(s,t) === leader).length;
+  // Candidate (testing, off by default): blockHuman aims Block the leader at the human player instead of the VP leader.
+  const blockTarget = PAPER.blockHuman && s.human && s.human !== actor ? s.human : leader;
+  const leaderDom = terrainIds(s).filter(t => !s.scored.includes(t) && cone(s,t) === blockTarget).length;
   const blockMin = PAPER.domBlock2 ? 2 : 1;
   const blockMax = PAPER.domBlock3 ? 3 : 2; // candidate (testing, off by default): block with up to three Domination pawns
   const block = (PAPER.domBlock || PAPER.domBlock2) && !domFirst && availableCards(s).length && doms < blockMax && leaderDom >= blockMin ? pick(['domination'], true) : null;

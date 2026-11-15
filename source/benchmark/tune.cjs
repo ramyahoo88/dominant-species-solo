@@ -34,6 +34,8 @@ const MODE_NAME = {app: 'App', '-1': 'Easy', 0: 'Standard', 1: 'Hard', 2: 'Exper
 // '--modes=app,-1,0' or 'app,m1,0' (m1 = -1, for job files).
 const parseModes = list => list.split(',').filter(Boolean).map(m => m === 'app' ? 'app' : +m.replace(/^m/, '-'));
 const BOTS = [2, 3, 4, 5];
+// --bots 2,3 limits which rival counts run (cell seeds stay as with all four); the paper rules are for 2-3 rivals.
+let RUN_BOTS = BOTS;
 const EVEN = {2: 1 / 3, 3: 1 / 4, 4: 1 / 5, 5: 1 / 6};
 
 // Tuned numbers and how far a typical step moves each one.
@@ -160,7 +162,7 @@ function scenarios(seed, count, animals, cell = null, modes = MODES) {
   const r = rng(seed);
   const pick = list => list[Math.floor(r() * list.length)];
   return Array.from({length: count}, (_, i) => {
-    const bots = cell ? cell.bots : pick(BOTS);
+    const bots = cell ? cell.bots : pick(RUN_BOTS);
     const mode = cell ? cell.mode : pick(modes);
     const order = [...animals];
     for (let k = order.length - 1; k > 0; k--) { const m = Math.floor(r() * (k + 1)); [order[k], order[m]] = [order[m], order[k]]; }
@@ -284,6 +286,15 @@ async function evaluate(args, pool, animals) {
     for (const k of ABLATIONS[group] ? ABLATIONS[group]() : groupKeys(pool.defaults, group)) setKey(w, k, getKey(pool.defaults, k));
     columns.push({label: 'no_' + group, policy: 'tuned', weights: w});
   }
+  // Column labels key the table rows and the pooled results, so they must be unique and must not reuse a row field
+  // (GPT v0.4.1 re-audit: a --compare named 'dominance' merged two samples; one named 'extraPawns' overwrote the pawns).
+  const labels = columns.map(c => c.label);
+  const ROW_FIELDS = ['rivals', 'rivalsAre', 'extraPawns', 'even', 'errors', 'stalled'];
+  for (const [i, label] of labels.entries()) {
+    assert(/^[A-Za-z][A-Za-z0-9_.-]*$/.test(label), 'Column label ' + JSON.stringify(label) + ' must start with a letter and use only letters, digits and _ . -');
+    assert(!ROW_FIELDS.includes(label), 'Column label ' + JSON.stringify(label) + ' is a table field (' + ROW_FIELDS.join(', ') + '); choose another.');
+    assert(labels.indexOf(label) === i, 'Column label ' + JSON.stringify(label) + ' is used twice; give each column its own label (--compare label=file).');
+  }
   const table = [];
   const games = Object.fromEntries(columns.map(c => [c.label, {}]));
   // Each cell's seeds stay the same whichever cells run. Cells of the earlier five tables (App, 0..3) keep their
@@ -292,7 +303,7 @@ async function evaluate(args, pool, animals) {
     const b = BOTS.indexOf(bots), m = ALL_MODES.indexOf(mode);
     return +args.seed + (m < 5 ? b * 5 + m : BOTS.length * 5 + b * (ALL_MODES.length - 5) + (m - 5));
   };
-  for (const bots of BOTS) for (const mode of modes) {
+  for (const bots of RUN_BOTS) for (const mode of modes) {
     assert(ALL_MODES.includes(mode), 'Unknown rival table ' + mode + '; use app or -1..3.');
     const base = scenarios(cellSeed(bots, mode), +args['per-cell'], animals, {bots, mode});
     const jobs = columns.map(c => ({weights: c.weights, scenarios: base.map(s => ({...s, policy: c.policy}))}));
@@ -339,12 +350,13 @@ async function nnData(args, pool, animals) {
   const file = args.weights ? read(args.weights) : {};
   const weights = complete(pool.defaults, file.best ?? file);
   const opts = {k: +args.k, m: +args.m, rate: +args.rate};
-  const batch = pool.size * 2, limit = Date.now() + 60000 * +args.minutes;
+  // One game per task, so a free worker always takes the next game (games differ a lot in playout count).
+  const batch = pool.size * 4, limit = Date.now() + 60000 * +args.minutes;
   let start = +args.seed, games = 0, wins = 0, samples = 0, errors = [], stalled = 0;
   const t0 = Date.now();
   while (Date.now() < limit && games < +args['max-games']) {
     const scs = scenarios(start++, batch, animals, null, parseModes(args['train-modes'] || MODES.join(','))).map(sc => ({...sc, policy: 'nn'}));
-    const [res] = await pool.run([{weights, scenarios: scs, nn: opts}]);
+    const res = (await pool.run(scs.map(sc => ({weights, scenarios: [sc], nn: opts})))).map(r => r[0]);
     for (let i = 0; i < res.length; i++) {
       const g = res[i];
       games++;
@@ -387,9 +399,10 @@ async function main(argv) {
     sigma: {type: 'string', default: '.5'}, lr: {type: 'string', default: '.6'},
     focus: {type: 'string', default: 'dominance'}, weights: {type: 'string'}, out: {type: 'string'},
     modes: {type: 'string'}, policies: {type: 'string'}, 'paper-options': {type: 'string', default: ''},
-    features: {type: 'string'}, resume: {type: 'string'}, compare: {type: 'string'}, ablate: {type: 'string'},
+    features: {type: 'string'}, resume: {type: 'string'}, compare: {type: 'string'}, ablate: {type: 'string'}, bots: {type: 'string'},
   }}).values;
   assert(['majority', 'dominance', 'reach'].includes(args.focus), 'Focus is majority, dominance or reach.');
+  if (args.bots) { RUN_BOTS = args.bots.split(',').map(Number); assert(RUN_BOTS.length && RUN_BOTS.every(b => BOTS.includes(b)), 'Rival counts are 2, 3, 4 or 5.'); }
   const pool = await makePool(Math.max(1, Math.min(64, +args.workers)), args['paper-options'].split(',').filter(Boolean), args.net || null);
   const animals = [...load(PLAYER_REFERENCE, ['player']).get('FOOD')];
   try {

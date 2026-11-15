@@ -1,0 +1,9 @@
+{
+ "focus": "dominance",
+ "initFirst": 3.61,
+ "initOther": 9.888,
+ "late": {
+  "initiative": 1.948
+ },
+ "note": "Simple human: the fixed 'dominance' player (all default weights) plus only v3's Initiative weights (initFirst, initOther, late.initiative). Assignment 5 in COORDINATION.md."
+}

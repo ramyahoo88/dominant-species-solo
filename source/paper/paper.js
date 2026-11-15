@@ -75,9 +75,23 @@ function paperPlacement(s, actor, cardIndex, openOverride = null) {
   const leader = pLeader(s,actor);
   const leaderDom = terrainIds(s).filter(t => !s.scored.includes(t) && cone(s,t) === leader).length;
   const blockMin = PAPER.domBlock2 ? 2 : 1;
-  const block = (PAPER.domBlock || PAPER.domBlock2) && !domFirst && availableCards(s).length && doms < 2 && leaderDom >= blockMin ? pick(['domination'], true) : null;
+  // Candidate (testing, off by default): blockHuman aims Block the leader at the player instead of the VP leader.
+  const you = s.human && s.human !== actor && !s.paperRivals?.includes(s.human) ? s.human : null;
+  const blockTarget = PAPER.blockHuman && you ? you : leader;
+  const targetDom = blockTarget === leader ? leaderDom : terrainIds(s).filter(t => !s.scored.includes(t) && cone(s,t) === blockTarget).length;
+  const block = (PAPER.domBlock || PAPER.domBlock2) && !domFirst && availableCards(s).length && doms < 2 && targetDom >= blockMin ? pick(['domination'], true) : null;
+  // Candidates (testing, off by default) for turn order. initClimb: a rival that is not first in Initiative takes the open
+  // Initiative space. holdYou: a rival ahead of you on the Initiative track takes it, so you can't climb past it.
+  const initOpen = open.includes('initiative-0') && !pawnCount(s,actor,'initiative');
+  const climb = PAPER.initClimb && initOpen && s.initiative[0] !== actor ? 'initiative-0' : null;
+  const hold = PAPER.holdYou && initOpen && you && s.initiative.indexOf(you) > s.initiative.indexOf(actor) ? 'initiative-0' : null;
+  // Candidate (testing, off by default): leadDom races you for Domination space 1 (it resolves first) when you dominate an
+  // unscored tile and a card is available.
+  const youDominate = you && terrainIds(s).some(t => !s.scored.includes(t) && cone(s,t) === you);
+  const leadDom = PAPER.leadDom && open.includes('domination-0') && availableCards(s).length && youDominate ? 'domination-0' : null;
   // The same order as before; also record which Planning step chose the space, for the player.
-  const steps = [['Domination first', () => domFirst], ['Barren Earth', () => barren], ['Block the leader', () => block],
+  const steps = [['Lead Domination', () => leadDom], ['Hold Initiative', () => hold], ['Climb Initiative', () => PAPER.initClimbLate ? null : climb],
+    ['Domination first', () => domFirst], ['Barren Earth', () => barren], ['Block the leader', () => block], ['Climb Initiative', () => PAPER.initClimbLate ? climb : null],
     ['Card action', () => pick(face ? face.rows : [], false, !PAPER.noWeak)], ['Fallback', () => pick(PAPER_FALLBACK, false)],
     ['Last resort', () => pick(PAPER_FALLBACK, true) || open[0]]];
   let slot = null, why = '';
@@ -540,6 +554,31 @@ newGame = function(human, rivals, short, seed, paper = null) {
   if (PAPER.flatMatch && !PAPER.noRivalTie) s.paper.rivalTie = true;
   s.paperRivals = [...rivals];
   return s;
+};
+
+// Candidate (testing, off by default): extraFirst. Rivals place their extra (difficulty) pawns before anyone else, at the
+// start of Planning, in Initiative order; then Planning continues as usual from the top of the Initiative order.
+const _appEnterSupply = enterSupply;
+enterSupply = function(s, values) {
+  _appEnterSupply(s, values);
+  if (PAPER.extraFirst && s.paper && s.paper.extra > 0 && s.phase === 'planning') s.paper.pre = s.paper.extra * s.paperRivals.length;
+};
+const _appCurrentPlanner = currentPlanner;
+currentPlanner = function(s) {
+  if (!(s.paper?.pre > 0) || s.phase !== 'planning' || ALL_SLOTS.every(key => s.pawns[key])) return _appCurrentPlanner(s);
+  const order = s.initiative.filter(id => s.paperRivals.includes(id));
+  const done = s.paper.extra * order.length - s.paper.pre;
+  const actor = order[done % order.length];
+  return s.animals[actor].remaining > 0 ? {actor, index: s.initiative.indexOf(actor)} : _appCurrentPlanner(s);
+};
+const _appPlace = place;
+place = function(s, key, bot = null) {
+  const pre = s.paper?.pre > 0 && s.phase === 'planning';
+  _appPlace(s, key, bot);
+  if (!pre) return;
+  if (--s.paper.pre > 0 && s.phase === 'planning') return;
+  delete s.paper.pre;
+  if (s.phase === 'planning') { s.planning = 0; if (!_appCurrentPlanner(s)) { s.phase = 'execution'; s.cursor = 0; } }
 };
 
 // ---------- Option: flat element matching for rivals ----------

@@ -114,3 +114,71 @@ against `rivalTie` (from v2) is running next.
 One game in 18,000 stalled: it hit the harness's turn-30 cap, on a table with 4 Easy rivals. That cap is the
 harness's known stall case, where no one can dominate any more, and is scored as it stands; it is not a new
 impossible state.
+
+## Release check for v0.4.0 (round 2b: v3, re-tuned against the rival tie-break)
+
+**v3** (`tuned_weights_v3.json`) is v2 re-tuned against `rivalTie` with every feature group on. It ran 39
+generations (train seeds 350001+, validation block 360000 with 400 tables of App and 0..+3) and keeps the best
+validated generation, 24. Validation win rate went from 34.3% (v2) to 48.0%; generations 25–39 stayed at 43–47%.
+
+**Held-out evaluation** under v0.4.0 on the PC, seed block 330000. Levels are Easy −1, Standard 0, Hard +1,
+Expert +2, plus App. 90 tables per cell: n = 360 per level per column, 1,800 overall. All columns play the same
+tables.
+
+**Tie-break on (the v0.4.0 default).** Win %:
+
+| Rivals | v3 | v2 | v1 | dominance | majority | expansion |
+|---|---|---|---|---|---|---|
+| App | 43.3 | 42.5 | 43.6 | 15.6 | 9.7 | 11.7 |
+| Easy (−1) | 80.3 | 69.2 | 67.5 | 47.5 | 32.2 | 36.9 |
+| Standard (0) | 64.2 | 52.2 | 48.1 | 25.6 | 11.9 | 15.6 |
+| Hard (+1) | 47.8 | 41.9 | 39.2 | 17.8 | 8.3 | 10.6 |
+| Expert (+2) | 39.7 | 28.9 | 28.6 | 13.9 | 6.4 | 8.1 |
+| All | **55.1** | 46.9 | 45.4 | 24.1 | 13.7 | 16.6 |
+
+v3 minus v2 (paired): **+8.1** [+5.3, +11.0] overall. By level: Easy +11.1, Standard +11.9, Expert +10.8,
+Hard +5.8 [−0.7, +12.4], App +0.8. The re-tune gained against paper rivals only.
+
+Gap over the best fixed strategy (dominance at every level), in points:
+
+| Player | App | Easy | Standard | Hard | Expert | Hard minus App |
+|---|---|---|---|---|---|---|
+| v3 | +27.7 | +32.8 | +38.6 | +30.0 | +25.8 | **+2.3** |
+| v2 | +26.9 | +21.7 | +26.6 | +24.1 | +15.0 | −2.8 |
+| v1 | +28.0 | +20.0 | +22.5 | +21.4 | +14.7 | −6.6 |
+
+The director's test (21:15) flags a Hard gap more than about 5 points above the same player's App gap. v3 comes
+to +2.3 and v2 to −2.8, so **no new exploit**. The Standard gap is above the App gap: +10.9 for v3, against
+−0.3 for v2.
+
+What v3 leans on: ablations of v3 on the same tables, change in win % when the group is reset.
+
+| Group off | All | App | Standard | Hard |
+|---|---|---|---|---|
+| initiative (initFirst, initOther, late.initiative) | **−10.3** [−12.9, −7.6] | −8.6 | −14.4 | −9.2 |
+| domination (cardWeight, nonOwner, rivalWeight, setup, domCommit, late.domination) | **−6.6** [−9.3, −3.9] | −8.6 | −3.9 | −10.3 |
+| cubes | −2.7 [−5.4, +0.1] | −6.1 | −1.4 | −1.1 |
+| phase | −1.3 [−3.5, +0.8] | 0.0 | −1.7 | −4.7 |
+
+The same two drivers as v1, Initiative climbing and Domination weights, still carry the edge.
+
+**Tie-break off** (`noRivalTie`, the old rules), same tables:
+
+| Rivals | v3 | v2 | v1 | dominance |
+|---|---|---|---|---|
+| App | 43.3 | 42.5 | 43.6 | 15.6 |
+| Easy (−1) | 92.5 | 92.5 | 90.8 | 73.6 |
+| Standard (0) | 88.1 | 85.6 | 86.4 | 45.0 |
+| Hard (+1) | 80.0 | 78.6 | 71.4 | 28.9 |
+| Expert (+2) | 68.3 | 62.2 | 57.2 | 20.8 |
+| All | 74.4 | 72.3 | 69.9 | 36.8 |
+
+Without the tie-break, v3's Hard gap is +51.1 against +27.7 at App (+23.4). With it, the Hard gap is +30.0
+(+2.3 over App). So the tie-break brings the tuned player's Hard edge into line with the app's rivals.
+
+**Consistency check:** with `noRivalTie`, v2 reproduces its v0.3.9 numbers on the same tables exactly. Tables with
+0, +1 and +2 pawns give 85.6, 78.6 and 62.2, and App 42.5, the same as in round 2. So the cell seeds carried over,
+and `noRivalTie` is the old rule set.
+
+**Stalls:** 3 games hit the turn-30 cap, all with the tie-break off (4 rivals at Standard, 5 at Easy).
+None did with it on, out of 18,000 games.

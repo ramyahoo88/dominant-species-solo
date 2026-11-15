@@ -550,6 +550,9 @@ botAction = function(s, step) {
 const _appNewGame = newGame;
 newGame = function(human, rivals, short, seed, paper = null) {
   const s = _appNewGame(human, rivals, short, seed);
+  // Testing switches (off by default): full = the retired detailed rules; realMatch = rivals use normal element matching.
+  if (PAPER.full) for (const k of PAPER_DEFAULTS) PAPER[k] = false;
+  if (PAPER.realMatch) PAPER.flatMatch = false;
   if (!PAPER.place && !paper) return s;
   const extra = paper ? Number(paper.extra || 0) : Number(PAPER.extraAP || 0);
   for (const id of rivals) s.animals[id].ap += extra;

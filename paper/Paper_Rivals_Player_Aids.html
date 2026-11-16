@@ -127,7 +127,7 @@ p{margin:3px 0}
 </div><div>
 <h2>What it chooses</h2>
 <table class="small">
-<tr><td>Aquatic</td><td>If the bag has an element and a sea or wetland tile has a free corner, only those tiles are candidates. Tile where 4 species make it first (element on the tile's first free corner in board order); else where they gain a rank. It must match the tile. Element: its printed one if in the bag; otherwise as Habitat.</td></tr>
+<tr><td>Aquatic</td><td>If the bag has an element and a sea or wetland tile has a free corner, only those tiles are candidates. Adds 4 species (fewer if its gene pool is short), counted with its element on the tile's first free corner in board order: the tile where they make it first → where they gain a rank → one it matches → any (tie: value → board order). Element: its printed one if in the bag; otherwise as Habitat.</td></tr>
 <tr><td>Biomass</td><td>On each crowded tile: a species of the first opponent in VP order present, else its own.</td></tr>
 <tr><td>Blight</td><td>The tile and kept disk leaving the most opposing species on surrounding tiles without a match (its own count −2 each). Tie: higher value → the tile's board order → the kept disk's.</td></tr>
 <tr><td>Catastrophe</td><td>Tile removing the most opposing species (its own count −2). Keeps its own species there, else the lowest-VP opponent's (tie: lower in the food chain). On each adjacent tile removes the first opponent in VP order present; its own only if alone.</td></tr>

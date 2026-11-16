@@ -22,3 +22,17 @@ Release: printables update on top of v0.5.4 (the app is unchanged: build SHA-256
 - **Rulebook design:** the rulebook uses the aids' design, and its appendix holds the six cut-out card pages (the same as `paper/Paper_Rivals_Cards.pdf`) instead of tables. The Markdown copy keeps the tables. The PDF is 15 pages (9 of rules, 6 of cards). Your `verify-printables.py` compares appendix tables, so it needs to read the card pages instead.
 - **Competition score wording:** "+6 if it is that opponent's last species there and that opponent is dominant there (so it loses its dominance)", as the app scores it. Before, "that also takes away the opponent's dominance" could be read as applying to any removal.
 - **Testing text:** your v0.5.4 Hard estimate (−0.43, 95% −0.73 to −0.10) joins the earlier four.
+
+## Printables audit (51bd501): P3 Aquatic and T1 builder check
+
+The printables audit passed e7a9726 with one wording clarification (P3) and one note on the builder's check (T1).
+
+**P3: Aquatic compares the species it can actually add.** The rule said to compare tiles using 4 species; the app adds `min(4, gene pool)` and ranks with that number. Your save (`source/fixtures/gpt-v054p-aquatic-one-species.json`, log stripped) has one Bird left: one species makes Birds first only on D2 Wetland, while four would make them first on E2 Sea too, which the old wording would pick. Fixed in both documents, as you suggested: "It adds 4 species, or all its gene pool holds if that is fewer; count them with its element on the tile's free corner first in board order. Choose the tile where they make it first; else where they gain a rank; else one it matches; a tile it does not match only if it matches none (ties: higher first-place value, then board order)." Aid sheet 3 says the same. No change to play.
+
+**Also in the Aquatic row:** "It must match the tile" was a preference, not a filter. With an empty bag and no disk on any sea or wetland tile, the rival matches none of them, and the app still adds its species to the highest-value tile. The new wording says so; a constructed test covers it.
+
+**Tests:** "Aquatic adds only the species left in the gene pool…" covers a constructed position (pool 4 picks C4 Sea, pool 1 picks D2 Wetland), the no-match case, and your save (D2, one Bird, Seed placed). 50 tests pass. The app is unchanged.
+
+**T1: the builder's aid check.** You were right that `check_aids` matched each row label anywhere in the aids. It now checks the Planning targets on sheet 1, Execution on sheet 2 and the Dominance Card choices on sheet 3. Your control (removing the Execution Migration row) now stops the build: "aid sheet 2 row: Migration".
+
+**Your verifier.** `source/paper/verify-printables.py` needs PyMuPDF, which this environment does not have, so I could not run it here. The only printed text that changed since e7a9726 is the Aquatic row in the rulebook and on aid sheet 3.

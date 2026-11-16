@@ -949,3 +949,43 @@ test('Printables update: Mass Exodus prefers a tile without the rival, else the 
     assert.equal(s.tiles.D4.cubes.insects, 3);
   })()`);
 });
+
+test('Aquatic adds only the species left in the gene pool, and takes a tile it does not match only if it matches none (GPT, printables check)', () => {
+  const g = load('worktree', ['game']);
+  g.get('globalThis').assert = assert;
+  g.run(`(() => {
+    Object.assign(PAPER, {place:true, all:true, extraAP:-1});
+    const s = newGame('birds',['mammals','insects'],true,7,{extra:-1});
+    // C4 Sea: Birds 3, Mammals 0. D2 Wetland: Insects 2, Mammals 1.
+    s.tiles.C4.terrain = 'sea'; s.tiles.C4.cubes.mammals = 0; s.tiles.C4.cubes.birds = 3; s.tiles.D2.cubes.mammals = 1; s.tiles.D2.cubes.insects = 2;
+    const aquatic = () => paperEffect(s,{kind:'effect',name:'Aquatic',actor:'mammals'});
+    // Four species make Mammals first on either tile: Sea is worth more.
+    s.animals.mammals.pool = 4;
+    assert.deepEqual([aquatic().tile, aquatic().n], ['C4', 4]);
+    // One species left: it makes Mammals first only on D2 (2-2, food chain); on C4 it only enters the ranking.
+    s.animals.mammals.pool = 1;
+    assert.deepEqual([aquatic().tile, aquatic().n], ['D2', 1]);
+    // No element to place and no disks on either tile: it matches neither, and still takes the higher value (C4 Sea).
+    s.animals.mammals.pool = 4;
+    for (const t of ['C4','D2']) for (const k of VERTICES_OF[t]) delete s.corners[k];
+    const bag = globalThis.bagCount; globalThis.bagCount = () => 0;
+    try {
+      assert.deepEqual(elementOptions(s), []);
+      assert.equal(match(s,'C4','mammals') + match(s,'D2','mammals'), 0);
+      assert.equal(aquatic().tile, 'C4');
+    } finally { globalThis.bagCount = bag; }
+  })()`);
+  // GPT's printables-audit save: Birds have one species left. One makes them first only on D2 Wetland; four would on E2 Sea too.
+  Object.assign(g.get('globalThis'), {aq:FIX('gpt-v054p-aquatic-one-species.json')});
+  g.run(`(() => {
+    const s = copy(aq);
+    validateState(s);
+    const step = nextStep(s);
+    assert.equal(step.name, 'Aquatic');
+    assert.equal(s.animals.birds.pool, 1);
+    const choice = botAction(s,step);
+    assert.deepEqual([choice.tile, choice.n, choice.type], ['D2', 1, 'seed']);
+    runStep(s,step,choice);
+    validateState(s);
+  })()`);
+});

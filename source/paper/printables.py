@@ -269,10 +269,11 @@ def check_aids(rules, aid):
                     r"Cards with no choice for the taker \(([^)]+)\)"]:
         items = re.search(pattern, rules).group(1)
         assert items in text or " · ".join(items.split(", ")) in text, "aid list: " + items
-    for head, end in [("| Action | Has a target when |", "## Execution"), ("| Action | What the rival does |", "**Migration, one"),
-                      ("| Card | The rival chooses |", "## Other decisions")]:
+    sheets = re.split(r'<div class="page">', aid)[1:]  # each table is checked on its own sheet (GPT printables audit, T1)
+    for head, end, sheet in [("| Action | Has a target when |", "## Execution", 0), ("| Action | What the rival does |", "**Migration, one", 1),
+                             ("| Card | The rival chooses |", "## Other decisions", 2)]:
         for row in re.findall(r"^\| ([A-Z][A-Za-z ]+?) \|", rules[rules.index(head):rules.index(end)], re.M)[1:]:
-            assert f"<td>{row}</td>" in aid, "aid row: " + row
+            assert f"<td>{row}</td>" in sheets[sheet], f"aid sheet {sheet + 1} row: " + row
     for row in ["Arachnids' free", "Insects' free", "Arriving", "Losing an element", "Mammals' save", "Hibernation-protected", "Immigrants"]:
         assert row in text, "aid decision: " + row
 

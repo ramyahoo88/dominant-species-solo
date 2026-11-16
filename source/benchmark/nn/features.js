@@ -3,14 +3,14 @@
 // Seats: 0 is the player, 1..5 the opponents by VP (then food-chain rank), padded with zeros.
 // Everything is scaled to roughly 0..1. Layout version NN_FEATURES_VERSION; NN_FEATURE_SIZE numbers.
 
-const NN_FEATURES_VERSION = 1;
+const NN_FEATURES_VERSION = 2;   // 2 (15 Nov, v0.5.x levels): the table block encodes -2..+3 and scaled Easy
 const NN_SEATS = 6;
 const NN_TERRAIN = Object.keys(TERRAIN);
 const NN_SLOTS = ALL_SLOTS;
 const NN_SEAT_SIZE = 1 + FOOD.length + 5 + ELEMENT_IDS.length + 1;
 const NN_TILE_SIZE = 1 + NN_TERRAIN.length + NN_SEATS + (NN_SEATS + 1) + 1 + NN_SEATS;
 const NN_FEATURE_SIZE = NN_SEATS * NN_SEAT_SIZE + GRID.length * NN_TILE_SIZE + 2 * NN_SLOTS.length +
-  elementRows.length * ELEMENT_IDS.length + DOMINANCE.length + 3 * (NN_TERRAIN.length + 1) + 4 + 4 + 5 + 6;
+  elementRows.length * ELEMENT_IDS.length + DOMINANCE.length + 3 * (NN_TERRAIN.length + 1) + 4 + 4 + 8 + 6;
 
 function nnSeats(s, actor) {
   const others = s.ids.filter(id => id !== actor).sort((a, b) => s.animals[b].vp - s.animals[a].vp || rank(a) - rank(b));
@@ -61,9 +61,12 @@ function nnFeatures(s, actor) {
   }
   // Game clock.
   x[i++] = tunedPhase(s); x[i++] = s.turn / 12; x[i++] = s.short ? 1 : 0; x[i++] = s.ending ? 1 : 0;
-  // Table: number of rivals (2-5), App or paper level (Easy..Expert).
+  // Table: number of rivals (2-5); App, or the paper rivals' extra pawns -2..+3 (v0.5.x: Easy -2 .. Expert +1);
+  // whether five-rival Easy is scaled (v0.5.3+: rivals -1 each, the player +1). Version 1 clamped the level to 0..3,
+  // so Easy, Standard and Hard looked alike.
   x[i + Math.max(0, Math.min(3, s.ids.length - 3))] = 1; i += 4;
-  x[i + (s.paper ? 1 + Math.max(0, Math.min(3, s.paper.extra || 0)) : 0)] = 1; i += 5;
+  x[i + (s.paper ? 1 + Math.max(0, Math.min(5, (s.paper.extra || 0) + 2)) : 0)] = 1; i += 7;
+  x[i++] = s.paper?.scaledEasy ? 1 : 0;
   // Planning context: pawns the player still holds, opponents' pawns left, display fill.
   x[i++] = (s.animals[actor].remaining || 0) / 6;
   x[i++] = sum(seats.slice(1).map(id => s.animals[id].remaining || 0)) / 20;

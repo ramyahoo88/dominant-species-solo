@@ -17,8 +17,8 @@ verify('GMT p. 4: six APs and 50 cubes include one VP marker and four starting s
   }
 `);
 
-verify('v0.1 through v0.5.3 save migration preserves inventory, pending choices, and random state', `
-  for (const version of ['0.1.0','0.2.0','0.3.0','0.3.1','0.3.2','0.3.3','0.3.4','0.3.5','0.3.6','0.3.7','0.3.8','0.3.9','0.4.0','0.4.1','0.5.0','0.5.1','0.5.2','0.5.3']) {
+verify('v0.1 through v0.5.4 save migration preserves inventory, pending choices, and random state', `
+  for (const version of ['0.1.0','0.2.0','0.3.0','0.3.1','0.3.2','0.3.3','0.3.4','0.3.5','0.3.6','0.3.7','0.3.8','0.3.9','0.4.0','0.4.1','0.5.0','0.5.1','0.5.2','0.5.3','0.5.4']) {
     const s = newGame('insects',['mammals','birds'],true,51);
     s.version = version;
     s.phase = 'execution';
@@ -191,7 +191,7 @@ verify('v0.3.6: paper-rules games add difficulty pawns, use the printed rules, a
   s.phase = 'planning'; s.planning = 0; s.cursor = 0;
   for (const id of s.ids) s.animals[id].remaining = s.animals[id].ap;
   const planner = currentPlanner(s);
-  if (planner && planner.actor !== s.human) assert.match(botPlacement(s).reason, /^Paper rule, /);
+  if (planner && planner.actor !== s.human) assert.match(botPlacement(s).reason, /^Red Queen, /);
 `);
 
 verify('GPT audit A1: Evolution replaces cubes of at most two opposing animals, even with five opponents', `
@@ -987,5 +987,80 @@ test('Aquatic adds only the species left in the gene pool, and takes a tile it d
     assert.deepEqual([choice.tile, choice.n, choice.type], ['D2', 1, 'seed']);
     runStep(s,step,choice);
     validateState(s);
+  })()`);
+});
+
+test('v0.5.5 printed rules: Catastrophe only targets a tile with species; Hibernation returns 5, or all if fewer (GPT comprehensive audit)', () => {
+  const g = load('worktree', ['game']);
+  g.get('globalThis').assert = assert;
+  g.run(`(() => {
+    Object.assign(PAPER, {place:true, all:true, extraAP:-1});
+    const s = newGame('birds',['mammals','insects'],true,7,{extra:-1});
+    // D3 is empty but touches six tiles that all hold opponents: without the restriction it would remove the most.
+    for (const n of NEIGHBORS.D3.filter(n => s.tiles[n])) { s.tiles[n].cubes.birds = Math.max(1, s.tiles[n].cubes.birds); s.tiles[n].cubes.insects = Math.max(1, s.tiles[n].cubes.insects); }
+    assert.equal(s.ids.reduce((a,id) => a + s.tiles.D3.cubes[id], 0), 0);
+    assert.equal(NEIGHBORS.D3.filter(n => s.tiles[n]).length, 6);
+    const cat = paperEffect(s,{kind:'effect',name:'Catastrophe',actor:'mammals'});
+    assert.ok(s.ids.some(id => s.tiles[cat.tile].cubes[id] > 0), 'Catastrophe picks a tile with species');
+    assert.equal(cat.tile, 'C4');
+    // Hibernation: 5 when it has more, all of them when it has fewer.
+    for (const [dead, n] of [[7,5],[5,5],[2,2]]) {
+      s.animals.mammals.dead = dead;
+      assert.equal(paperEffect(s,{kind:'effect',name:'Hibernation',actor:'mammals'}).n, n);
+    }
+  })()`);
+});
+
+test('v0.5.5 Ice Age forecast uses the real final reset: GPT\'s losing Ice Age, protected cubes, shared tundra, human Mammals (GPT comprehensive audit A1)', () => {
+  const g = load('worktree', ['game']);
+  Object.assign(g.get('globalThis'), {assert, ia:FIX('gpt-v054c-ice-age-wrong-mammal-save.json')});
+  g.run(`(() => {
+    const est = s => Object.fromEntries(s.ids.map(id => [id, endEstimate(s,id)]));
+    // Take Ice Age and play the turn out: the true final scores.
+    const finish = s => { const t = copy(s); let step = nextStep(t); runStep(t, step, {...botAction(t,step), card:'Ice Age'});
+      for (let i = 0; t.phase !== 'finished' && i < 200; i++) { step = nextStep(t); runStep(t, step, botAction(t, step)); }
+      assert.equal(t.phase, 'finished'); return Object.fromEntries(t.ids.map(id => [id, t.animals[id].vp])); };
+    const s = copy(ia);
+    validateState(s);
+    assert.equal(nextStep(s).kind, 'claim');
+    // Mammals' save is D2 Wetland (as the Extinction step chooses), so Mammals win 18-16 and Birds no longer take Ice Age.
+    assert.deepEqual(est(s), {mammals:18, birds:16, insects:0});
+    assert.deepEqual(finish(s), {mammals:18, birds:16, insects:0});
+    assert.equal(botAction(copy(s), nextStep(s)).card, 'Fertile');
+    // v0.5.4 forecast (testing switch): it saved D3 Tundra, forecast 12-16 and took the losing Ice Age.
+    PAPER.oldForecast = true;
+    assert.deepEqual(est(s), {mammals:12, birds:16, insects:0});
+    assert.equal(botAction(copy(s), nextStep(s)).card, 'Ice Age');
+    delete PAPER.oldForecast;
+    // A Hibernation-protected cube on D3 and a Birds cube sharing D3: the forecast still equals the played-out result.
+    const warded = copy(s); warded.animals.mammals.ward = {D3:1};
+    assert.deepEqual(est(warded), finish(warded));
+    const shared = copy(s); shared.tiles.D3.cubes.birds++; shared.animals.birds.pool--;
+    assert.deepEqual(est(shared), finish(shared));
+    // A human Mammals player is assumed to make its best legal save.
+    const human = copy(s); human.human = 'mammals';
+    const best = Math.max(...extinctionOptions(human,'mammals').map(tile => {
+      const t = copy(human); earned(t,'mammals',icePoints(t).mammals); for (const id of t.ids) if (id !== 'mammals') earned(t,id,icePoints(human)[id]);
+      t.ending = true; resolveExtinction(t, tile); return t.animals.mammals.vp; }));
+    assert.equal(endEstimate(human,'mammals'), best);
+  })()`);
+});
+
+test('v0.5.5 printed Catastrophe and Hibernation on GPT\'s saves: an empty centre is never chosen; Hibernation returns 5 (GPT comprehensive audit P1, P2)', () => {
+  const g = load('worktree', ['game']);
+  Object.assign(g.get('globalThis'), {assert, cat:FIX('gpt-v054c-catastrophe-empty-center.json'), hib:FIX('gpt-v054c-hibernation-quantity.json')});
+  g.run(`(() => {
+    const c = copy(cat); validateState(c);
+    const step = nextStep(c); assert.equal(step.name, 'Catastrophe');
+    const choice = botAction(c, step);
+    assert.equal(choice.tile, 'E3');
+    assert.equal(c.ids.reduce((n,id) => n + c.tiles.D3.cubes[id], 0), 0, 'fixture: D3 is empty');
+    runStep(c, step, choice); validateState(c);
+    const h = copy(hib); validateState(h);
+    const hs = nextStep(h); assert.equal(hs.name, 'Hibernation');
+    const hc = botAction(h, hs);
+    assert.deepEqual([hc.tile, hc.n], ['D3', 5]);
+    runStep(h, hs, hc); validateState(h);
+    assert.equal(h.animals.birds.ward.D3, 5);
   })()`);
 });

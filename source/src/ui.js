@@ -113,7 +113,7 @@ function readSupplyDraft(s, raw) {
 function validateState(s) {
   function assert(ok) { if (!ok) throw new Error('This is not a valid Dominant Species companion save.'); }
   recordPaperLevel(s); // before the version is replaced: the level scale depends on it
-  if (s && ['0.1.0', '0.2.0', '0.3.0', '0.3.1', '0.3.2', '0.3.3', '0.3.4', '0.3.5', '0.3.6', '0.3.7', '0.3.8', '0.3.9', '0.4.0', '0.4.1', '0.5.0', '0.5.1', '0.5.2', '0.5.3'].includes(s.version)) s.version = VERSION;
+  if (s && ['0.1.0', '0.2.0', '0.3.0', '0.3.1', '0.3.2', '0.3.3', '0.3.4', '0.3.5', '0.3.6', '0.3.7', '0.3.8', '0.3.9', '0.4.0', '0.4.1', '0.5.0', '0.5.1', '0.5.2', '0.5.3', '0.5.4'].includes(s.version)) s.version = VERSION;
   const keys = value => value && typeof value === 'object' ? Object.keys(value) : [];
   assert(s && s.version === VERSION && ['supply','planning','execution','finished'].includes(s.phase) &&
     num(s.turn) && s.turn > 0 && num(s.rng) && s.rng <= 0xffffffff && num(s.seed) && s.seed <= 0xffffffff);
@@ -238,8 +238,8 @@ function setupPage() {
     '<form data-form="start"><fieldset class="rival-count"><legend>Rivals</legend><div class="segment">' + [2,3,4,5].map(n => '<label><input name="count" type="radio" value="' + n + '"' +
       (setup.bots.length === n ? ' checked' : '') + '> ' + n + '</label>').join('') + '</div></fieldset><div class="seats">' + seats.map(seat).join('') + '</div><p class="seat-hint">Choosing an animal already at the table swaps the two seats.</p><div class="setup-bottom">' +
     '<fieldset><legend>Rival rules</legend><div class="segment">' +
-    '<label><input name="rules" type="radio" value="app"' + (!setup.paper ? ' checked' : '') + '> App rivals</label>' +
-    '<label><input name="rules" type="radio" value="paper"' + (setup.paper ? ' checked' : '') + '> Paper rules · as printed</label></div>' +
+    '<label><input name="rules" type="radio" value="app"' + (!setup.paper ? ' checked' : '') + '> Tooth &amp; Claw · app rivals</label>' +
+    '<label><input name="rules" type="radio" value="paper"' + (setup.paper ? ' checked' : '') + '> The Red Queen · printed rivals</label></div>' +
     (setup.paper ? '<div class="segment paper-level">' + PAPER_LEVELS.map(([n,name]) => '<label><input name="extra" type="radio" value="' + n + '"' + (setup.extra === n ? ' checked' : '') + '> ' + name + ' · ' + (n === -2 && setup.bots.length === 5 ? '−1 pawn, you +1' : (n < 0 ? '−' + -n : '+' + n) + ' pawn' + (Math.abs(n) === 1 ? '' : 's')) + '</label>').join('') + '</div>' : '') +
     '</fieldset>' +
     '<fieldset><legend>Dominance deck</legend><div class="segment">' +
@@ -340,7 +340,7 @@ function showSupply() {
     // GPT v0.5.3 re-audit (medium): scaled Easy (five rivals) is −1 for each rival and +1 for you, not −2.
     (game.paper?.extra ? (([rd, yd]) => ' Each rival ' + (rd > 0 ? 'takes ' + rd + ' extra' : 'returns ' + -rd) + ' action pawn' + (Math.abs(rd) === 1 ? '' : 's') +
       (yd ? ' and you take ' + yd + ' extra' : '') + ': each rival has ' + (SETUP_BY_PLAYERS[game.ids.length][0] + rd) + (yd ? ' and you have ' + (SETUP_BY_PLAYERS[game.ids.length][0] + yd) : '') +
-      ' (paper rules, ' + paperLevel(game.paper.extra, game.paper) + ').')(game.paper.scaledEasy ? [-1, 1] : [game.paper.extra, 0]) : '') +
+      ' (The Red Queen, ' + paperLevel(game.paper.extra, game.paper) + ').')(game.paper.scaledEasy ? [-1, 1] : [game.paper.extra, 0]) : '') +
     ' Match the Earth map with Wetland at the top.' :
     'Slide the physical action display as usual. Refill the three draw rows, turn up any face-down tile stacks, and fill the open card spaces.';
   return '<div class="block-head"><h2 id="turn-focus" tabindex="-1">Enter board draws</h2><span class="phase-badge">' + (game.turn === 1 ? 'Setup' : 'Reseed') +
@@ -378,7 +378,7 @@ function drawPanel() {
     return '<div class="block-head"><h2 id="turn-focus" tabindex="-1">Place the pawn</h2><span class="phase-badge">Planning</span></div>' +
       '<p class="actorline">' + badge(reveal.actor,true) + nameOf(reveal.actor) + ' · ' + (left - 1) + ' left in deck</p>' +
       '<div class="current-card"><p class="eyebrow">' + (reveal.face ? 'Primary face' : 'Reverse face') + '</p><p class="display">' + card.title +
-      '</p><p class="muted">' + (game.paper ? 'Paper rules always use this face.' : CHECKS[card.check] + ' · ' + (reveal.face ? 'Yes' : 'No')) + '</p>' + cardRows(face) + '</div>' +
+      '</p><p class="muted">' + (game.paper ? 'The Red Queen always uses this face.' : CHECKS[card.check] + ' · ' + (reveal.face ? 'Yes' : 'No')) + '</p>' + cardRows(face) + '</div>' +
       '<div class="result-box"><strong>' + slotLabel(reveal.slot) + '</strong><p>' + reveal.reason + '</p></div>' +
       button('Pawn placed · Continue','next','primary');
   }
@@ -449,7 +449,7 @@ function render(focus = false, noScroll = false) {
       ' · ' + a.pool + ' in pool</small></div><div class="score-vp"><b>' + a.vp + '</b>VP</div></div>';
   }).join('');
   const turn = game.phase === 'supply' ? showSupply() : reveal || game.phase === 'planning' ? drawPanel() : game.phase === 'execution' ? showExecution() : showFinished();
-  main.innerHTML = '<div class="game-top"><div><p class="eyebrow">' + (game.short ? '22-card game' : '26-card game') + (game.paper ? ' · Paper rules, ' + paperLevel(game.paper.extra, game.paper) : '') +
+  main.innerHTML = '<div class="game-top"><div><p class="eyebrow">' + (game.short ? '22-card game' : '26-card game') + (game.paper ? ' · The Red Queen, ' + paperLevel(game.paper.extra, game.paper) : ' · Tooth &amp; Claw') +
     '</p><h1>' + roundTitle + '</h1></div><div class="toolrow">' + button('Undo','undo','sm subtle',enable(!!(undo.length || reveal || preview))) + '</div></div>' +
     '<div class="score-strip" aria-label="Scores in Initiative order">' + score + '</div><nav class="game-jump" aria-label="Jump to board section">' +
     '<a href="#turn-focus">Current step</a><a href="#action-display">Action display</a><a href="#earth-panel">Earth map</a></nav>' +

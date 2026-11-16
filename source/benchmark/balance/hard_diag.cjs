@@ -58,7 +58,7 @@ for (let i = 0; i < +gamesArg; i++) {
   }, true);
   for (const e of g.events) {
     if (e.actor !== sc.human && e.slot && e.reason) {
-      const why = e.reason.replace(/^Paper rule, /, '').replace(/: .*/, '').replace(/ \d+$/, '');
+      const why = e.reason.replace(/^(?:Red Queen|Paper rule), /, '').replace(/: .*/, '').replace(/ \d+$/, '');
       agg.rivalReasons[why] = (agg.rivalReasons[why] || 0) + 1;
       const row = e.slot.split('-')[0];
       agg.rivalRows[row] = (agg.rivalRows[row] || 0) + 1;

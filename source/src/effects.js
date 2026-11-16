@@ -8,7 +8,33 @@ function icePoints(s) {
   for (const tile of terrainIds(s)) { const owner = cone(s,tile); if (owner) totals[owner]++; }
   return Object.fromEntries(s.ids.map(id => [id,bonus(totals[id])]));
 }
+// Final-reset projection for the Ice Age decision (v0.5.5, GPT's v0.5.4 comprehensive audit A1). It runs the real
+// resolution on a copy: Ice Age points, then Extinction with the Mammals save the Extinction step itself would make (the
+// app's or the printed rivals' chooser; a human Mammals player is assumed to take its best legal save), Survival and
+// final tile scoring. Actions still to come this turn are outside the snapshot. Before v0.5.5 the estimate saved the
+// first endangered Mammals tile in the order Mammals reached them; PAPER.oldForecast (testing) restores that.
+function finalProjection(s) {
+  const ice = icePoints(s);
+  const run = saved => {
+    const t = copy({...s, log: []});
+    for (const id of t.ids) earned(t, id, ice[id]);
+    t.ending = true;
+    resolveExtinction(t, saved);
+    return Object.fromEntries(t.ids.map(id => [id, t.animals[id].vp]));
+  };
+  const options = s.ids.includes('mammals') ? extinctionOptions(s,'mammals') : [];
+  if (!options.length) return run(null);
+  const chosen = botAction(s,{kind:'extinction',actor:'mammals'})?.saved ?? null;
+  if (s.human !== 'mammals') return run(chosen);
+  const runs = options.map(tile => ({tile, vp:run(tile)}));
+  const top = Math.max(...runs.map(r => r.vp.mammals));
+  return (runs.find(r => r.tile === chosen && r.vp.mammals === top) || runs.find(r => r.vp.mammals === top)).vp;
+}
 function endEstimate(s, id) {
+  if (typeof PAPER !== 'undefined' && PAPER.oldForecast) return endEstimateV054(s, id);
+  return finalProjection(s)[id];
+}
+function endEstimateV054(s, id) {
   let points = s.animals[id].vp + icePoints(s)[id];
   const trial = {...s,tiles:Object.fromEntries(terrainIds(s).map(tile => [tile,{...s.tiles[tile],cubes:{...s.tiles[tile].cubes}}]))};
   for (const actor of s.ids) {

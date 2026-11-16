@@ -1,0 +1,673 @@
+<!doctype html><meta charset='utf-8'><title>The Red Queen — solo rivals for Dominant Species</title><style>
+@page{size:letter;margin:0.55in}
+@page cards{margin:0.4in}
+*{box-sizing:border-box}
+body{font:10.5pt/1.42 Georgia,serif;color:#1d1d1b;max-width:800px;margin:24px auto;padding:0 18px}
+h1{font-size:22pt;color:#2f4a3a;margin:0 0 4px;border-bottom:3px solid #2f4a3a;padding-bottom:4px}
+h1+p{font:8.5pt/1.4 Helvetica,Arial,sans-serif;color:#666}
+h2{font:bold 11pt Helvetica,Arial,sans-serif;text-transform:uppercase;letter-spacing:.05em;color:#fff;background:#2f4a3a;padding:3px 8px;margin:20px 0 8px}
+h3{font:bold 10.5pt Helvetica,Arial,sans-serif;color:#2f4a3a;border-bottom:1px solid #9aa39a;padding-bottom:2px;margin:14px 0 6px}
+p{margin:5px 0}
+table{border-collapse:collapse;width:100%;margin:6px 0 8px;font-size:9.5pt}tr{page-break-inside:avoid;break-inside:avoid}thead{display:table-header-group}
+th,td{border:1px solid #9aa39a;padding:3px 6px;vertical-align:top;text-align:left}
+th{background:#e8ede6;font:bold 8.5pt Helvetica,Arial,sans-serif}td:first-child{font-weight:bold}
+code{font-size:8.5pt;background:#f1f3ee;padding:0 3px}ul{padding-left:20px}li{margin:2px 0}
+body>ol{list-style:none;padding:0;counter-reset:step;margin:6px 0}
+body>ol>li{counter-increment:step;position:relative;border:1px solid #9aa39a;border-radius:4px;padding:5px 8px 5px 34px;margin:0 0 4px}
+body>ol>li::before{content:counter(step);position:absolute;left:10px;top:3px;font:bold 14pt Helvetica,Arial,sans-serif;color:#2f4a3a}
+@media print{body{margin:0;max-width:none;padding:0}h2,h3{page-break-after:avoid;break-after:avoid}li,p{page-break-inside:avoid;break-inside:avoid}}
+
+.cardpage{page:cards;page-break-before:always;break-before:page}
+.cardpage h4{width:7in;margin:0 auto 6px;font:bold 9pt Helvetica,Arial,sans-serif;text-transform:uppercase;letter-spacing:.05em;color:#fff;background:#2f4a3a;padding:2px 6px}
+.grid{display:grid;grid-template-columns:repeat(2,3.5in);grid-auto-rows:2.4in;width:7in;margin:0 auto}
+.card{border:1px dashed #8a8a8a;padding:8px 10px;display:flex;flex-direction:column;font-family:Georgia,serif;overflow:hidden}
+.card .head{display:flex;align-items:center;gap:8px;background:var(--bg);color:var(--ink);padding:3px 8px;border-radius:4px;border:1px solid rgba(0,0,0,.35)}
+.card .who{font:bold 9.5pt Helvetica,Arial,sans-serif;letter-spacing:.08em}
+.card .meta{font:7.5pt Helvetica,Arial,sans-serif;opacity:.85;flex:1}
+.card .num{font:bold 17pt/1 Helvetica,Arial,sans-serif}
+.card .name{font-size:12pt;font-weight:bold;color:#2f4a3a;margin:5px 0 3px}
+.card ol.acts{list-style:none;margin:0;padding:0;counter-reset:act;border:0}
+.card ol.acts li{counter-increment:act;position:relative;padding:1px 0 3px 24px;margin:0;border:0;border-bottom:1px solid #e1e5df}
+.card ol.acts li:last-child{border-bottom:0}
+.card ol.acts li::before{content:counter(act);position:absolute;left:0;top:2px;width:17px;height:17px;border-radius:50%;background:#2f4a3a;color:#fff;font:bold 9pt/17px Helvetica,Arial,sans-serif;text-align:center}
+.card ol.acts b{display:block;font-size:11.5pt;line-height:1.2}
+.card ol.acts small{display:block;font:7.4pt/1.25 Helvetica,Arial,sans-serif;color:#555}
+.card ol.acts li.weak b,.card ol.acts li.weak small{color:#9a9a9a}.card ol.acts li.weak::before{background:#b9b9b9}
+.card .foot{margin-top:auto;font:6.8pt/1.3 Helvetica,Arial,sans-serif;color:#666;border-top:1px solid #9aa39a;padding-top:3px}
+.card.back{border:1px solid #c9c9c9;padding:7px}
+.card.back .inner{flex:1;background:var(--bg);color:var(--ink);border-radius:8px;border:2px solid rgba(0,0,0,.25);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px;position:relative}
+.card.back .inner::after{content:"";position:absolute;inset:5px;border:1px solid currentColor;border-radius:6px;opacity:.35}
+.card.back .brand{font:bold 8pt Helvetica,Arial,sans-serif;letter-spacing:.3em;opacity:.8}
+.card.back .animal{font:bold 26pt/1.1 Georgia,serif;margin:4px 0 2px;letter-spacing:.02em}
+.card.back .line{font:8.5pt Helvetica,Arial,sans-serif;opacity:.9}
+.card.back .power{font:italic 9pt/1.3 Georgia,serif;margin-top:8px;max-width:2.6in}
+.card.back .game{position:absolute;bottom:10px;font:6.5pt Helvetica,Arial,sans-serif;letter-spacing:.12em;opacity:.7}
+</style><body><h1>The Red Queen</h1>
+<p><strong>Solo rivals for <em>Dominant Species</em></strong> · Version 0.5.5 · 15 November 2026 · An unofficial solo variant for <em>Dominant Species</em> (designed by Chad Jensen, published by GMT Games), for one player against two to five rival animals.</p>
+<p><em>In biology, the Red Queen hypothesis says a species must keep evolving just to hold its place against its rivals. These rivals make you do exactly that.</em></p>
+<h2>Overview</h2>
+<p>These rules run the rival animals at the table without the app, against two to five rivals. Each rival draws from its own eight-card deck. Every decision after that is made by counting things on the board, with no scoring or judgment calls. The rivals place their first pawn of each turn before you do, and the number of pawns they get sets the difficulty.</p>
+<p><strong>You need:</strong> the base game, and for each rival eight cards numbered 1–8 (or roll a d8 instead; the deck is recommended, because a die can repeat a card before the others have come up). The decks are listed under Rival decks, and printable cards with backs are at the end of this rulebook.</p>
+<p><strong>Player aids:</strong> the companion player aids have four reference sheets (Planning, Execution, Dominance Cards, and Setup with the other decisions) and one sheet per rival with its deck, power and food-chain position. They condense these rules; if the two ever disagree, this rulebook wins.</p>
+<p><strong>Terms used throughout</strong></p>
+<ul>
+<li><strong>Opponents in VP order:</strong> the rival's opponents (you and the other rivals) from highest to lowest on the VP track, ties to the animal higher in the food chain. The first one is the <strong>leader</strong>.</li>
+<li><strong>Rank on a tile:</strong> order every animal with a species on the tile by its number of species, ties to the food chain, as in normal tile scoring. Animals rank even below the places that score VP (on tundra, second place still counts as second).</li>
+<li><strong>Gains a rank:</strong> after the change, the rival is ranked higher on that tile than before, or now ranks there at all.</li>
+<li><strong>First-place value:</strong> the leftmost number on the Tile Scoring table: Sea 9, Wetland 8, Savannah 7, Jungle 6, Forest 5, Desert 4, Mountain 3, Tundra 1.</li>
+<li><strong>Uses an element:</strong> the element is on the rival's animal display (printed or added).</li>
+<li><strong>Matches (rivals only):</strong> a rival matches a tile with its printed element count (2, or 3 for Amphibians) plus its number of added elements, capped at the number of element disks on that tile. The element types don't matter. Use this count wherever the game asks how many elements a rival matches (dominance, Extinction, and every "matches" in these rules). Adaptation, Regression and Disease still change the count. You count your own animal normally.</li>
+<li><strong>Rival ties:</strong> if only rivals tie for the most matches on a tile, the rival with the most species there is dominant; if they still tie, the one higher in the food chain. If you tie with them, no one is dominant there, as in the normal rules.</li>
+<li><strong>Ties:</strong> break any remaining tie between tiles already on Earth by the higher first-place value, then <strong>board order</strong>, unless the rule gives a different priority. For corners and empty spots, use board order after the priorities listed for that choice. Board order means furthest left on the board, then highest; for tiles it runs down the leftmost column, then the next column.</li>
+</ul>
+<h2>Setup and difficulty</h2>
+<p>Set up a normal game for your player count: you plus two to five rival animals, with the base game's pawns and cubes for that count (6 pawns and 50 cubes with two rivals, 5 and 45 with three, 4 and 40 with four, 3 and 35 with five). Then:</p>
+<ol>
+<li>Shuffle each rival's eight deck cards face down. When a deck runs out, reshuffle its discards.</li>
+<li>Choose a difficulty and adjust <strong>each rival's</strong> action pawns from the base count. Extra pawns come from the unused pawns in the box; removed pawns go back to it. <strong>Easy with five rivals</strong> is different: each rival has one pawn fewer (not two), and you take one extra pawn, so they have 2 each and you have 4 (the base of 3 would otherwise leave each rival only 1).</li>
+<li>Before the first Planning, place the dominance cones using these rules: rivals use their own matching count, and rival ties go to the rival with the most species there, then the food chain (Terms used). Only an animal that is present and matches at least one element can be dominant. Update the cones whenever the result changes.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Each rival's pawns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Easy</td>
+<td>Base count −2 (with five rivals: −1 for each rival, and you take 1 extra pawn)</td>
+</tr>
+<tr>
+<td>Standard</td>
+<td>Base count −1</td>
+</tr>
+<tr>
+<td>Hard</td>
+<td>Base count</td>
+</tr>
+<tr>
+<td>Expert</td>
+<td>Base count +1</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Playing with the companion app:</strong> the app can run these exact rules, so you don't need to print anything. On the setup screen choose <strong>The Red Queen</strong> and a level. The app draws each rival's card, names the Planning step that chose each space, and spells out every change to make on the board. (The app's other option, Tooth &amp; Claw, is a separate set of rivals with their own rules.)</p>
+<p>Everything else follows the normal rules. Rivals never break a rule to make a choice: if a rule points at something illegal, skip to the next option.</p>
+<h2>Two players plus a rival</h2>
+<p>Two people can add one Red Queen rival as the third animal to get a full three-player game, with more blocking and more pressure on the board than a two-player game.</p>
+<ul>
+<li>Set up a normal three-player game with the rival as the third animal.</li>
+<li>Run the rival exactly as in solo. Its <strong>leader</strong> is whichever opponent is highest on the VP track, so it presses whoever is winning, not one fixed person.</li>
+<li>Start at Standard. The levels were set for one person against the rivals, so they may feel different with two.</li>
+</ul>
+<h2>Planning: placing a pawn</h2>
+<p><strong>Rivals plan first.</strong> At the start of each Planning, before anyone else places, each rival places one pawn, in Initiative order (a rival whose pawns are all already on the action display skips this). Then Planning goes around the Initiative order as usual, starting from the top, until everyone has placed all their pawns. (Without this, a player who stays first on the Initiative track gets first pick of the action display every turn, which these rivals rarely contest.)</p>
+<p>When it is a rival's turn to place, first draw the top card of its deck (it is discarded after this placement even if an earlier step decides). Then take the first step below that gives a space.</p>
+<ol>
+<li><strong>Domination first.</strong> If a Dominance Card is available, and the rival dominates more unscored tiles than it has pawns on Domination (at most 2), it takes the leftmost open Domination space.</li>
+<li><strong>Barren Earth.</strong> After turn 1, if no animal is dominant on any tile, the rival takes an open Abundance space, unless it already has a pawn there. It may take any element there. <strong>Empty Earth:</strong> if no rival has any species left on Earth (yours may remain), the rival's Abundance may use any empty corner, so species can return (see the tables below).</li>
+<li><strong>Block the leader.</strong> If a Dominance Card is available, the rival has fewer than 2 pawns on Domination, and the leader dominates at least one unscored tile, the rival takes the leftmost open Domination space (it needs a legal target; see the table below).</li>
+<li><strong>Its card.</strong> Try the drawn card's three actions in order and place on the first one that:<ul>
+<li>is not a row where the rival already has a pawn;</li>
+<li>is not a weak action (Abundance, Glaciation, Wasteland, Depletion, Regression, Initiative), unless it is the card's first action;</li>
+<li>has an open space with a target (table below).</li>
+</ul>
+</li>
+<li><strong>Fallback.</strong> Try this order with the same tests, except the weak-action test: Domination, Wanderlust, Speciation, Adaptation, Competition, Migration, Abundance, Initiative, Regression, Depletion, Wasteland, Glaciation.</li>
+<li><strong>Last resort.</strong> Repeat step 5, now allowing rows where the rival already has a pawn. If nothing qualifies, take the first open space.</li>
+</ol>
+<p><strong>Full display.</strong> If every action space is taken, Planning ends at once, even if some players still have pawns. Those pawns wait for the next turn.</p>
+<p><strong>Which space in the row:</strong> for Speciation, the element whose disks touch the most tiles the rival matches. For Competition, the space whose terrains (plus tundra) hold the most tiles the rival shares with an opponent. In a tie, and for any other row, the leftmost open space.</p>
+<table>
+<thead>
+<tr>
+<th>Action</th>
+<th>Has a target when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Initiative</td>
+<td>The rival is not first on the Initiative track</td>
+</tr>
+<tr>
+<td>Adaptation</td>
+<td>The box holds an element and the display has fewer than 6</td>
+</tr>
+<tr>
+<td>Regression</td>
+<td>An added element's type is in the Adaptation or Regression box (Reptiles: always)</td>
+</tr>
+<tr>
+<td>Abundance</td>
+<td>The box holds an element the rival uses (any element during Barren Earth), and a tile it occupies has an empty corner (Empty Earth, no rival species on Earth: any empty corner)</td>
+</tr>
+<tr>
+<td>Wasteland</td>
+<td>The box holds an element the rival uses</td>
+</tr>
+<tr>
+<td>Depletion</td>
+<td>A disk on Earth is of an element in the box that the rival does not use</td>
+</tr>
+<tr>
+<td>Glaciation</td>
+<td>A legal Glaciation tile holds opposing species and none of the rival's</td>
+</tr>
+<tr>
+<td>Speciation</td>
+<td>The gene pool is not empty and a disk of that element is on earth</td>
+</tr>
+<tr>
+<td>Wanderlust</td>
+<td>A tile is face up and an empty spot touches a tile the rival occupies</td>
+</tr>
+<tr>
+<td>Migration</td>
+<td>At least one move is allowed under Migration below: a rescue, or a species from a tile where it has 2+ (losing no rank there) to a matched tile it is not on yet</td>
+</tr>
+<tr>
+<td>Competition</td>
+<td>A tile of that space's terrains, or tundra, holds the rival and an opponent</td>
+</tr>
+<tr>
+<td>Domination</td>
+<td>An unscored tile holds a rival species</td>
+</tr>
+</tbody>
+</table>
+<h2>Execution: resolving each action</h2>
+<p>When a rival's pawn is reached, resolve it with the rule below. If the rule finds nothing legal, the rival forfeits the action.</p>
+<table>
+<thead>
+<tr>
+<th>Action</th>
+<th>What the rival does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Initiative</td>
+<td>Advances one place on the Initiative track, then moves this pawn to an open space later in this turn's order, chosen by Planning steps 1–3, 5 and 6 (no card). If no such space is open, it still advances and the pawn returns to the rival (this is also the rule for you)</td>
+</tr>
+<tr>
+<td>Adaptation</td>
+<td>Takes its own printed element if the box offers it; otherwise the leftmost element</td>
+</tr>
+<tr>
+<td>Regression</td>
+<td>Nothing to decide; see Losing an element under Other decisions</td>
+</tr>
+<tr>
+<td>Abundance</td>
+<td>Takes the leftmost box element it uses (else the leftmost). Places it on the empty corner touching the most tiles it occupies, then the corner touching the highest first-place value (any touching tile counts, even one it is not on), then board order. Empty Earth (no rival species on Earth): on any empty corner, the first in board order (furthest left, then highest)</td>
+</tr>
+<tr>
+<td>Wasteland</td>
+<td>Removes the leftmost box element it uses. If it uses none, forfeits</td>
+</tr>
+<tr>
+<td>Depletion</td>
+<td>Removes a disk of a box element it does not use: the disk touching the most tiles the leader dominates, then the most tiles any opponent dominates, then board order</td>
+</tr>
+<tr>
+<td>Glaciation</td>
+<td>Among legal tiles, prefers those with none of its species. Picks the most opposing species; then fewest of its own species</td>
+</tr>
+<tr>
+<td>Speciation</td>
+<td>Picks the disk of that element touching the most tiles it matches, then the highest total first-place value of those tiles, then board order. On each of those tiles, highest first-place value first (then board order), places the terrain maximum while its gene pool lasts</td>
+</tr>
+<tr>
+<td>Wanderlust</td>
+<td>Picks the empty spot next to its own tiles that touches the most tiles, then the most of its own tiles, then board order. Places the face-up tile with the highest first-place value (tie: the leftmost stack). If the box holds an element it uses, it takes the leftmost element in the box that it uses and puts it on the new tile's corner touching the most of its tiles, then board order</td>
+</tr>
+<tr>
+<td>Migration</td>
+<td>Moves one species at a time, up to the space's number (see below)</td>
+</tr>
+<tr>
+<td>Competition</td>
+<td>One elimination per terrain of the space (and tundra), on a tile it shares, scored below. Tie: the opponent earlier in VP order, then board order</td>
+</tr>
+<tr>
+<td>Domination</td>
+<td>If a card is available and it dominates unscored tiles, scores the one of those where it earns the most VP. Otherwise the unscored tile no opponent dominates where it earns the most VP. If it earns VP on none of those, the unscored tile with species where it earns the most VP</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Migration, one species at a time.</strong> Rivals never weigh rank gains when choosing a destination; they only avoid losing a rank where they leave. A species may leave a tile the rival does not match (a rescue), or a tile where it has 2+ species and losing one costs no rank. It moves to an adjacent tile the rival matches (Birds: up to two tiles away through existing terrain, as their power allows). Every move must be a rescue or reach a tile the rival is not on yet. Choose rescues first, then the destination with the higher first-place value. At equal value, prefer a destination the rival does not occupy, then the fullest origin, then the destination in board order, then the origin in board order. During one Migration action each tile either sends or receives species: once a tile has sent a species it can only send more, and once it has received one it can only receive more.</p>
+<p><strong>Competition score</strong> for removing one opposing species from a tile:</p>
+<ul>
+<li>start with the tile's first-place value;</li>
+<li>add it again if that opponent ranks above the rival and no longer does afterwards (a tie goes to the food chain, so 2–2 against a higher animal is not a pass);</li>
+<li>add half of it if this is that opponent's last species there;</li>
+<li>add 6 more if it is that opponent's last species there and that opponent is dominant there (so it loses its dominance).</li>
+</ul>
+<h2>Dominance Cards</h2>
+<p><strong>Taking a card.</strong> The rival takes the first available card in this list: Omnivore, Intelligence, Parasitism, Evolution, Catastrophe, Ice Sheet, Aquatic, Mass Exodus, Habitat, Instinct, Blight, Metamorphosis, Symbiotic, Nocturnal, Immigrants, Biomass, Disease, Fecundity, Predator, Hibernation, Cold Snap, Biodiversity, Ecodiversity, Fertile, Niche Biomes, Ice Age. It skips Ice Age unless it leads or ties on VP, and skips Omnivore, Intelligence and Parasitism at 10 action pawns. It also skips a card that would do nothing: Metamorphosis if it has no added element (or the bag is empty); Disease unless an opponent has more elements on its animal (printed plus added) than it does, and at least one added element; Niche Biomes unless an opponent has more VP; Nocturnal if it is first on the Initiative track; Hibernation if it has no eliminated species. If it would skip every available card, it takes the first one in the list anyway.</p>
+<p><strong>Resolving the effect.</strong> Cards with no choice for the taker (Biodiversity, Cold Snap, Disease, Ecodiversity, Ice Age, Immigrants, Intelligence, Niche Biomes, Nocturnal, Omnivore, Parasitism, Symbiotic) follow the card. For the rest:</p>
+<table>
+<thead>
+<tr>
+<th>Card</th>
+<th>The rival chooses</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Aquatic</td>
+<td>If the bag has an element and any sea or wetland tile has a free corner, only those tiles are candidates (the element is part of the card). It adds 4 species, or all its gene pool holds if that is fewer; count them with its element on the tile's free corner first in board order. Choose the tile where they make it first; else where they gain a rank; else one it matches; a tile it does not match only if it matches none (ties: higher first-place value, then board order). It takes its printed element if in the bag; otherwise it chooses the element using Habitat's element priority</td>
+</tr>
+<tr>
+<td>Biomass</td>
+<td>On each crowded tile, a species of the first opponent in VP order present there, else its own</td>
+</tr>
+<tr>
+<td>Blight</td>
+<td>The tile and kept disk that leave the most opposing species on surrounding tiles without a match, counting its own as −2 each (tie: higher first-place value, then the tile's board order, then the kept disk's)</td>
+</tr>
+<tr>
+<td>Catastrophe</td>
+<td>Only a tile with species on it can be chosen. Keeps its own species on the tile, else the lowest-VP opponent's (at equal lowest VP, the animal lower in the food chain). On each adjacent tile, removes the first opponent in VP order present, its own only if alone. Picks the tile removing the most opposing species, its own counting −2 (tie: higher first-place value, then board order)</td>
+</tr>
+<tr>
+<td>Evolution</td>
+<td>Replaces one species of each of two opponents (fewer if its gene pool is short), taking opponents in VP order. Only tiles it matches: skip an opponent with no species on such a tile and try the next. For each opponent, score every such tile: 2× its first-place value if the swap moves the rival into first place, 1× if it otherwise gains a rank or enters the ranking, 0 otherwise; add 3 if the rival ends dominant there. Take the highest score (tie: higher first-place value, then board order)</td>
+</tr>
+<tr>
+<td>Fecundity</td>
+<td>Tiles it matches first, then by first-place value</td>
+</tr>
+<tr>
+<td>Fertile</td>
+<td>Its tile with the most species of all animals (tie: board order); it scores 1 VP for every species there, its own and everyone else's</td>
+</tr>
+<tr>
+<td>Habitat</td>
+<td>Its printed element; if the bag has none, an element it added (earliest first); if none of those either, the first element in the bag in this order: Meat, Sun, Seed, Water, Grub, Grass. On the empty corner touching the most tiles it occupies, then the corner touching the highest first-place value (any touching tile counts, even one it is not on), then board order; if it occupies no tile with an empty corner, the first empty corner in board order</td>
+</tr>
+<tr>
+<td>Hibernation</td>
+<td>Returns 5 of its eliminated species, or all of them if it has fewer, to one tile it matches: tundra first, then a tile it is not on, then where the returned species gain a rank (tie: higher first-place value, then board order)</td>
+</tr>
+<tr>
+<td>Ice Sheet</td>
+<td>As the Glaciation action</td>
+</tr>
+<tr>
+<td>Instinct</td>
+<td>An open space not yet resolved this turn, by Planning steps 1–3, 5 and 6. If none is open, an open space that already resolved: the pawn waits there for next turn (not on the final turn)</td>
+</tr>
+<tr>
+<td>Mass Exodus</td>
+<td>Among occupied tiles with an adjacent tile on Earth, prefer one without its own species; then choose the one holding the most opposing species. Break ties by higher first-place value, then board order. Its own species go to the adjacent tile it matches best (tie: higher first-place value, then board order); each opponent's to the one that opponent matches least (tie: the lower first-place value, then board order)</td>
+</tr>
+<tr>
+<td>Metamorphosis</td>
+<td>Swaps the added element on the fewest corners of its tiles (tie: the one it added earliest) for the bag element on the most. Among equally useful bag elements, prefer its printed type; if still tied, use Meat, Sun, Seed, Water, Grub, Grass order</td>
+</tr>
+<tr>
+<td>Predator</td>
+<td>On each of its tiles, a species of the first opponent in VP order present there</td>
+</tr>
+</tbody>
+</table>
+<h2>Other decisions</h2>
+<table>
+<thead>
+<tr>
+<th>Decision</th>
+<th>What the rival does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Arachnids' free Competition</td>
+<td>One elimination on any tile it shares, highest Competition score (tie: the opponent earlier in VP order, then board order)</td>
+</tr>
+<tr>
+<td>Insects' free species</td>
+<td>On a tile it matches: one where it gains a rank, then one it is already on, then by first-place value</td>
+</tr>
+<tr>
+<td>Arriving after Wanderlust</td>
+<td>If it matches the new tile, moves 1 species from each adjacent tile where it has 2+ and losing one costs no rank</td>
+</tr>
+<tr>
+<td>Losing an element (Regression, Disease)</td>
+<td>Loses the added element on the fewest corners of tiles it occupies (tie: for Regression, the one further left in the Regression box; for Disease, the one it added earliest)</td>
+</tr>
+<tr>
+<td>Mammals' save in Extinction</td>
+<td>Saves the endangered species on the tile with the highest first-place value (tie: board order)</td>
+</tr>
+<tr>
+<td>Hibernation-protected cubes</td>
+<td>When protected and ordinary cubes of the same animal share a tile and some must move or be removed, move or remove the ordinary cubes first</td>
+</tr>
+<tr>
+<td>Immigrants</td>
+<td>In order: discard a duplicate added element (if several added types are duplicated, discard the type whose second copy was added earliest); else, if it has at most 2 species on every tile, keep one per tile; else discard the added element on the fewest corners of its tiles (tie: the one it added earliest); else lose a pawn: an unplaced one if it has one, otherwise its last pawn on the action display, reading top to bottom and left to right</td>
+</tr>
+</tbody>
+</table>
+<h2>Rival decks</h2>
+<p>Each rival has its own eight-card deck. Each card lists three actions; try them in order (Planning step 4). The numbers let you roll a d8 instead of using cards. Printable cards, with backs, are at the end of this rulebook.</p>
+<h3>Mammals</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Card</th>
+<th>Actions, in order</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Food Chain Advantage</td>
+<td>Migration → Speciation → Abundance</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Last of the Herd</td>
+<td>Speciation → Domination → Initiative</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Winter Range</td>
+<td>Wanderlust → Abundance → Migration</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Prime Hunting Grounds</td>
+<td>Wanderlust → Speciation → Migration</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Meat Supply</td>
+<td>Speciation → Migration → Domination</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Hold the Center</td>
+<td>Speciation → Abundance → Competition</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Herd Expansion</td>
+<td>Migration → Domination → Initiative</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Final Territory</td>
+<td>Initiative → Speciation → Adaptation</td>
+</tr>
+</tbody>
+</table>
+<h3>Reptiles</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Card</th>
+<th>Actions, in order</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Sunward Slope</td>
+<td>Wanderlust → Migration → Speciation</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Shed the Old Skin</td>
+<td>Adaptation → Domination → Abundance</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Cold-Blooded Retreat</td>
+<td>Wanderlust → Speciation → Domination</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Sun Trap</td>
+<td>Speciation → Adaptation → Wanderlust</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Basking Ground</td>
+<td>Abundance → Migration → Speciation</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Rocky Frontier</td>
+<td>Speciation → Adaptation → Initiative</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Thin the Ice</td>
+<td>Depletion → Domination → Speciation</td>
+</tr>
+<tr>
+<td>8</td>
+<td>The Last Warmth</td>
+<td>Initiative → Abundance → Speciation</td>
+</tr>
+</tbody>
+</table>
+<h3>Birds</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Card</th>
+<th>Actions, in order</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Two Hexes Ahead</td>
+<td>Wanderlust → Migration → Speciation</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Seed Corridor</td>
+<td>Migration → Wanderlust → Speciation</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Early Departure</td>
+<td>Initiative → Migration → Domination</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Flock at the Waterline</td>
+<td>Wanderlust → Abundance → Domination</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Claim from Above</td>
+<td>Migration → Adaptation → Speciation</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Beyond the Ridge</td>
+<td>Speciation → Initiative → Migration</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Breaking Formation</td>
+<td>Migration → Competition → Wanderlust</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Last Flight</td>
+<td>Glaciation → Migration → Speciation</td>
+</tr>
+</tbody>
+</table>
+<h3>Amphibians</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Card</th>
+<th>Actions, in order</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Threefold Water</td>
+<td>Speciation → Migration → Wanderlust</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Seasonal Pools</td>
+<td>Speciation → Domination → Wanderlust</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Floodplain Nursery</td>
+<td>Migration → Domination → Adaptation</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Drought Refuge</td>
+<td>Adaptation → Abundance → Wasteland</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Wetland Tenure</td>
+<td>Abundance → Adaptation → Migration</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Under the Ice</td>
+<td>Wanderlust → Abundance → Migration</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Cut the Tributary</td>
+<td>Speciation → Migration → Domination</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Waters Recede</td>
+<td>Initiative → Migration → Abundance</td>
+</tr>
+</tbody>
+</table>
+<h3>Arachnids</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Card</th>
+<th>Actions, in order</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>One Cut Is Enough</td>
+<td>Speciation → Wanderlust → Adaptation</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Anchor the Web</td>
+<td>Wanderlust → Speciation → Migration</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Grub Cache</td>
+<td>Speciation → Domination → Competition</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Ambush at the Margin</td>
+<td>Wanderlust → Migration → Abundance</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Frozen Web</td>
+<td>Depletion → Migration → Speciation</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Follow the Footfalls</td>
+<td>Wanderlust → Speciation → Migration</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Retreat to Cover</td>
+<td>Speciation → Competition → Initiative</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Close the Trap</td>
+<td>Speciation → Abundance → Wanderlust</td>
+</tr>
+</tbody>
+</table>
+<h3>Insects</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Card</th>
+<th>Actions, in order</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>First Colonist</td>
+<td>Adaptation → Migration → Domination</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Over the Threshold</td>
+<td>Speciation → Migration → Abundance</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Grassland Mosaic</td>
+<td>Speciation → Domination → Initiative</td>
+</tr>
+<tr>
+<td>4</td>
+<td>A Thousand Footholds</td>
+<td>Adaptation → Migration → Domination</td>
+</tr>
+<tr>
+<td>5</td>
+<td>After the Thaw</td>
+<td>Migration → Domination → Wanderlust</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Swarm the Gap</td>
+<td>Adaptation → Speciation → Migration</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Keep the Colony</td>
+<td>Competition → Domination → Speciation</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Everywhere at Once</td>
+<td>Speciation → Domination → Migration</td>
+</tr>
+</tbody>
+</table>
+<h2>Appendix: printable rival cards</h2>
+<p>Each rival has a sheet of fronts followed by a sheet of backs. Print them double-sided, flipping on the long edge, so every back lines up with its front, then cut along the lines. Each front shows the card's number (for a d8 instead of cards), its three actions in order and when each has a target. A weak action after the first is shown in grey: step 4 never takes it. Each back shows the rival in its own colour, with its element, food-chain place and power.</p>
+<section class='cardpage'><h4>Mammals · card fronts</h4><div class='grid'><div class='card front' style='--bg:#eee7d8;--ink:#40372c'><div class='head'><span class='who'>MAMMALS</span><span class='meta'>Meat · first in the food chain</span><span class='num'>1</span></div><div class='name'>Food Chain Advantage</div><ol class='acts'><li class=''><b>Migration</b><small>a rescue, or a spare species to a new matched tile</small></li><li class=''><b>Speciation</b><small>gene pool not empty; a disk of that element on Earth</small></li><li class='weak'><b>Abundance</b><small>Weak action after the first: step 4 skips it</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#eee7d8;--ink:#40372c'><div class='head'><span class='who'>MAMMALS</span><span class='meta'>Meat · first in the food chain</span><span class='num'>2</span></div><div class='name'>Last of the Herd</div><ol class='acts'><li class=''><b>Speciation</b><small>gene pool not empty; a disk of that element on Earth</small></li><li class=''><b>Domination</b><small>an unscored tile holds one of its species</small></li><li class='weak'><b>Initiative</b><small>Weak action after the first: step 4 skips it</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#eee7d8;--ink:#40372c'><div class='head'><span class='who'>MAMMALS</span><span class='meta'>Meat · first in the food chain</span><span class='num'>3</span></div><div class='name'>Winter Range</div><ol class='acts'><li class=''><b>Wanderlust</b><small>a face-up tile; an empty spot next to its tiles</small></li><li class='weak'><b>Abundance</b><small>Weak action after the first: step 4 skips it</small></li><li class=''><b>Migration</b><small>a rescue, or a spare species to a new matched tile</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#eee7d8;--ink:#40372c'><div class='head'><span class='who'>MAMMALS</span><span class='meta'>Meat · first in the food chain</span><span class='num'>4</span></div><div class='name'>Prime Hunting Grounds</div><ol class='acts'><li class=''><b>Wanderlust</b><small>a face-up tile; an empty spot next to its tiles</small></li><li class=''><b>Speciation</b><small>gene pool not empty; a disk of that element on Earth</small></li><li class=''><b>Migration</b><small>a rescue, or a spare species to a new matched tile</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#eee7d8;--ink:#40372c'><div class='head'><span class='who'>MAMMALS</span><span class='meta'>Meat · first in the food chain</span><span class='num'>5</span></div><div class='name'>Meat Supply</div><ol class='acts'><li class=''><b>Speciation</b><small>gene pool not empty; a disk of that element on Earth</small></li><li class=''><b>Migration</b><small>a rescue, or a spare species to a new matched tile</small></li><li class=''><b>Domination</b><small>an unscored tile holds one of its species</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#eee7d8;--ink:#40372c'><div class='head'><span class='who'>MAMMALS</span><span class='meta'>Meat · first in the food chain</span><span class='num'>6</span></div><div class='name'>Hold the Center</div><ol class='acts'><li class=''><b>Speciation</b><small>gene pool not empty; a disk of that element on Earth</small></li><li class='weak'><b>Abundance</b><small>Weak action after the first: step 4 skips it</small></li><li class=''><b>Competition</b><small>shares a tile of these terrains or tundra with an opponent</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#eee7d8;--ink:#40372c'><div class='head'><span class='who'>MAMMALS</span><span class='meta'>Meat · first in the food chain</span><span class='num'>7</span></div><div class='name'>Herd Expansion</div><ol class='acts'><li class=''><b>Migration</b><small>a rescue, or a spare species to a new matched tile</small></li><li class=''><b>Domination</b><small>an unscored tile holds one of its species</small></li><li class='weak'><b>Initiative</b><small>Weak action after the first: step 4 skips it</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#eee7d8;--ink:#40372c'><div class='head'><span class='who'>MAMMALS</span><span class='meta'>Meat · first in the food chain</span><span class='num'>8</span></div><div class='name'>Final Territory</div><ol class='acts'><li class=''><b>Initiative</b><small>it is not first on the Initiative track</small></li><li class=''><b>Speciation</b><small>gene pool not empty; a disk of that element on Earth</small></li><li class=''><b>Adaptation</b><small>the box has an element; its display has under 6</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div></div></section><section class='cardpage'><h4>Mammals · card backs (print on the reverse)</h4><div class='grid'><div class='card back' style='--bg:#eee7d8;--ink:#40372c'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Mammals</div><div class='line'>Meat · first in the food chain</div><div class='power'>Saves one endangered species at Extinction.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#eee7d8;--ink:#40372c'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Mammals</div><div class='line'>Meat · first in the food chain</div><div class='power'>Saves one endangered species at Extinction.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#eee7d8;--ink:#40372c'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Mammals</div><div class='line'>Meat · first in the food chain</div><div class='power'>Saves one endangered species at Extinction.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#eee7d8;--ink:#40372c'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Mammals</div><div class='line'>Meat · first in the food chain</div><div class='power'>Saves one endangered species at Extinction.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#eee7d8;--ink:#40372c'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Mammals</div><div class='line'>Meat · first in the food chain</div><div class='power'>Saves one endangered species at Extinction.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#eee7d8;--ink:#40372c'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Mammals</div><div class='line'>Meat · first in the food chain</div><div class='power'>Saves one endangered species at Extinction.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#eee7d8;--ink:#40372c'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Mammals</div><div class='line'>Meat · first in the food chain</div><div class='power'>Saves one endangered species at Extinction.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#eee7d8;--ink:#40372c'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Mammals</div><div class='line'>Meat · first in the food chain</div><div class='power'>Saves one endangered species at Extinction.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div></div></section><section class='cardpage'><h4>Reptiles · card fronts</h4><div class='grid'><div class='card front' style='--bg:#3d4c4b;--ink:#ffffff'><div class='head'><span class='who'>REPTILES</span><span class='meta'>Sun · second in the food chain</span><span class='num'>1</span></div><div class='name'>Sunward Slope</div><ol class='acts'><li class=''><b>Wanderlust</b><small>a face-up tile; an empty spot next to its tiles</small></li><li class=''><b>Migration</b><small>a rescue, or a spare species to a new matched tile</small></li><li class=''><b>Speciation</b><small>gene pool not empty; a disk of that element on Earth</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#3d4c4b;--ink:#ffffff'><div class='head'><span class='who'>REPTILES</span><span class='meta'>Sun · second in the food chain</span><span class='num'>2</span></div><div class='name'>Shed the Old Skin</div><ol class='acts'><li class=''><b>Adaptation</b><small>the box has an element; its display has under 6</small></li><li class=''><b>Domination</b><small>an unscored tile holds one of its species</small></li><li class='weak'><b>Abundance</b><small>Weak action after the first: step 4 skips it</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#3d4c4b;--ink:#ffffff'><div class='head'><span class='who'>REPTILES</span><span class='meta'>Sun · second in the food chain</span><span class='num'>3</span></div><div class='name'>Cold-Blooded Retreat</div><ol class='acts'><li class=''><b>Wanderlust</b><small>a face-up tile; an empty spot next to its tiles</small></li><li class=''><b>Speciation</b><small>gene pool not empty; a disk of that element on Earth</small></li><li class=''><b>Domination</b><small>an unscored tile holds one of its species</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#3d4c4b;--ink:#ffffff'><div class='head'><span class='who'>REPTILES</span><span class='meta'>Sun · second in the food chain</span><span class='num'>4</span></div><div class='name'>Sun Trap</div><ol class='acts'><li class=''><b>Speciation</b><small>gene pool not empty; a disk of that element on Earth</small></li><li class=''><b>Adaptation</b><small>the box has an element; its display has under 6</small></li><li class=''><b>Wanderlust</b><small>a face-up tile; an empty spot next to its tiles</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#3d4c4b;--ink:#ffffff'><div class='head'><span class='who'>REPTILES</span><span class='meta'>Sun · second in the food chain</span><span class='num'>5</span></div><div class='name'>Basking Ground</div><ol class='acts'><li class=''><b>Abundance</b><small>a box element it uses; an empty corner on its tile</small></li><li class=''><b>Migration</b><small>a rescue, or a spare species to a new matched tile</small></li><li class=''><b>Speciation</b><small>gene pool not empty; a disk of that element on Earth</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#3d4c4b;--ink:#ffffff'><div class='head'><span class='who'>REPTILES</span><span class='meta'>Sun · second in the food chain</span><span class='num'>6</span></div><div class='name'>Rocky Frontier</div><ol class='acts'><li class=''><b>Speciation</b><small>gene pool not empty; a disk of that element on Earth</small></li><li class=''><b>Adaptation</b><small>the box has an element; its display has under 6</small></li><li class='weak'><b>Initiative</b><small>Weak action after the first: step 4 skips it</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#3d4c4b;--ink:#ffffff'><div class='head'><span class='who'>REPTILES</span><span class='meta'>Sun · second in the food chain</span><span class='num'>7</span></div><div class='name'>Thin the Ice</div><ol class='acts'><li class=''><b>Depletion</b><small>a disk on Earth of a box element it doesn't use</small></li><li class=''><b>Domination</b><small>an unscored tile holds one of its species</small></li><li class=''><b>Speciation</b><small>gene pool not empty; a disk of that element on Earth</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#3d4c4b;--ink:#ffffff'><div class='head'><span class='who'>REPTILES</span><span class='meta'>Sun · second in the food chain</span><span class='num'>8</span></div><div class='name'>The Last Warmth</div><ol class='acts'><li class=''><b>Initiative</b><small>it is not first on the Initiative track</small></li><li class='weak'><b>Abundance</b><small>Weak action after the first: step 4 skips it</small></li><li class=''><b>Speciation</b><small>gene pool not empty; a disk of that element on Earth</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div></div></section><section class='cardpage'><h4>Reptiles · card backs (print on the reverse)</h4><div class='grid'><div class='card back' style='--bg:#3d4c4b;--ink:#ffffff'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Reptiles</div><div class='line'>Sun · second in the food chain</div><div class='power'>Protects one added element for free during Regression.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#3d4c4b;--ink:#ffffff'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Reptiles</div><div class='line'>Sun · second in the food chain</div><div class='power'>Protects one added element for free during Regression.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#3d4c4b;--ink:#ffffff'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Reptiles</div><div class='line'>Sun · second in the food chain</div><div class='power'>Protects one added element for free during Regression.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#3d4c4b;--ink:#ffffff'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Reptiles</div><div class='line'>Sun · second in the food chain</div><div class='power'>Protects one added element for free during Regression.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#3d4c4b;--ink:#ffffff'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Reptiles</div><div class='line'>Sun · second in the food chain</div><div class='power'>Protects one added element for free during Regression.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#3d4c4b;--ink:#ffffff'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Reptiles</div><div class='line'>Sun · second in the food chain</div><div class='power'>Protects one added element for free during Regression.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#3d4c4b;--ink:#ffffff'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Reptiles</div><div class='line'>Sun · second in the food chain</div><div class='power'>Protects one added element for free during Regression.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#3d4c4b;--ink:#ffffff'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Reptiles</div><div class='line'>Sun · second in the food chain</div><div class='power'>Protects one added element for free during Regression.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div></div></section><section class='cardpage'><h4>Birds · card fronts</h4><div class='grid'><div class='card front' style='--bg:#ead174;--ink:#302713'><div class='head'><span class='who'>BIRDS</span><span class='meta'>Seed · third in the food chain</span><span class='num'>1</span></div><div class='name'>Two Hexes Ahead</div><ol class='acts'><li class=''><b>Wanderlust</b><small>a face-up tile; an empty spot next to its tiles</small></li><li class=''><b>Migration</b><small>a rescue, or a spare species to a new matched tile</small></li><li class=''><b>Speciation</b><small>gene pool not empty; a disk of that element on Earth</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#ead174;--ink:#302713'><div class='head'><span class='who'>BIRDS</span><span class='meta'>Seed · third in the food chain</span><span class='num'>2</span></div><div class='name'>Seed Corridor</div><ol class='acts'><li class=''><b>Migration</b><small>a rescue, or a spare species to a new matched tile</small></li><li class=''><b>Wanderlust</b><small>a face-up tile; an empty spot next to its tiles</small></li><li class=''><b>Speciation</b><small>gene pool not empty; a disk of that element on Earth</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#ead174;--ink:#302713'><div class='head'><span class='who'>BIRDS</span><span class='meta'>Seed · third in the food chain</span><span class='num'>3</span></div><div class='name'>Early Departure</div><ol class='acts'><li class=''><b>Initiative</b><small>it is not first on the Initiative track</small></li><li class=''><b>Migration</b><small>a rescue, or a spare species to a new matched tile</small></li><li class=''><b>Domination</b><small>an unscored tile holds one of its species</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#ead174;--ink:#302713'><div class='head'><span class='who'>BIRDS</span><span class='meta'>Seed · third in the food chain</span><span class='num'>4</span></div><div class='name'>Flock at the Waterline</div><ol class='acts'><li class=''><b>Wanderlust</b><small>a face-up tile; an empty spot next to its tiles</small></li><li class='weak'><b>Abundance</b><small>Weak action after the first: step 4 skips it</small></li><li class=''><b>Domination</b><small>an unscored tile holds one of its species</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#ead174;--ink:#302713'><div class='head'><span class='who'>BIRDS</span><span class='meta'>Seed · third in the food chain</span><span class='num'>5</span></div><div class='name'>Claim from Above</div><ol class='acts'><li class=''><b>Migration</b><small>a rescue, or a spare species to a new matched tile</small></li><li class=''><b>Adaptation</b><small>the box has an element; its display has under 6</small></li><li class=''><b>Speciation</b><small>gene pool not empty; a disk of that element on Earth</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#ead174;--ink:#302713'><div class='head'><span class='who'>BIRDS</span><span class='meta'>Seed · third in the food chain</span><span class='num'>6</span></div><div class='name'>Beyond the Ridge</div><ol class='acts'><li class=''><b>Speciation</b><small>gene pool not empty; a disk of that element on Earth</small></li><li class='weak'><b>Initiative</b><small>Weak action after the first: step 4 skips it</small></li><li class=''><b>Migration</b><small>a rescue, or a spare species to a new matched tile</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#ead174;--ink:#302713'><div class='head'><span class='who'>BIRDS</span><span class='meta'>Seed · third in the food chain</span><span class='num'>7</span></div><div class='name'>Breaking Formation</div><ol class='acts'><li class=''><b>Migration</b><small>a rescue, or a spare species to a new matched tile</small></li><li class=''><b>Competition</b><small>shares a tile of these terrains or tundra with an opponent</small></li><li class=''><b>Wanderlust</b><small>a face-up tile; an empty spot next to its tiles</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#ead174;--ink:#302713'><div class='head'><span class='who'>BIRDS</span><span class='meta'>Seed · third in the food chain</span><span class='num'>8</span></div><div class='name'>Last Flight</div><ol class='acts'><li class=''><b>Glaciation</b><small>a legal tile with opposing species and none of its own</small></li><li class=''><b>Migration</b><small>a rescue, or a spare species to a new matched tile</small></li><li class=''><b>Speciation</b><small>gene pool not empty; a disk of that element on Earth</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div></div></section><section class='cardpage'><h4>Birds · card backs (print on the reverse)</h4><div class='grid'><div class='card back' style='--bg:#ead174;--ink:#302713'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Birds</div><div class='line'>Seed · third in the food chain</div><div class='power'>Each migrating species may move up to two tiles, through existing terrain.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#ead174;--ink:#302713'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Birds</div><div class='line'>Seed · third in the food chain</div><div class='power'>Each migrating species may move up to two tiles, through existing terrain.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#ead174;--ink:#302713'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Birds</div><div class='line'>Seed · third in the food chain</div><div class='power'>Each migrating species may move up to two tiles, through existing terrain.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#ead174;--ink:#302713'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Birds</div><div class='line'>Seed · third in the food chain</div><div class='power'>Each migrating species may move up to two tiles, through existing terrain.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#ead174;--ink:#302713'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Birds</div><div class='line'>Seed · third in the food chain</div><div class='power'>Each migrating species may move up to two tiles, through existing terrain.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#ead174;--ink:#302713'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Birds</div><div class='line'>Seed · third in the food chain</div><div class='power'>Each migrating species may move up to two tiles, through existing terrain.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#ead174;--ink:#302713'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Birds</div><div class='line'>Seed · third in the food chain</div><div class='power'>Each migrating species may move up to two tiles, through existing terrain.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#ead174;--ink:#302713'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Birds</div><div class='line'>Seed · third in the food chain</div><div class='power'>Each migrating species may move up to two tiles, through existing terrain.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div></div></section><section class='cardpage'><h4>Amphibians · card fronts</h4><div class='grid'><div class='card front' style='--bg:#8ec7db;--ink:#173746'><div class='head'><span class='who'>AMPHIBIANS</span><span class='meta'>Water · fourth in the food chain</span><span class='num'>1</span></div><div class='name'>Threefold Water</div><ol class='acts'><li class=''><b>Speciation</b><small>gene pool not empty; a disk of that element on Earth</small></li><li class=''><b>Migration</b><small>a rescue, or a spare species to a new matched tile</small></li><li class=''><b>Wanderlust</b><small>a face-up tile; an empty spot next to its tiles</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#8ec7db;--ink:#173746'><div class='head'><span class='who'>AMPHIBIANS</span><span class='meta'>Water · fourth in the food chain</span><span class='num'>2</span></div><div class='name'>Seasonal Pools</div><ol class='acts'><li class=''><b>Speciation</b><small>gene pool not empty; a disk of that element on Earth</small></li><li class=''><b>Domination</b><small>an unscored tile holds one of its species</small></li><li class=''><b>Wanderlust</b><small>a face-up tile; an empty spot next to its tiles</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#8ec7db;--ink:#173746'><div class='head'><span class='who'>AMPHIBIANS</span><span class='meta'>Water · fourth in the food chain</span><span class='num'>3</span></div><div class='name'>Floodplain Nursery</div><ol class='acts'><li class=''><b>Migration</b><small>a rescue, or a spare species to a new matched tile</small></li><li class=''><b>Domination</b><small>an unscored tile holds one of its species</small></li><li class=''><b>Adaptation</b><small>the box has an element; its display has under 6</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#8ec7db;--ink:#173746'><div class='head'><span class='who'>AMPHIBIANS</span><span class='meta'>Water · fourth in the food chain</span><span class='num'>4</span></div><div class='name'>Drought Refuge</div><ol class='acts'><li class=''><b>Adaptation</b><small>the box has an element; its display has under 6</small></li><li class='weak'><b>Abundance</b><small>Weak action after the first: step 4 skips it</small></li><li class='weak'><b>Wasteland</b><small>Weak action after the first: step 4 skips it</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#8ec7db;--ink:#173746'><div class='head'><span class='who'>AMPHIBIANS</span><span class='meta'>Water · fourth in the food chain</span><span class='num'>5</span></div><div class='name'>Wetland Tenure</div><ol class='acts'><li class=''><b>Abundance</b><small>a box element it uses; an empty corner on its tile</small></li><li class=''><b>Adaptation</b><small>the box has an element; its display has under 6</small></li><li class=''><b>Migration</b><small>a rescue, or a spare species to a new matched tile</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#8ec7db;--ink:#173746'><div class='head'><span class='who'>AMPHIBIANS</span><span class='meta'>Water · fourth in the food chain</span><span class='num'>6</span></div><div class='name'>Under the Ice</div><ol class='acts'><li class=''><b>Wanderlust</b><small>a face-up tile; an empty spot next to its tiles</small></li><li class='weak'><b>Abundance</b><small>Weak action after the first: step 4 skips it</small></li><li class=''><b>Migration</b><small>a rescue, or a spare species to a new matched tile</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#8ec7db;--ink:#173746'><div class='head'><span class='who'>AMPHIBIANS</span><span class='meta'>Water · fourth in the food chain</span><span class='num'>7</span></div><div class='name'>Cut the Tributary</div><ol class='acts'><li class=''><b>Speciation</b><small>gene pool not empty; a disk of that element on Earth</small></li><li class=''><b>Migration</b><small>a rescue, or a spare species to a new matched tile</small></li><li class=''><b>Domination</b><small>an unscored tile holds one of its species</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#8ec7db;--ink:#173746'><div class='head'><span class='who'>AMPHIBIANS</span><span class='meta'>Water · fourth in the food chain</span><span class='num'>8</span></div><div class='name'>Waters Recede</div><ol class='acts'><li class=''><b>Initiative</b><small>it is not first on the Initiative track</small></li><li class=''><b>Migration</b><small>a rescue, or a spare species to a new matched tile</small></li><li class='weak'><b>Abundance</b><small>Weak action after the first: step 4 skips it</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div></div></section><section class='cardpage'><h4>Amphibians · card backs (print on the reverse)</h4><div class='grid'><div class='card back' style='--bg:#8ec7db;--ink:#173746'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Amphibians</div><div class='line'>Water · fourth in the food chain</div><div class='power'>Three printed Water.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#8ec7db;--ink:#173746'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Amphibians</div><div class='line'>Water · fourth in the food chain</div><div class='power'>Three printed Water.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#8ec7db;--ink:#173746'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Amphibians</div><div class='line'>Water · fourth in the food chain</div><div class='power'>Three printed Water.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#8ec7db;--ink:#173746'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Amphibians</div><div class='line'>Water · fourth in the food chain</div><div class='power'>Three printed Water.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#8ec7db;--ink:#173746'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Amphibians</div><div class='line'>Water · fourth in the food chain</div><div class='power'>Three printed Water.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#8ec7db;--ink:#173746'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Amphibians</div><div class='line'>Water · fourth in the food chain</div><div class='power'>Three printed Water.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#8ec7db;--ink:#173746'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Amphibians</div><div class='line'>Water · fourth in the food chain</div><div class='power'>Three printed Water.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#8ec7db;--ink:#173746'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Amphibians</div><div class='line'>Water · fourth in the food chain</div><div class='power'>Three printed Water.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div></div></section><section class='cardpage'><h4>Arachnids · card fronts</h4><div class='grid'><div class='card front' style='--bg:#db9b91;--ink:#40231f'><div class='head'><span class='who'>ARACHNIDS</span><span class='meta'>Grub · fifth in the food chain</span><span class='num'>1</span></div><div class='name'>One Cut Is Enough</div><ol class='acts'><li class=''><b>Speciation</b><small>gene pool not empty; a disk of that element on Earth</small></li><li class=''><b>Wanderlust</b><small>a face-up tile; an empty spot next to its tiles</small></li><li class=''><b>Adaptation</b><small>the box has an element; its display has under 6</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#db9b91;--ink:#40231f'><div class='head'><span class='who'>ARACHNIDS</span><span class='meta'>Grub · fifth in the food chain</span><span class='num'>2</span></div><div class='name'>Anchor the Web</div><ol class='acts'><li class=''><b>Wanderlust</b><small>a face-up tile; an empty spot next to its tiles</small></li><li class=''><b>Speciation</b><small>gene pool not empty; a disk of that element on Earth</small></li><li class=''><b>Migration</b><small>a rescue, or a spare species to a new matched tile</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#db9b91;--ink:#40231f'><div class='head'><span class='who'>ARACHNIDS</span><span class='meta'>Grub · fifth in the food chain</span><span class='num'>3</span></div><div class='name'>Grub Cache</div><ol class='acts'><li class=''><b>Speciation</b><small>gene pool not empty; a disk of that element on Earth</small></li><li class=''><b>Domination</b><small>an unscored tile holds one of its species</small></li><li class=''><b>Competition</b><small>shares a tile of these terrains or tundra with an opponent</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#db9b91;--ink:#40231f'><div class='head'><span class='who'>ARACHNIDS</span><span class='meta'>Grub · fifth in the food chain</span><span class='num'>4</span></div><div class='name'>Ambush at the Margin</div><ol class='acts'><li class=''><b>Wanderlust</b><small>a face-up tile; an empty spot next to its tiles</small></li><li class=''><b>Migration</b><small>a rescue, or a spare species to a new matched tile</small></li><li class='weak'><b>Abundance</b><small>Weak action after the first: step 4 skips it</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#db9b91;--ink:#40231f'><div class='head'><span class='who'>ARACHNIDS</span><span class='meta'>Grub · fifth in the food chain</span><span class='num'>5</span></div><div class='name'>Frozen Web</div><ol class='acts'><li class=''><b>Depletion</b><small>a disk on Earth of a box element it doesn't use</small></li><li class=''><b>Migration</b><small>a rescue, or a spare species to a new matched tile</small></li><li class=''><b>Speciation</b><small>gene pool not empty; a disk of that element on Earth</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#db9b91;--ink:#40231f'><div class='head'><span class='who'>ARACHNIDS</span><span class='meta'>Grub · fifth in the food chain</span><span class='num'>6</span></div><div class='name'>Follow the Footfalls</div><ol class='acts'><li class=''><b>Wanderlust</b><small>a face-up tile; an empty spot next to its tiles</small></li><li class=''><b>Speciation</b><small>gene pool not empty; a disk of that element on Earth</small></li><li class=''><b>Migration</b><small>a rescue, or a spare species to a new matched tile</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#db9b91;--ink:#40231f'><div class='head'><span class='who'>ARACHNIDS</span><span class='meta'>Grub · fifth in the food chain</span><span class='num'>7</span></div><div class='name'>Retreat to Cover</div><ol class='acts'><li class=''><b>Speciation</b><small>gene pool not empty; a disk of that element on Earth</small></li><li class=''><b>Competition</b><small>shares a tile of these terrains or tundra with an opponent</small></li><li class='weak'><b>Initiative</b><small>Weak action after the first: step 4 skips it</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#db9b91;--ink:#40231f'><div class='head'><span class='who'>ARACHNIDS</span><span class='meta'>Grub · fifth in the food chain</span><span class='num'>8</span></div><div class='name'>Close the Trap</div><ol class='acts'><li class=''><b>Speciation</b><small>gene pool not empty; a disk of that element on Earth</small></li><li class='weak'><b>Abundance</b><small>Weak action after the first: step 4 skips it</small></li><li class=''><b>Wanderlust</b><small>a face-up tile; an empty spot next to its tiles</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div></div></section><section class='cardpage'><h4>Arachnids · card backs (print on the reverse)</h4><div class='grid'><div class='card back' style='--bg:#db9b91;--ink:#40231f'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Arachnids</div><div class='line'>Grub · fifth in the food chain</div><div class='power'>One free Competition on any one tile it shares, as in the normal rules.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#db9b91;--ink:#40231f'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Arachnids</div><div class='line'>Grub · fifth in the food chain</div><div class='power'>One free Competition on any one tile it shares, as in the normal rules.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#db9b91;--ink:#40231f'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Arachnids</div><div class='line'>Grub · fifth in the food chain</div><div class='power'>One free Competition on any one tile it shares, as in the normal rules.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#db9b91;--ink:#40231f'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Arachnids</div><div class='line'>Grub · fifth in the food chain</div><div class='power'>One free Competition on any one tile it shares, as in the normal rules.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#db9b91;--ink:#40231f'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Arachnids</div><div class='line'>Grub · fifth in the food chain</div><div class='power'>One free Competition on any one tile it shares, as in the normal rules.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#db9b91;--ink:#40231f'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Arachnids</div><div class='line'>Grub · fifth in the food chain</div><div class='power'>One free Competition on any one tile it shares, as in the normal rules.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#db9b91;--ink:#40231f'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Arachnids</div><div class='line'>Grub · fifth in the food chain</div><div class='power'>One free Competition on any one tile it shares, as in the normal rules.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#db9b91;--ink:#40231f'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Arachnids</div><div class='line'>Grub · fifth in the food chain</div><div class='power'>One free Competition on any one tile it shares, as in the normal rules.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div></div></section><section class='cardpage'><h4>Insects · card fronts</h4><div class='grid'><div class='card front' style='--bg:#a5c2a0;--ink:#25382a'><div class='head'><span class='who'>INSECTS</span><span class='meta'>Grass · last in the food chain</span><span class='num'>1</span></div><div class='name'>First Colonist</div><ol class='acts'><li class=''><b>Adaptation</b><small>the box has an element; its display has under 6</small></li><li class=''><b>Migration</b><small>a rescue, or a spare species to a new matched tile</small></li><li class=''><b>Domination</b><small>an unscored tile holds one of its species</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#a5c2a0;--ink:#25382a'><div class='head'><span class='who'>INSECTS</span><span class='meta'>Grass · last in the food chain</span><span class='num'>2</span></div><div class='name'>Over the Threshold</div><ol class='acts'><li class=''><b>Speciation</b><small>gene pool not empty; a disk of that element on Earth</small></li><li class=''><b>Migration</b><small>a rescue, or a spare species to a new matched tile</small></li><li class='weak'><b>Abundance</b><small>Weak action after the first: step 4 skips it</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#a5c2a0;--ink:#25382a'><div class='head'><span class='who'>INSECTS</span><span class='meta'>Grass · last in the food chain</span><span class='num'>3</span></div><div class='name'>Grassland Mosaic</div><ol class='acts'><li class=''><b>Speciation</b><small>gene pool not empty; a disk of that element on Earth</small></li><li class=''><b>Domination</b><small>an unscored tile holds one of its species</small></li><li class='weak'><b>Initiative</b><small>Weak action after the first: step 4 skips it</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#a5c2a0;--ink:#25382a'><div class='head'><span class='who'>INSECTS</span><span class='meta'>Grass · last in the food chain</span><span class='num'>4</span></div><div class='name'>A Thousand Footholds</div><ol class='acts'><li class=''><b>Adaptation</b><small>the box has an element; its display has under 6</small></li><li class=''><b>Migration</b><small>a rescue, or a spare species to a new matched tile</small></li><li class=''><b>Domination</b><small>an unscored tile holds one of its species</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#a5c2a0;--ink:#25382a'><div class='head'><span class='who'>INSECTS</span><span class='meta'>Grass · last in the food chain</span><span class='num'>5</span></div><div class='name'>After the Thaw</div><ol class='acts'><li class=''><b>Migration</b><small>a rescue, or a spare species to a new matched tile</small></li><li class=''><b>Domination</b><small>an unscored tile holds one of its species</small></li><li class=''><b>Wanderlust</b><small>a face-up tile; an empty spot next to its tiles</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#a5c2a0;--ink:#25382a'><div class='head'><span class='who'>INSECTS</span><span class='meta'>Grass · last in the food chain</span><span class='num'>6</span></div><div class='name'>Swarm the Gap</div><ol class='acts'><li class=''><b>Adaptation</b><small>the box has an element; its display has under 6</small></li><li class=''><b>Speciation</b><small>gene pool not empty; a disk of that element on Earth</small></li><li class=''><b>Migration</b><small>a rescue, or a spare species to a new matched tile</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#a5c2a0;--ink:#25382a'><div class='head'><span class='who'>INSECTS</span><span class='meta'>Grass · last in the food chain</span><span class='num'>7</span></div><div class='name'>Keep the Colony</div><ol class='acts'><li class=''><b>Competition</b><small>shares a tile of these terrains or tundra with an opponent</small></li><li class=''><b>Domination</b><small>an unscored tile holds one of its species</small></li><li class=''><b>Speciation</b><small>gene pool not empty; a disk of that element on Earth</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div><div class='card front' style='--bg:#a5c2a0;--ink:#25382a'><div class='head'><span class='who'>INSECTS</span><span class='meta'>Grass · last in the food chain</span><span class='num'>8</span></div><div class='name'>Everywhere at Once</div><ol class='acts'><li class=''><b>Speciation</b><small>gene pool not empty; a disk of that element on Earth</small></li><li class=''><b>Domination</b><small>an unscored tile holds one of its species</small></li><li class=''><b>Migration</b><small>a rescue, or a spare species to a new matched tile</small></li></ol><div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. Steps 1–3 come before this card; if no action fits, step 5.</div></div></div></section><section class='cardpage'><h4>Insects · card backs (print on the reverse)</h4><div class='grid'><div class='card back' style='--bg:#a5c2a0;--ink:#25382a'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Insects</div><div class='line'>Grass · last in the food chain</div><div class='power'>One free species at Speciation, as in the normal rules.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#a5c2a0;--ink:#25382a'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Insects</div><div class='line'>Grass · last in the food chain</div><div class='power'>One free species at Speciation, as in the normal rules.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#a5c2a0;--ink:#25382a'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Insects</div><div class='line'>Grass · last in the food chain</div><div class='power'>One free species at Speciation, as in the normal rules.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#a5c2a0;--ink:#25382a'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Insects</div><div class='line'>Grass · last in the food chain</div><div class='power'>One free species at Speciation, as in the normal rules.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#a5c2a0;--ink:#25382a'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Insects</div><div class='line'>Grass · last in the food chain</div><div class='power'>One free species at Speciation, as in the normal rules.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#a5c2a0;--ink:#25382a'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Insects</div><div class='line'>Grass · last in the food chain</div><div class='power'>One free species at Speciation, as in the normal rules.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#a5c2a0;--ink:#25382a'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Insects</div><div class='line'>Grass · last in the food chain</div><div class='power'>One free species at Speciation, as in the normal rules.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div><div class='card back' style='--bg:#a5c2a0;--ink:#25382a'><div class='inner'><div class='brand'>THE RED QUEEN</div><div class='animal'>Insects</div><div class='line'>Grass · last in the food chain</div><div class='power'>One free species at Speciation, as in the normal rules.</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div></div></section></body>

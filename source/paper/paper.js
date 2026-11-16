@@ -99,7 +99,7 @@ function paperPlacement(s, actor, cardIndex, openOverride = null) {
   for (const [name, get] of steps) { slot = get(); if (slot) { why = name; break; } }
   const {row} = splitSlot(slot);
   if (why === 'Card action') why += ' ' + (face.rows.indexOf(row) + 1);
-  return {slot,row,priority:face ? face.rows.indexOf(row) : -1,focus,card:cardIndex,face:positive,opportunity:1,reason:'Paper rule, ' + why + ': ' + ROW_BY_ID[row].name + '.'};
+  return {slot,row,priority:face ? face.rows.indexOf(row) : -1,focus,card:cardIndex,face:positive,opportunity:1,reason:'Red Queen, ' + why + ': ' + ROW_BY_ID[row].name + '.'};
 }
 const _appBotPlacement = botPlacement;
 botPlacement = function(s) {
@@ -153,7 +153,7 @@ function pVacantMyCorners(s, actor) { // vacant corners touching my tiles, with 
   return unique(occupied(s,actor).flatMap(t => VERTICES_OF[t].filter(k => !s.corners[k])))
     .map(k => ({corner:k, mine:CORNER_TILES[k].filter(t => s.tiles[t]?.cubes[actor]).length, vp:Math.max(...CORNER_TILES[k].filter(t => s.tiles[t]).map(t => pFirstVP(s,t)))}));
 }
-function pLabel(text) { return 'Paper rule: ' + text; }
+function pLabel(text) { return 'Red Queen: ' + text; } // v0.5.5: the printed rivals are named The Red Queen
 // A tile's free corner in board order (Aquatic); v0.5.1 took the first in clockwise storage order.
 function pFreeCorner(s, t) { return pBoardOrder(VERTICES_OF[t].filter(k => !s.corners[k]))[0] || null; }
 // Full table instructions: every location, element, quantity and pawn the decision changes.

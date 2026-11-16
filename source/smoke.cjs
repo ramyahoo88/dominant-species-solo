@@ -106,5 +106,16 @@ for (const human of FOOD) {
   const bots=FOOD.filter(id=>id!==human);
   for(let j=0;j<bots.length;j++) for(let k=j+1;k<bots.length;k++) scenario(human,[bots[j],bots[k]],seed++);
 }
-console.log(JSON.stringify({games,totalSteps,maxTurns,maxTime,forfeit,botHits,deckDraws,counts},null,2));
+globalThis.SMOKE = {games,totalSteps,maxTurns,maxTime,forfeit,botHits,deckDraws,counts};
 `,sandbox,{filename:'smoke-cases.js'});
+const result = JSON.parse(JSON.stringify(sandbox.SMOKE));
+console.log(JSON.stringify(result,null,2));
+// --check (v0.5.5, GPT's v0.5.4 comprehensive audit T1): compare with BASELINE_RESULTS.json, ignoring the machine-dependent maxTime.
+// --write refreshes the baseline from this build.
+const baselinePath = path.join(__dirname,'..','BASELINE_RESULTS.json');
+const stable = r => { const {maxTime, ...rest} = r; return rest; };
+if (process.argv.includes('--write')) fs.writeFileSync(baselinePath, JSON.stringify(result,null,2) + '\n');
+if (process.argv.includes('--check')) {
+  assert.deepEqual(stable(result), stable(JSON.parse(fs.readFileSync(baselinePath,'utf8'))), 'smoke results differ from BASELINE_RESULTS.json');
+  console.error('Smoke results match BASELINE_RESULTS.json (maxTime ignored).');
+}

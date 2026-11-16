@@ -446,7 +446,7 @@ dialog::backdrop{background:#132d2c88}
 <noscript>This companion needs JavaScript. Open the downloaded HTML file in a browser.</noscript>
 <script>'use strict';
 
-const VERSION = '0.5.4';
+const VERSION = '0.5.5';
 const SAVE_KEY = 'dominant-species-solo-v1';
 // GMT rules p. 4: of the 50 gathered cubes, one marks VP.
 const THREE_PLAYER_CUBES = 50;
@@ -1719,7 +1719,33 @@ function icePoints(s) {
   for (const tile of terrainIds(s)) { const owner = cone(s,tile); if (owner) totals[owner]++; }
   return Object.fromEntries(s.ids.map(id => [id,bonus(totals[id])]));
 }
+// Final-reset projection for the Ice Age decision (v0.5.5, GPT's v0.5.4 comprehensive audit A1). It runs the real
+// resolution on a copy: Ice Age points, then Extinction with the Mammals save the Extinction step itself would make (the
+// app's or the printed rivals' chooser; a human Mammals player is assumed to take its best legal save), Survival and
+// final tile scoring. Actions still to come this turn are outside the snapshot. Before v0.5.5 the estimate saved the
+// first endangered Mammals tile in the order Mammals reached them; PAPER.oldForecast (testing) restores that.
+function finalProjection(s) {
+  const ice = icePoints(s);
+  const run = saved => {
+    const t = copy({...s, log: []});
+    for (const id of t.ids) earned(t, id, ice[id]);
+    t.ending = true;
+    resolveExtinction(t, saved);
+    return Object.fromEntries(t.ids.map(id => [id, t.animals[id].vp]));
+  };
+  const options = s.ids.includes('mammals') ? extinctionOptions(s,'mammals') : [];
+  if (!options.length) return run(null);
+  const chosen = botAction(s,{kind:'extinction',actor:'mammals'})?.saved ?? null;
+  if (s.human !== 'mammals') return run(chosen);
+  const runs = options.map(tile => ({tile, vp:run(tile)}));
+  const top = Math.max(...runs.map(r => r.vp.mammals));
+  return (runs.find(r => r.tile === chosen && r.vp.mammals === top) || runs.find(r => r.vp.mammals === top)).vp;
+}
 function endEstimate(s, id) {
+  if (typeof PAPER !== 'undefined' && PAPER.oldForecast) return endEstimateV054(s, id);
+  return finalProjection(s)[id];
+}
+function endEstimateV054(s, id) {
   let points = s.animals[id].vp + icePoints(s)[id];
   const trial = {...s,tiles:Object.fromEntries(terrainIds(s).map(tile => [tile,{...s.tiles[tile],cubes:{...s.tiles[tile].cubes}}]))};
   for (const actor of s.ids) {
@@ -2193,7 +2219,7 @@ function paperPlacement(s, actor, cardIndex, openOverride = null) {
   for (const [name, get] of steps) { slot = get(); if (slot) { why = name; break; } }
   const {row} = splitSlot(slot);
   if (why === 'Card action') why += ' ' + (face.rows.indexOf(row) + 1);
-  return {slot,row,priority:face ? face.rows.indexOf(row) : -1,focus,card:cardIndex,face:positive,opportunity:1,reason:'Paper rule, ' + why + ': ' + ROW_BY_ID[row].name + '.'};
+  return {slot,row,priority:face ? face.rows.indexOf(row) : -1,focus,card:cardIndex,face:positive,opportunity:1,reason:'Red Queen, ' + why + ': ' + ROW_BY_ID[row].name + '.'};
 }
 const _appBotPlacement = botPlacement;
 botPlacement = function(s) {
@@ -2247,7 +2273,7 @@ function pVacantMyCorners(s, actor) { // vacant corners touching my tiles, with 
   return unique(occupied(s,actor).flatMap(t => VERTICES_OF[t].filter(k => !s.corners[k])))
     .map(k => ({corner:k, mine:CORNER_TILES[k].filter(t => s.tiles[t]?.cubes[actor]).length, vp:Math.max(...CORNER_TILES[k].filter(t => s.tiles[t]).map(t => pFirstVP(s,t)))}));
 }
-function pLabel(text) { return 'Paper rule: ' + text; }
+function pLabel(text) { return 'Red Queen: ' + text; } // v0.5.5: the printed rivals are named The Red Queen
 // A tile's free corner in board order (Aquatic); v0.5.1 took the first in clockwise storage order.
 function pFreeCorner(s, t) { return pBoardOrder(VERTICES_OF[t].filter(k => !s.corners[k]))[0] || null; }
 // Full table instructions: every location, element, quantity and pawn the decision changes.
@@ -2877,7 +2903,7 @@ function readSupplyDraft(s, raw) {
 function validateState(s) {
   function assert(ok) { if (!ok) throw new Error('This is not a valid Dominant Species companion save.'); }
   recordPaperLevel(s); // before the version is replaced: the level scale depends on it
-  if (s && ['0.1.0', '0.2.0', '0.3.0', '0.3.1', '0.3.2', '0.3.3', '0.3.4', '0.3.5', '0.3.6', '0.3.7', '0.3.8', '0.3.9', '0.4.0', '0.4.1', '0.5.0', '0.5.1', '0.5.2', '0.5.3'].includes(s.version)) s.version = VERSION;
+  if (s && ['0.1.0', '0.2.0', '0.3.0', '0.3.1', '0.3.2', '0.3.3', '0.3.4', '0.3.5', '0.3.6', '0.3.7', '0.3.8', '0.3.9', '0.4.0', '0.4.1', '0.5.0', '0.5.1', '0.5.2', '0.5.3', '0.5.4'].includes(s.version)) s.version = VERSION;
   const keys = value => value && typeof value === 'object' ? Object.keys(value) : [];
   assert(s && s.version === VERSION && ['supply','planning','execution','finished'].includes(s.phase) &&
     num(s.turn) && s.turn > 0 && num(s.rng) && s.rng <= 0xffffffff && num(s.seed) && s.seed <= 0xffffffff);
@@ -3002,8 +3028,8 @@ function setupPage() {
     '<form data-form="start"><fieldset class="rival-count"><legend>Rivals</legend><div class="segment">' + [2,3,4,5].map(n => '<label><input name="count" type="radio" value="' + n + '"' +
       (setup.bots.length === n ? ' checked' : '') + '> ' + n + '</label>').join('') + '</div></fieldset><div class="seats">' + seats.map(seat).join('') + '</div><p class="seat-hint">Choosing an animal already at the table swaps the two seats.</p><div class="setup-bottom">' +
     '<fieldset><legend>Rival rules</legend><div class="segment">' +
-    '<label><input name="rules" type="radio" value="app"' + (!setup.paper ? ' checked' : '') + '> App rivals</label>' +
-    '<label><input name="rules" type="radio" value="paper"' + (setup.paper ? ' checked' : '') + '> Paper rules · as printed</label></div>' +
+    '<label><input name="rules" type="radio" value="app"' + (!setup.paper ? ' checked' : '') + '> Tooth &amp; Claw · app rivals</label>' +
+    '<label><input name="rules" type="radio" value="paper"' + (setup.paper ? ' checked' : '') + '> The Red Queen · printed rivals</label></div>' +
     (setup.paper ? '<div class="segment paper-level">' + PAPER_LEVELS.map(([n,name]) => '<label><input name="extra" type="radio" value="' + n + '"' + (setup.extra === n ? ' checked' : '') + '> ' + name + ' · ' + (n === -2 && setup.bots.length === 5 ? '−1 pawn, you +1' : (n < 0 ? '−' + -n : '+' + n) + ' pawn' + (Math.abs(n) === 1 ? '' : 's')) + '</label>').join('') + '</div>' : '') +
     '</fieldset>' +
     '<fieldset><legend>Dominance deck</legend><div class="segment">' +
@@ -3104,7 +3130,7 @@ function showSupply() {
     // GPT v0.5.3 re-audit (medium): scaled Easy (five rivals) is −1 for each rival and +1 for you, not −2.
     (game.paper?.extra ? (([rd, yd]) => ' Each rival ' + (rd > 0 ? 'takes ' + rd + ' extra' : 'returns ' + -rd) + ' action pawn' + (Math.abs(rd) === 1 ? '' : 's') +
       (yd ? ' and you take ' + yd + ' extra' : '') + ': each rival has ' + (SETUP_BY_PLAYERS[game.ids.length][0] + rd) + (yd ? ' and you have ' + (SETUP_BY_PLAYERS[game.ids.length][0] + yd) : '') +
-      ' (paper rules, ' + paperLevel(game.paper.extra, game.paper) + ').')(game.paper.scaledEasy ? [-1, 1] : [game.paper.extra, 0]) : '') +
+      ' (The Red Queen, ' + paperLevel(game.paper.extra, game.paper) + ').')(game.paper.scaledEasy ? [-1, 1] : [game.paper.extra, 0]) : '') +
     ' Match the Earth map with Wetland at the top.' :
     'Slide the physical action display as usual. Refill the three draw rows, turn up any face-down tile stacks, and fill the open card spaces.';
   return '<div class="block-head"><h2 id="turn-focus" tabindex="-1">Enter board draws</h2><span class="phase-badge">' + (game.turn === 1 ? 'Setup' : 'Reseed') +
@@ -3142,7 +3168,7 @@ function drawPanel() {
     return '<div class="block-head"><h2 id="turn-focus" tabindex="-1">Place the pawn</h2><span class="phase-badge">Planning</span></div>' +
       '<p class="actorline">' + badge(reveal.actor,true) + nameOf(reveal.actor) + ' · ' + (left - 1) + ' left in deck</p>' +
       '<div class="current-card"><p class="eyebrow">' + (reveal.face ? 'Primary face' : 'Reverse face') + '</p><p class="display">' + card.title +
-      '</p><p class="muted">' + (game.paper ? 'Paper rules always use this face.' : CHECKS[card.check] + ' · ' + (reveal.face ? 'Yes' : 'No')) + '</p>' + cardRows(face) + '</div>' +
+      '</p><p class="muted">' + (game.paper ? 'The Red Queen always uses this face.' : CHECKS[card.check] + ' · ' + (reveal.face ? 'Yes' : 'No')) + '</p>' + cardRows(face) + '</div>' +
       '<div class="result-box"><strong>' + slotLabel(reveal.slot) + '</strong><p>' + reveal.reason + '</p></div>' +
       button('Pawn placed · Continue','next','primary');
   }
@@ -3213,7 +3239,7 @@ function render(focus = false, noScroll = false) {
       ' · ' + a.pool + ' in pool</small></div><div class="score-vp"><b>' + a.vp + '</b>VP</div></div>';
   }).join('');
   const turn = game.phase === 'supply' ? showSupply() : reveal || game.phase === 'planning' ? drawPanel() : game.phase === 'execution' ? showExecution() : showFinished();
-  main.innerHTML = '<div class="game-top"><div><p class="eyebrow">' + (game.short ? '22-card game' : '26-card game') + (game.paper ? ' · Paper rules, ' + paperLevel(game.paper.extra, game.paper) : '') +
+  main.innerHTML = '<div class="game-top"><div><p class="eyebrow">' + (game.short ? '22-card game' : '26-card game') + (game.paper ? ' · The Red Queen, ' + paperLevel(game.paper.extra, game.paper) : ' · Tooth &amp; Claw') +
     '</p><h1>' + roundTitle + '</h1></div><div class="toolrow">' + button('Undo','undo','sm subtle',enable(!!(undo.length || reveal || preview))) + '</div></div>' +
     '<div class="score-strip" aria-label="Scores in Initiative order">' + score + '</div><nav class="game-jump" aria-label="Jump to board section">' +
     '<a href="#turn-focus">Current step</a><a href="#action-display">Action display</a><a href="#earth-panel">Earth map</a></nav>' +
@@ -3703,7 +3729,7 @@ main.addEventListener('submit',event => {
   const values=new FormData(form);
   try {
     if (form.dataset.form === 'start') {
-      if (setup.paper && !PAPER_LEVELS.some(([n]) => n === setup.extra)) throw new Error('Choose a difficulty level for the paper rivals.');
+      if (setup.paper && !PAPER_LEVELS.some(([n]) => n === setup.extra)) throw new Error('Choose a difficulty level for The Red Queen.');
       game=newGame(setup.human,[...setup.bots],setup.short,randomSeed(),setup.paper ? {extra:setup.extra} : null);
       activeTile='D3'; reveal=null; preview=null; draft={}; undo=[]; notice=''; initialError='';
       save(); render(true);
@@ -3805,7 +3831,7 @@ function renderModal() {
     '<li>Place your own pawns. Reveal a card for each rival placement and mirror the indicated slot on your action display.</li>' +
     '<li>Apply each action to the physical board and confirm it here. The Earth map uses the starting wetland as north. Corner 1 points right, and corners 2–6 follow clockwise. The map shows a shared corner once.</li>' +
     '<li>Follow the app’s Extinction and Survival prompts. After Ice Age, complete the turn and compare the final scores.</li></ol>' +
-    '<h3>Bot cards</h3><p>Each rival shuffles its own eight-card deck, checks one condition per placement and starts on the corresponding face. The action list guides the pawn placement. The bot can take another open space when it sees a stronger opportunity. Targets are chosen when the pawn resolves.</p><p>With <b>Paper rules</b>, the rivals follow the printed Paper Rivals rulebook exactly: always the reverse face of the card, simple counting rules, and a pawn adjustment for difficulty (' + PAPER_LEVELS.map(([n,name]) => name + ' ' + (n < 0 ? '−' + -n : n ? '+' + n : '0')).join(', ') + '; from v0.5.3, Easy with five rivals is −1 for each rival and +1 for you). In Paper games started in v0.5.0 or later, the rivals plan first: at the start of each Planning, they place one pawn each before anyone else, in Initiative order. In Paper games started in v0.4.0 or later, when only rivals tie for the most matches on a tile, one of them is dominant: from v0.5.4 the rival with the most species there, then the one higher in the food chain (earlier games: the food chain alone); a tie that includes you leaves the tile with no dominant animal. In every Paper game (from v0.5.1, saved games included), if no rival has any species left on Earth (from v0.5.4 even if yours remain), a rival\'s Abundance may use any empty corner, so species can return. Use it to learn the printed rules, or to play them without printing anything.</p>' +
+    '<h3>Rival cards</h3><p>With <b>Tooth &amp; Claw</b>, the app\'s own rivals, each rival shuffles its own eight-card deck, checks one condition per placement and starts on the corresponding face. The action list guides the pawn placement. The bot can take another open space when it sees a stronger opportunity. Targets are chosen when the pawn resolves.</p><p>With <b>The Red Queen</b>, the rivals follow the printed rulebook (The Red Queen: solo rivals for Dominant Species) exactly: always the reverse face of the card, simple counting rules, and a pawn adjustment for difficulty (' + PAPER_LEVELS.map(([n,name]) => name + ' ' + (n < 0 ? '−' + -n : n ? '+' + n : '0')).join(', ') + '; from v0.5.3, Easy with five rivals is −1 for each rival and +1 for you). In Red Queen games started in v0.5.0 or later, the rivals plan first: at the start of each Planning, they place one pawn each before anyone else, in Initiative order. In Red Queen games started in v0.4.0 or later, when only rivals tie for the most matches on a tile, one of them is dominant: from v0.5.4 the rival with the most species there, then the one higher in the food chain (earlier games: the food chain alone); a tie that includes you leaves the tile with no dominant animal. In every Red Queen game (from v0.5.1, saved games included), if no rival has any species left on Earth (from v0.5.4 even if yours remain), a rival\'s Abundance may use any empty corner, so species can return. Use it to learn the printed rules, or to play them without printing anything.</p>' +
     (game?.paper && !game.paper.planFirst ? '<p><b>This saved game</b> was started before ' + (game.paper.rivalTie ? 'v0.5.0' : 'v0.4.0') + ' and keeps these rules from then: ' + esc(paperLevel(game.paper.extra, game.paper)) + ' (' + (game.paper.extra < 0 ? '−' + -game.paper.extra : '+' + game.paper.extra) + ' pawn' + (Math.abs(game.paper.extra) === 1 ? '' : 's') + ' per rival), the rivals place in normal Initiative order' + (game.paper.rivalTie ? '' : ', and a tie between rivals leaves the tile with no dominant animal') + '.</p>' : '') +
     (game?.paper?.planFirst && !game.paper.speciesTie ? '<p><b>This saved game</b> was started before v0.5.4 and keeps its rival tie rule from then: when only rivals tie for the most matches on a tile, the one higher in the food chain is dominant.</p>' : '') +
     '<h3>Board tracking</h3><p>The companion checks cones automatically. When a protected Hibernation cube shares a tile with other cubes of the same animal, the app moves or removes the ordinary cubes first. Confirm each physical move to save it. Undo is available until you close or reload the page. Export a save before switching browsers or devices.</p>' +

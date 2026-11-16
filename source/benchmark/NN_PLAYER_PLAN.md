@@ -55,6 +55,43 @@ largest at Hard and Expert. All candidates were identical in every future in 11%
 Standard and Hard together). Labels: pb5's top 4 spaces, 8 playouts each on shared re-dealt futures, kept raw
 (`pb_q*`, seeds 5601xx onwards, v0.5.5 rules on the PC).
 
+**Step 1 result (16 Nov, 01:10): the net does not learn.** Residual MLP (1,322 features, 256-256, pairwise loss,
+last layer zero-initialised), trained on the GPU with a train/validation/test split by decision:
+
+| Job | Training data | Test gain over pb5, points of win rate per decision |
+|---|---|---|
+| `pb_t0a_train` | `pb_q01`–`q07`, 4,839 decisions | −0.14 (SE 0.33) |
+| `pb_t0b_train` | `pb_q01`–`q10`, 7,003 decisions | −0.37 (SE 0.39) |
+| `pb_t0c`–`t0e` | smaller, more regularised nets | never beat pb5 on validation (kept epoch 0) |
+
+It memorises training pairs (98%) and orders held-back pairs at chance (50–52%). A boosted-tree switch rule on
+simple candidate features (space, rank, value gap, level, rivals, turn) found nothing either (cross-validated
+correlation 0.02).
+
+**Bug found and fixed (45591f9).** `nnSlotScores` scored the candidates outside `asTuned`, so pb5's utility hook
+(the lone-tundra feature) was off: the "top candidate" was not pb5's real pick in 11% of decisions, and the stored
+base values differed from the ones the net is added to in play. Both the 19:38 gate and `pb_q01`–`q12` carry it.
+With the fix the top candidate equals pb5's placement in 332 of 332 decisions, and a game replayed through the data
+loop matches pb5 exactly.
+
+**Corrected gate (16 Nov, 02:25) — passed again.** Jobs `pb_q13_data`, `pb_q14_data`, `pb_q15_gate`
+(`results/pb_g1`–`pb_g3`; k 4, m 16, raw; seeds 571000/572000/573000; v0.5.6 rules): 1,152 decisions, 0 errors,
+0 stalls.
+
+| Per decision, win probability | All | Easy | Standard | Hard | Expert | App |
+|---|---|---|---|---|---|---|
+| Realisable gain (choose on 8, score on 8) | **+0.0139 (±0.0052)** | +0.002 (±0.004) | +0.031 (±0.016) | +0.007 (±0.011) | +0.019 (±0.012) | +0.011 (±0.013) |
+| Perfect chooser among the 4 (rough) | +0.017 | +0.002 | +0.034 | +0.011 | +0.022 | +0.015 |
+
+By rivals 2 / 3 / 4 / 5: +0.012 / +0.018 / +0.013 / +0.012. Per job: +0.013, +0.011, +0.019. pb5's 2nd / 3rd /
+4th choices score −0.006 / −0.003 / −0.006 against its pick. The bug barely moved the gate (+0.0154 before), so the
+headroom is real; the net cannot find which decisions it lives in.
+
+**Next: the search player itself** (`--search K:M` in `--evaluate`, 45591f9). At each of its Planning placements
+it plays pb5's top K spaces out M times on shared re-dealt futures and takes the most wins (then margin);
+everything else is pb5. The paired reference column runs through the same loop (`--search 1:1` replays pb5 game
+for game). Pilot on 530000, paired with pb5, Hard and Expert first: `pb_s*_search`.
+
 The original proposal follows.
 
 ## Proposal (14 Nov)

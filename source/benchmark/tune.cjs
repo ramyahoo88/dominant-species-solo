@@ -5,7 +5,7 @@
 //        [--pairs 8] [--games 64] [--validate-games 400] [--focus dominance] [--weights FILE] [--out FILE]
 //        [--features base,phase,cards,cubes,elements,denial | all] [--resume CHECKPOINT] [--train-modes=app,-1,0,1,2]
 //   node source/benchmark.cjs --evaluate [--weights FILE] [--seed 230000] [--per-cell 90] [--modes app,1] [--policies tuned,dominance]
-//        [--compare v1=FILE,...] [--ablate phase,cards,...] [--net NET.json for the 'nn' policy]
+//        [--compare v1=FILE,...] [--ablate phase,cards,...] [--net NET.json for the 'nn' policy] [--search K:M]
 //   node source/benchmark.cjs --nn-data --weights FILE [--net NET.json] --seed S --out PREFIX [--k 4 --m 2 --rate .07 --minutes 17]
 //   node source/benchmark.cjs --selftest
 //
@@ -288,6 +288,16 @@ async function evaluate(args, pool, animals) {
     const w = read(path);
     columns.push({label, policy: 'tuned', weights: w.best ?? w});
   }
+  // Search player column (--search K:M): at each of its Planning placements it plays the tuned policy's top K spaces
+  // out M times on shared re-dealt futures and takes the best (nn/driver.js); everything else is the tuned policy.
+  if (args.search) {
+    const [k, m] = args.search.split(':').map(Number);
+    assert(k >= 1 && m >= 1, '--search needs K:M, for example 4:8 (1:1 replays the tuned player, a pairing check)');
+    columns.push({label: 'search', policy: 'tuned', weights, nn: {k, m, rate: 1, search: true}});
+    // Pair it: the tuned column then plays through the same game loop (nn/driver.js, nothing sampled), so the two
+    // columns see the same tables and draws until the search player first chooses differently.
+    for (const c of columns) if (c.label === 'tuned') c.nn = {k: 1, m: 0, rate: 0};
+  }
   for (const group of (args.ablate || '').split(',').filter(Boolean)) {
     const w = complete(pool.defaults, JSON.parse(JSON.stringify(weights)));
     for (const k of ABLATIONS[group] ? ABLATIONS[group]() : groupKeys(pool.defaults, group)) setKey(w, k, getKey(pool.defaults, k));
@@ -313,7 +323,7 @@ async function evaluate(args, pool, animals) {
   for (const bots of RUN_BOTS) for (const mode of modes) {
     assert(ALL_MODES.includes(mode), 'Unknown rival table ' + mode + '; use app or -2..3.');
     const base = scenarios(cellSeed(bots, mode), +args['per-cell'], animals, {bots, mode});
-    const jobs = columns.map(c => ({weights: c.weights, scenarios: base.map(s => ({...s, policy: c.policy}))}));
+    const jobs = columns.map(c => ({weights: c.weights, scenarios: base.map(s => ({...s, policy: c.policy})), ...(c.nn ? {nn: c.nn} : {})}));
     const res = await pool.run(jobs);
     const row = {rivals: bots, rivalsAre: MODE_NAME[mode], extraPawns: mode === 'app' ? null : mode, even: Math.round(100 * EVEN[bots])};
     columns.forEach((c, i) => {
@@ -396,7 +406,7 @@ async function selftest(pool, animals) {
 async function main(argv) {
   const args = parseArgs({args: argv, options: {
     tune: {type: 'boolean'}, evaluate: {type: 'boolean'}, selftest: {type: 'boolean'}, 'nn-data': {type: 'boolean'},
-    net: {type: 'string'}, k: {type: 'string', default: '4'}, m: {type: 'string', default: '2'}, rate: {type: 'string', default: '.07'},
+    net: {type: 'string'}, search: {type: 'string'}, k: {type: 'string', default: '4'}, m: {type: 'string', default: '2'}, rate: {type: 'string', default: '.07'},
     minutes: {type: 'string', default: '17'}, 'train-modes': {type: 'string'}, raw: {type: 'boolean'}, 'max-games': {type: 'string', default: '1000000'},
     workers: {type: 'string', default: String(availableParallelism())},
     'train-seed': {type: 'string', default: '210000'}, 'validate-seed': {type: 'string', default: '220000'},

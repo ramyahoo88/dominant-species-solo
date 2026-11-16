@@ -61,7 +61,8 @@ function nnResample(s, supply, rnd) {
 }
 // One game from scenario sc. Each Planning placement of the player is sampled with probability opts.rate: its top
 // opts.k spaces (by the policy's own scores) are each played out on opts.m re-dealt futures, the same futures for
-// every candidate. The game itself goes on with the policy's choice.
+// every candidate. The game itself goes on with the policy's choice, or with opts.search the best-scoring candidate
+// (a one-step rollout search player: candidates from the tuned policy, playouts by the tuned policy).
 function nnSampleGame(sc, player, opts) {
   const s = newGame(sc.human, sc.rivals, sc.short, sc.seed);
   const supply = makeSupplies(s, sc.seed);
@@ -85,6 +86,9 @@ function nnSampleGame(sc, player, opts) {
         c.raw.push([g.win, g.margin]);
       }
     }
+    // Search player (opts.search, evaluation only): play the candidate with the best playout result (wins, then
+    // mean margin, then the policy's own order) and keep no sample.
+    if (opts.search) return cands.reduce((b, c) => c.win > b.win || (c.win === b.win && c.margin > b.margin) ? c : b).slot;
     samples.push({features: player.features(st, sc.human), turn: st.turn,
       cands: cands.map(c => [NN_SLOT_INDEX[c.slot], +c.tuned.toFixed(4), +c.residual.toFixed(4), +c.win.toFixed(4), +c.margin.toFixed(3)]),
       // --raw: each candidate's [win, margin] per re-dealt future (future m is the same for every candidate).

@@ -35,7 +35,10 @@ function nnForward(x) {
 }
 // Every open space with tuned value and the net's correction (Planning only).
 function nnSlotScores(state, actor) {
-  const options = tunedOptions(state, actor, TUNED, null);
+  // asTuned: the tuned player's utility hook (loneTundra) is on, as in tunedPlacement. Without it the candidates and
+  // their 'tuned' values were the hook-free ones, and the top candidate missed pb5's actual pick 11% of the time
+  // (found 16 Nov; the data drivers and the gate measured against that hook-free top candidate).
+  const options = asTuned(() => tunedOptions(state, actor, TUNED, null));
   if (!options) return null;
   const residual = NN_NET ? nnForward(nnFeatures(visibleBoard(state), actor)) : null;
   return options.map(o => {

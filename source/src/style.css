@@ -197,6 +197,25 @@ dialog::backdrop{background:#132d2c88}
   .wrap{padding-inline:18px}.game-grid{grid-template-columns:minmax(0,1fr) minmax(0,.9fr)}
   .block{padding:14px}.board-panel{padding:11px}.action-row{grid-template-columns:96px minmax(0,1fr)}
 }
+/* The Red Queen, cards only (v0.5.6) */
+.rq-intro h2{font-size:30px;margin-bottom:6px}.rq-intro .muted{margin-top:7px;font-size:13px}
+.rq-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px;margin:14px 0}
+.rq-deck{padding:15px 16px;display:flex;flex-direction:column;gap:10px}.rq-deck .block-head{margin:0}
+.rq-deck h2{display:flex;align-items:center;gap:9px;font-size:30px}.rq-deck .button{align-self:flex-start}
+.rq-card{border:1px solid #b5c5b9;border-radius:10px;background:#fffef9;padding:10px 12px;font-family:Georgia,serif}
+.rq-head{display:flex;align-items:center;gap:8px;background:var(--chip);color:var(--chip-ink);padding:4px 9px;border-radius:6px;border:1px solid #0000004d}
+.rq-who{font:700 12px/1.2 var(--body);letter-spacing:.08em}.rq-meta{font:12px/1.2 var(--body);opacity:.88;flex:1}.rq-num{font:700 22px/1 var(--body)}
+.rq-name{font:700 18px/1.25 Georgia,serif;color:#2f4a3a;margin:8px 0 4px}
+.rq-acts{list-style:none;margin:0;padding:0;counter-reset:act}
+.rq-acts li{counter-increment:act;position:relative;padding:3px 0 5px 30px;border-bottom:1px solid #e1e5df}.rq-acts li:last-child{border-bottom:0}
+.rq-acts li::before{content:counter(act);position:absolute;left:0;top:5px;width:21px;height:21px;border-radius:50%;background:#2f4a3a;color:#fff;font:700 12px/21px var(--body);text-align:center}
+.rq-acts b{display:block;font-size:16px}.rq-acts small{display:block;font:12.5px/1.3 var(--body);color:#555}
+.rq-acts li.weak b,.rq-acts li.weak small{color:#9a9a9a}.rq-acts li.weak::before{background:#b9b9b9}
+.rq-foot{margin-top:6px;padding-top:5px;border-top:1px solid #9aa39a;font:11.5px/1.35 var(--body);color:#666}
+.rq-note{font-size:13px;color:#8a3b1c}.rq-empty{padding:12px 0;color:var(--muted)}
+.rq-recent li{display:flex;align-items:center;gap:6px}
+dialog.doc-modal{width:min(980px,calc(100% - 16px))}dialog.doc-modal .modal-body{padding:0}
+.doc-frame{display:block;width:100%;height:calc(100dvh - 125px);border:0;background:#fff}
 @media(max-width:670px){
   .wrap{padding-inline:12px}.mast-inner{min-height:55px;gap:3px}.brand{font-size:13px;gap:6px}.emblem{width:25px;height:25px}
   nav{gap:0}nav button{padding:8px 6px;font-size:12px}.hero{margin:15px 0 12px;min-height:232px}
@@ -213,6 +232,7 @@ dialog::backdrop{background:#132d2c88}
   .game-jump{display:flex;gap:12px;margin:0 2px 9px;font-size:12px}
   .block{padding:13px}.earth{max-width:540px;margin-inline:auto}.footer{min-height:53px}
   .hex-terrain{font-size:7px}.element-dot{width:17px;height:17px}.modal-body{padding:12px 14px 17px}.modal-header{padding:12px 14px}
+  .rq-grid{grid-template-columns:1fr;gap:10px}.rq-deck h2{font-size:27px}.game-top.rq-top{flex-wrap:wrap;align-items:flex-start}.rq-top .toolrow{width:100%}
 }
 @media(min-width:730px){.cone-marker{display:block}}
 @media(max-width:365px){

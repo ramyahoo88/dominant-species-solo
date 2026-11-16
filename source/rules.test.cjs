@@ -17,8 +17,8 @@ verify('GMT p. 4: six APs and 50 cubes include one VP marker and four starting s
   }
 `);
 
-verify('v0.1 through v0.5.4 save migration preserves inventory, pending choices, and random state', `
-  for (const version of ['0.1.0','0.2.0','0.3.0','0.3.1','0.3.2','0.3.3','0.3.4','0.3.5','0.3.6','0.3.7','0.3.8','0.3.9','0.4.0','0.4.1','0.5.0','0.5.1','0.5.2','0.5.3','0.5.4']) {
+verify('v0.1 through v0.5.5 save migration preserves inventory, pending choices, and random state', `
+  for (const version of ['0.1.0','0.2.0','0.3.0','0.3.1','0.3.2','0.3.3','0.3.4','0.3.5','0.3.6','0.3.7','0.3.8','0.3.9','0.4.0','0.4.1','0.5.0','0.5.1','0.5.2','0.5.3','0.5.4','0.5.5']) {
     const s = newGame('insects',['mammals','birds'],true,51);
     s.version = version;
     s.phase = 'execution';
@@ -1037,12 +1037,38 @@ test('v0.5.5 Ice Age forecast uses the real final reset: GPT\'s losing Ice Age, 
     assert.deepEqual(est(warded), finish(warded));
     const shared = copy(s); shared.tiles.D3.cubes.birds++; shared.animals.birds.pool--;
     assert.deepEqual(est(shared), finish(shared));
-    // A human Mammals player is assumed to make its best legal save.
+    // A human Mammals player is assumed to make the legal save that best helps it win (v0.5.6: place, then lead, then VP).
     const human = copy(s); human.human = 'mammals';
-    const best = Math.max(...extinctionOptions(human,'mammals').map(tile => {
-      const t = copy(human); earned(t,'mammals',icePoints(t).mammals); for (const id of t.ids) if (id !== 'mammals') earned(t,id,icePoints(human)[id]);
-      t.ending = true; resolveExtinction(t, tile); return t.animals.mammals.vp; }));
-    assert.equal(endEstimate(human,'mammals'), best);
+    const outcomes = extinctionOptions(human,'mammals').map(tile => {
+      const t = copy(human); const ice = icePoints(t); for (const id of t.ids) earned(t,id,ice[id]);
+      t.ending = true; resolveExtinction(t, tile); return Object.fromEntries(t.ids.map(id => [id, t.animals[id].vp])); });
+    const place = vp => [...human.ids].sort((a,b) => vp[b] - vp[a] || rank(a) - rank(b)).indexOf('mammals');
+    const lead = vp => vp.mammals - Math.max(...human.ids.filter(id => id !== 'mammals').map(id => vp[id]));
+    const best = outcomes.reduce((b, o) => place(o) < place(b) || place(o) === place(b) && (lead(o) > lead(b) || lead(o) === lead(b) && o.mammals > b.mammals) ? o : b);
+    assert.deepEqual(finalProjection(human), best);
+  })()`);
+});
+
+test('v0.5.6 a forecast tie that the food chain gives to another animal is a loss: Birds take Fertile, not Ice Age (GPT v0.5.5 re-audit)', () => {
+  const g = load('worktree', ['game']);
+  Object.assign(g.get('globalThis'), {assert, ia:FIX('gpt-v054c-ice-age-wrong-mammal-save.json')});
+  g.run(`(() => {
+    const s = copy(ia); s.animals.birds.vp += 2; validateState(s);
+    assert.equal(nextStep(s).actor, 'birds');
+    assert.deepEqual(finalProjection(s), {mammals:18, birds:18, insects:0});
+    // Taking Ice Age really ends 18-18, and Mammals, higher in the food chain, win.
+    const t = copy(s); let step = nextStep(t); runStep(t, step, {...botAction(t,step), card:'Ice Age'});
+    for (let i = 0; t.phase !== 'finished' && i < 200; i++) { step = nextStep(t); runStep(t, step, botAction(t, step)); }
+    assert.deepEqual([t.phase, standings(t)[0], t.animals.mammals.vp, t.animals.birds.vp], ['finished', 'mammals', 18, 18]);
+    assert.equal(botAction(copy(s), nextStep(s)).card, 'Fertile');
+    assert.ok(cardValue(s, 'birds', 'Ice Age') < 0);
+    // With Birds one VP higher the tie becomes a win, and Birds take Ice Age.
+    const ahead = copy(s); ahead.animals.birds.vp++;
+    assert.equal(botAction(copy(ahead), nextStep(ahead)).card, 'Ice Age');
+    // v0.5.5 (testing switch) took Ice Age on the losing tie.
+    PAPER.v055Forecast = true;
+    assert.equal(botAction(copy(s), nextStep(s)).card, 'Ice Age');
+    delete PAPER.v055Forecast;
   })()`);
 });
 
@@ -1064,3 +1090,93 @@ test('v0.5.5 printed Catastrophe and Hibernation on GPT\'s saves: an empty centr
     assert.equal(h.animals.birds.ward.D3, 5);
   })()`);
 });
+
+test('v0.5.6 on GPT\'s v0.5.5 saves: a human Mammals save that wins, a losing tie, and the two card reminders (GPT v0.5.5 re-audit F1, F2, P3)', () => {
+  const g = load('worktree', ['game']);
+  const F = n => FIX('gpt-v055-' + n + '.json');
+  Object.assign(g.get('globalThis'), {assert, hm:F('human-mammals-can-win'), tie:F('birds-losing-tie'), mig:F('migration-loses-rank'), ab:F('abundance-empty-earth')});
+  g.run(`(() => {
+    // F1: human Mammals. Saving the D2 Wetland cube gives Mammals 18 but Birds 19; saving E3 Savannah wins 17-16.
+    const h = copy(hm); validateState(h);
+    assert.deepEqual([nextStep(h).kind, nextStep(h).actor, h.human], ['claim', 'birds', 'mammals']);
+    assert.deepEqual(finalProjection(h), {mammals:17, birds:16, insects:0});
+    assert.equal(botAction(copy(h), nextStep(h)).card, 'Fertile');
+    PAPER.v055Forecast = true;
+    assert.deepEqual(finalProjection(h), {mammals:18, birds:19, insects:0});
+    assert.equal(botAction(copy(h), nextStep(h)).card, 'Ice Age');
+    delete PAPER.v055Forecast;
+    // F2: Birds forecast 18-18 and would lose the tie to Mammals, higher in the food chain.
+    const t = copy(tie); validateState(t);
+    assert.deepEqual(finalProjection(t), {mammals:18, birds:18, insects:0});
+    assert.equal(botAction(copy(t), nextStep(t)).card, 'Fertile');
+    PAPER.v055Forecast = true;
+    assert.equal(botAction(copy(t), nextStep(t)).card, 'Ice Age');
+    delete PAPER.v055Forecast;
+    // P3: the placements were already right; only the card reminders were short. Both now carry the condition.
+    const m = copy(mig); validateState(m);
+    assert.deepEqual([currentPlanner(m).actor, botPlacement(copy(m)).slot], ['mammals', 'speciation-0']);
+    const a = copy(ab); validateState(a);
+    assert.deepEqual([currentPlanner(a).actor, botPlacement(copy(a)).slot], ['reptiles', 'abundance-0']);
+  })()`);
+  const fs = require('node:fs'), path = require('node:path');
+  g.run(fs.readFileSync(path.join(__dirname, 'paper/rq_embed.js'), 'utf8'));
+  const target = g.get('RQ_TARGET');
+  assert.match(target.migration, /2\+ species \(no rank lost\)/);
+  assert.match(target.abundance, /exceptions: aid 1/);
+  const aid1 = g.get('RQ_AIDS').split("<div class=\"page\">")[1];
+  assert.ok(aid1.includes('Barren Earth') && aid1.includes('Empty Earth'), 'aid 1 holds the Abundance exceptions the card points to');
+});
+
+// v0.5.6: The Red Queen, cards only. The app keeps each rival's deck; the player runs the printed rules.
+verify('cards only: eight draws deal each card once, the ninth reshuffles the discards, and a save replays exactly', `
+  const s = newDrawGame('amphibians', ['birds','arachnids','mammals'], 0, 777);
+  validateDraw(s);
+  const seen = [];
+  for (let i = 0; i < 8; i++) seen.push(drawFor(s, 'birds'));
+  assert.deepEqual([...seen].sort(), [0,1,2,3,4,5,6,7]);
+  assert.equal(s.decks.birds.queue.length, 0);
+  assert.ok(s.draws.every(x => !x.reshuffled));
+  const saved = JSON.parse(JSON.stringify(s));
+  const ninth = drawFor(s, 'birds');
+  assert.equal(s.draws.at(-1).reshuffled, true);
+  assert.equal(s.decks.birds.queue.length, 7);
+  assert.deepEqual(s.decks.birds.discards, [ninth]);
+  assert.equal(s.decks.arachnids.queue.length, 8);
+  // Undo and a save keep the random state, so the same draws follow.
+  const again = validateDraw(saved);
+  assert.equal(drawFor(again, 'birds'), ninth);
+  assert.deepEqual(again.decks, s.decks);
+  // Same seed, same shuffle; the full game's deck code is shared.
+  const twin = newDrawGame('amphibians', ['birds','arachnids','mammals'], 0, 777);
+  assert.deepEqual(twin.decks.birds.queue, seen);
+`);
+
+verify('cards only: a cards-only save and a full-game save are never read as each other', `
+  const cards = newDrawGame('insects', ['reptiles','birds'], -1, 5);
+  const full = newGame('insects', ['reptiles','birds'], true, 5);
+  assert.throws(() => validateState(JSON.parse(JSON.stringify(cards))), /valid Dominant Species/);
+  assert.throws(() => validateDraw(JSON.parse(JSON.stringify(full))), /cards-only save/);
+  const bad = JSON.parse(JSON.stringify(cards));
+  bad.decks.reptiles.discards.push(bad.decks.reptiles.queue[0]);
+  assert.throws(() => validateDraw(bad), /cards-only save/);
+  const level = JSON.parse(JSON.stringify(cards)); level.extra = 3;
+  assert.throws(() => validateDraw(level), /cards-only save/);
+`);
+
+test('cards only: the rules and aids built into the app match the printables (run printables.py after any rules change)', () => {
+  const fs = require('node:fs'), path = require('node:path');
+  const root = path.resolve(__dirname, '..');
+  runtime.run(fs.readFileSync(path.join(root, 'source/paper/rq_embed.js'), 'utf8'));
+  const version = runtime.get('VERSION');
+  const rules = runtime.get('RQ_RULES'), aids = runtime.get('RQ_AIDS'), legend = runtime.get('RQ_LEGEND');
+  const book = fs.readFileSync(path.join(root, 'paper/The_Red_Queen_Rulebook.html'), 'utf8');
+  const body = html => html.slice(html.indexOf('<body>') + 6);
+  const printed = body(book).slice(0, body(book).indexOf('<h2>Appendix')).trimEnd();
+  assert.ok(printed.length > 20000 && body(rules).startsWith(printed), 'the in-app rules differ from the printed rulebook');
+  assert.ok(rules.includes('Version ' + version) && aids.includes('version ' + version), 'the built-in rules are from another version');
+  const printedAids = fs.readFileSync(path.join(root, 'paper/The_Red_Queen_Player_Aids.html'), 'utf8');
+  assert.equal(body(aids), body(printedAids));
+  assert.ok(fs.readFileSync(path.join(root, 'paper/The_Red_Queen_Cards.html'), 'utf8').includes("<div class='foot'>" + legend + '</div>'));
+  assert.deepEqual(Object.keys(runtime.get('RQ_TARGET')).sort(), Array.from(runtime.get('ROWS'), r => r.id).sort());
+});
+

@@ -24,14 +24,14 @@ ol,ul{margin:2px 0;padding-left:17px}li{margin:1.5px 0}
 p{margin:3px 0}
 </style><body>
 <div class="page">
-<header><h1>1 · Planning: a rival places a pawn</h1><span>The Red Queen · player aid 1 of 10 · version 0.5.5</span></header>
+<header><h1>1 · Planning: a rival places a pawn</h1><span>The Red Queen · player aid 1 of 10 · version 0.5.6</span></header>
 <div class="cols"><div style="flex:1.15">
 <h2>Each time a rival places</h2>
 <p><b>Rivals plan first:</b> at the start of Planning each rival places 1 pawn, in Initiative order (skip a rival with no pawn left to place). Then go round the Initiative order as usual.</p>
 <p><b>Draw the rival's top card</b> (discard it after this placement, whichever step decides). Take the first step that gives a space:</p>
 <div class="step"><b class="n">1</b><div><b>Domination first.</b> A Dominance Card is available, and the rival dominates more unscored tiles than it has pawns on Domination (at most 2) → leftmost open Domination space.</div></div>
 <div class="step"><b class="n">2</b><div><b>Barren Earth</b> (after turn 1). No animal is dominant on any tile → an open Abundance space, unless it already has a pawn there. It may take any element.<br><b>Empty Earth:</b> if no rival has species on Earth (yours may remain), its Abundance may use any empty corner.</div></div>
-<div class="step"><b class="n">3</b><div><b>Block the leader.</b> A card is available, the rival has fewer than 2 pawns on Domination, and the leader dominates an unscored tile → leftmost open Domination space (needs a target).</div></div>
+<div class="step"><b class="n">3</b><div><b>Block the leader.</b> A card is available, the rival has fewer than 2 pawns on Domination, and the leader dominates an unscored tile → leftmost open Domination space (needs a target). This only claims the space; in Execution it scores by the usual Domination rule (sheet 2), not necessarily the leader's tile.</div></div>
 <div class="step"><b class="n">4</b><div><b>Its card.</b> Try the card's three actions in order. Place on the first that:
 <ul><li>is not a row where it already has a pawn;</li><li>is not a <b>weak action</b>, unless it is the card's first action;</li><li>has an open space with a target (table →).</li></ul></div></div>
 <div class="step"><b class="n">5</b><div><b>Fallback.</b> Same tests, but weak actions allowed, in this order:<br>Domination · Wanderlust · Speciation · Adaptation · Competition · Migration · Abundance · Initiative · Regression · Depletion · Wasteland · Glaciation</div></div>
@@ -49,7 +49,7 @@ p{margin:3px 0}
 <tr><td>Wasteland</td><td>The box holds an element it uses</td></tr>
 <tr><td>Depletion</td><td>A disk on Earth is of a box element it does not use</td></tr>
 <tr><td>Glaciation</td><td>A legal tile holds opposing species and none of its own</td></tr>
-<tr><td>Speciation</td><td>Its gene pool is not empty and a disk of that element is on Earth</td></tr>
+<tr><td>Speciation</td><td>Its gene pool is not empty and a disk matching the element of the space being checked is on Earth</td></tr>
 <tr><td>Wanderlust</td><td>A tile is face up and an empty spot touches a tile it occupies</td></tr>
 <tr><td>Migration</td><td>At least one move is allowed (sheet 2): a rescue, or a species from a tile where it has 2+ (losing no rank) to a matched tile it is not on yet</td></tr>
 <tr><td>Competition</td><td>A tile of that space's terrains, or tundra, holds it and an opponent</td></tr>
@@ -64,7 +64,7 @@ p{margin:3px 0}
 </div>
 
 <div class="page">
-<header><h1>2 · Execution: resolving a rival's action</h1><span>The Red Queen · player aid 2 of 10 · version 0.5.5</span></header>
+<header><h1>2 · Execution: resolving a rival's action</h1><span>The Red Queen · player aid 2 of 10 · version 0.5.6</span></header>
 <p>If the rule finds nothing legal, the rival forfeits the action. <b>Ties</b> left over: between tiles, the higher first-place value, then board order; between corners or empty spots, board order (furthest left, then highest).</p>
 <table>
 <tr><th style="width:1in">Action</th><th>What the rival does</th></tr>
@@ -86,7 +86,7 @@ p{margin:3px 0}
 <ul>
 <li><b>May leave:</b> a tile it does not match (a <b>rescue</b>), or a tile where it has 2+ species and losing one costs no rank.</li>
 <li><b>Goes to:</b> an adjacent tile it matches (Birds: up to two tiles away, through existing terrain).</li>
-<li><b>Every move</b> must be a rescue or reach a tile it is not on yet.</li>
+<li><b>Every move</b> must be a rescue or reach a tile it is not on yet. Check again before each move: once it has arrived on a tile, a later move there must be a rescue.</li>
 <li><b>Choose:</b> rescues first → destination with the higher first-place value → a destination it does not occupy → the fullest origin → destination in board order → origin in board order.</li>
 <li><b>One direction per tile:</b> during this action a tile that has sent can only send; one that has received can only receive.</li>
 <li>Rivals never weigh rank gains at the destination.</li>
@@ -100,13 +100,14 @@ p{margin:3px 0}
 <tr><td>+ half value</td><td>it is that opponent's last species there</td></tr>
 <tr><td>+ 6</td><td>removing that last species also ends the opponent's dominance</td></tr>
 </table>
+<p class="small">Keep half-points exactly; do not round.</p>
 <h2>First-place values</h2>
 <table class='small'><tr><td>Sea 9</td><td>Wetland 8</td><td>Savannah 7</td><td>Jungle 6</td></tr><tr><td>Forest 5</td><td>Desert 4</td><td>Mountain 3</td><td>Tundra 1</td></tr></table>
 </div></div>
 </div>
 
 <div class="page">
-<header><h1>3 · Dominance Cards</h1><span>The Red Queen · player aid 3 of 10 · version 0.5.5</span></header>
+<header><h1>3 · Dominance Cards</h1><span>The Red Queen · player aid 3 of 10 · version 0.5.6</span></header>
 <div class="cols"><div style="flex:.62">
 <h2>Which card it takes</h2>
 <p>The first available card in this order:</p>
@@ -146,7 +147,7 @@ p{margin:3px 0}
 </div>
 
 <div class="page">
-<header><h1>4 · Setup, terms and other decisions</h1><span>The Red Queen · player aid 4 of 10 · version 0.5.5</span></header>
+<header><h1>4 · Setup, terms and other decisions</h1><span>The Red Queen · player aid 4 of 10 · version 0.5.6</span></header>
 <div class="cols"><div>
 <h2>Setup</h2>
 <ol>
@@ -163,6 +164,7 @@ p{margin:3px 0}
 <p><b>Rank on a tile:</b> animals with species there, ordered by number of species; ties to the food chain. Ranks count even below the places that score VP (on tundra, second is still second).</p>
 <p><b>Gains a rank:</b> it ends ranked higher on that tile than before, or now ranks there at all.</p>
 <p><b>First-place value:</b> Sea 9, Wetland 8, Savannah 7, Jungle 6, Forest 5, Desert 4, Mountain 3, Tundra 1.</p>
+<p><b>Added elements:</b> keep them in the order gained, oldest on the left; new ones (Metamorphosis replacements too) go at the right end. To remove a type, take its leftmost copy and close the gap.</p>
 <p><b>Ties:</b> between tiles, the higher first-place value, then board order, unless the rule says otherwise. Corners and empty spots: board order after that choice's own priorities.</p>
 <p><b>Board order:</b> furthest left on the board, then highest. For tiles: down the leftmost column, then the next column.</p>
 <p><b>Rivals never break a rule:</b> if a rule points at something illegal, skip to the next option.</p>
@@ -186,7 +188,7 @@ p{margin:3px 0}
 </div></div>
 </div>
 <div class="page">
-<header><h1><b class="tag" style="background:#eee7d8;color:#40372c">Mammals</b> rival</h1><span>The Red Queen · player aid 5 of 10 · version 0.5.5</span></header>
+<header><h1><b class="tag" style="background:#eee7d8;color:#40372c">Mammals</b> rival</h1><span>The Red Queen · player aid 5 of 10 · version 0.5.6</span></header>
 <div class="cols"><div style="flex:1.1">
 <h2>Its deck</h2>
 <p class="small">Draw one card each time it places a pawn (or roll a d8). Try the three actions in order (step 4).</p>
@@ -220,7 +222,7 @@ p{margin:3px 0}
 <h2>Dominance ties</h2>
 <p>Only rivals tie for the most matches: the rival with the most species on the tile, then the one higher in the food chain. A tie that includes you: no one is dominant.</p>
 </div></div></div><div class="page">
-<header><h1><b class="tag" style="background:#3d4c4b;color:#ffffff">Reptiles</b> rival</h1><span>The Red Queen · player aid 6 of 10 · version 0.5.5</span></header>
+<header><h1><b class="tag" style="background:#3d4c4b;color:#ffffff">Reptiles</b> rival</h1><span>The Red Queen · player aid 6 of 10 · version 0.5.6</span></header>
 <div class="cols"><div style="flex:1.1">
 <h2>Its deck</h2>
 <p class="small">Draw one card each time it places a pawn (or roll a d8). Try the three actions in order (step 4).</p>
@@ -254,7 +256,7 @@ p{margin:3px 0}
 <h2>Dominance ties</h2>
 <p>Only rivals tie for the most matches: the rival with the most species on the tile, then the one higher in the food chain. A tie that includes you: no one is dominant.</p>
 </div></div></div><div class="page">
-<header><h1><b class="tag" style="background:#ead174;color:#302713">Birds</b> rival</h1><span>The Red Queen · player aid 7 of 10 · version 0.5.5</span></header>
+<header><h1><b class="tag" style="background:#ead174;color:#302713">Birds</b> rival</h1><span>The Red Queen · player aid 7 of 10 · version 0.5.6</span></header>
 <div class="cols"><div style="flex:1.1">
 <h2>Its deck</h2>
 <p class="small">Draw one card each time it places a pawn (or roll a d8). Try the three actions in order (step 4).</p>
@@ -288,7 +290,7 @@ p{margin:3px 0}
 <h2>Dominance ties</h2>
 <p>Only rivals tie for the most matches: the rival with the most species on the tile, then the one higher in the food chain. A tie that includes you: no one is dominant.</p>
 </div></div></div><div class="page">
-<header><h1><b class="tag" style="background:#8ec7db;color:#173746">Amphibians</b> rival</h1><span>The Red Queen · player aid 8 of 10 · version 0.5.5</span></header>
+<header><h1><b class="tag" style="background:#8ec7db;color:#173746">Amphibians</b> rival</h1><span>The Red Queen · player aid 8 of 10 · version 0.5.6</span></header>
 <div class="cols"><div style="flex:1.1">
 <h2>Its deck</h2>
 <p class="small">Draw one card each time it places a pawn (or roll a d8). Try the three actions in order (step 4).</p>
@@ -322,7 +324,7 @@ p{margin:3px 0}
 <h2>Dominance ties</h2>
 <p>Only rivals tie for the most matches: the rival with the most species on the tile, then the one higher in the food chain. A tie that includes you: no one is dominant.</p>
 </div></div></div><div class="page">
-<header><h1><b class="tag" style="background:#db9b91;color:#40231f">Arachnids</b> rival</h1><span>The Red Queen · player aid 9 of 10 · version 0.5.5</span></header>
+<header><h1><b class="tag" style="background:#db9b91;color:#40231f">Arachnids</b> rival</h1><span>The Red Queen · player aid 9 of 10 · version 0.5.6</span></header>
 <div class="cols"><div style="flex:1.1">
 <h2>Its deck</h2>
 <p class="small">Draw one card each time it places a pawn (or roll a d8). Try the three actions in order (step 4).</p>
@@ -345,7 +347,7 @@ p{margin:3px 0}
 <tr><td>Food chain</td><td><b>5th.</b> Wins food-chain ties against Insects. Loses them to Mammals, Reptiles, Birds, Amphibians.</td></tr>
 </table>
 <h2>Its power</h2>
-<p><b>One free Competition on any one tile it shares, as in the normal rules.</b></p><p><b>Which elimination:</b> the highest Competition score (tie: the opponent earlier in VP order, then board order).</p><p><b>Competition score</b> for removing one opposing species:</p><table><tr><td>Start</td><td>the tile's first-place value</td></tr><tr><td>+ value again</td><td>that opponent ranks above the rival and no longer does afterwards (ties go to the food chain)</td></tr><tr><td>+ half value</td><td>it is that opponent's last species there</td></tr><tr><td>+ 6</td><td>removing that last species also ends the opponent's dominance</td></tr></table>
+<p><b>One free Competition on any one tile it shares, as in the normal rules.</b></p><p><b>Which elimination:</b> the highest Competition score (tie: the opponent earlier in VP order, then board order).</p><p><b>Competition score</b> for removing one opposing species:</p><table><tr><td>Start</td><td>the tile's first-place value</td></tr><tr><td>+ value again</td><td>that opponent ranks above the rival and no longer does afterwards (ties go to the food chain)</td></tr><tr><td>+ half value</td><td>it is that opponent's last species there</td></tr><tr><td>+ 6</td><td>removing that last species also ends the opponent's dominance</td></tr></table><p class='small'>Keep half-points exactly; do not round.</p>
 <h2>Where its element matters</h2>
 <ul>
 <li><b>Adaptation:</b> takes Grub if the box offers it; otherwise the leftmost element.</li>
@@ -356,7 +358,7 @@ p{margin:3px 0}
 <h2>Dominance ties</h2>
 <p>Only rivals tie for the most matches: the rival with the most species on the tile, then the one higher in the food chain. A tie that includes you: no one is dominant.</p>
 </div></div></div><div class="page">
-<header><h1><b class="tag" style="background:#a5c2a0;color:#25382a">Insects</b> rival</h1><span>The Red Queen · player aid 10 of 10 · version 0.5.5</span></header>
+<header><h1><b class="tag" style="background:#a5c2a0;color:#25382a">Insects</b> rival</h1><span>The Red Queen · player aid 10 of 10 · version 0.5.6</span></header>
 <div class="cols"><div style="flex:1.1">
 <h2>Its deck</h2>
 <p class="small">Draw one card each time it places a pawn (or roll a d8). Try the three actions in order (step 4).</p>

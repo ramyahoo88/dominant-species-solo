@@ -21,6 +21,7 @@ These rules run the rival animals at the table without the app, against two to f
 - **Gains a rank:** after the change, the rival is ranked higher on that tile than before, or now ranks there at all.
 - **First-place value:** the leftmost number on the Tile Scoring table: Sea 9, Wetland 8, Savannah 7, Jungle 6, Forest 5, Desert 4, Mountain 3, Tundra 1.
 - **Uses an element:** the element is on the rival's animal display (printed or added).
+- **Added elements, in order:** keep each rival's added elements in acquisition order, oldest on the left. Put new elements, including Metamorphosis replacements, at the right end. When removing an element type, remove its leftmost copy and close the gap without reordering the remaining elements.
 - **Matches (rivals only):** a rival matches a tile with its printed element count (2, or 3 for Amphibians) plus its number of added elements, capped at the number of element disks on that tile. The element types don't matter. Use this count wherever the game asks how many elements a rival matches (dominance, Extinction, and every "matches" in these rules). Adaptation, Regression and Disease still change the count. You count your own animal normally.
 - **Rival ties:** if only rivals tie for the most matches on a tile, the rival with the most species there is dominant; if they still tie, the one higher in the food chain. If you tie with them, no one is dominant there, as in the normal rules.
 - **Ties:** break any remaining tie between tiles already on Earth by the higher first-place value, then **board order**, unless the rule gives a different priority. For corners and empty spots, use board order after the priorities listed for that choice. Board order means furthest left on the board, then highest; for tiles it runs down the leftmost column, then the next column.
@@ -53,7 +54,7 @@ When it is a rival's turn to place, first draw the top card of its deck (it is d
 
 1. **Domination first.** If a Dominance Card is available, and the rival dominates more unscored tiles than it has pawns on Domination (at most 2), it takes the leftmost open Domination space.
 2. **Barren Earth.** After turn 1, if no animal is dominant on any tile, the rival takes an open Abundance space, unless it already has a pawn there. It may take any element there. **Empty Earth:** if no rival has any species left on Earth (yours may remain), the rival's Abundance may use any empty corner, so species can return (see the tables below).
-3. **Block the leader.** If a Dominance Card is available, the rival has fewer than 2 pawns on Domination, and the leader dominates at least one unscored tile, the rival takes the leftmost open Domination space (it needs a legal target; see the table below).
+3. **Block the leader.** If a Dominance Card is available, the rival has fewer than 2 pawns on Domination, and the leader dominates at least one unscored tile, the rival takes the leftmost open Domination space (it needs a legal target; see the table below). This only claims the space: its target is any unscored tile with one of the rival's species, and in Execution the pawn scores by the usual Domination rule, which need not be the leader's tile or win a card.
 4. **Its card.** Try the drawn card's three actions in order and place on the first one that:
     - is not a row where the rival already has a pawn;
     - is not a weak action (Abundance, Glaciation, Wasteland, Depletion, Regression, Initiative), unless it is the card's first action;
@@ -74,7 +75,7 @@ When it is a rival's turn to place, first draw the top card of its deck (it is d
 | Wasteland | The box holds an element the rival uses |
 | Depletion | A disk on Earth is of an element in the box that the rival does not use |
 | Glaciation | A legal Glaciation tile holds opposing species and none of the rival's |
-| Speciation | The gene pool is not empty and a disk of that element is on earth |
+| Speciation | The gene pool is not empty and a disk matching the element of the space being checked is on Earth |
 | Wanderlust | A tile is face up and an empty spot touches a tile the rival occupies |
 | Migration | At least one move is allowed under Migration below: a rescue, or a species from a tile where it has 2+ (losing no rank there) to a matched tile it is not on yet |
 | Competition | A tile of that space's terrains, or tundra, holds the rival and an opponent |
@@ -99,7 +100,7 @@ When a rival's pawn is reached, resolve it with the rule below. If the rule find
 | Competition | One elimination per terrain of the space (and tundra), on a tile it shares, scored below. Tie: the opponent earlier in VP order, then board order |
 | Domination | If a card is available and it dominates unscored tiles, scores the one of those where it earns the most VP. Otherwise the unscored tile no opponent dominates where it earns the most VP. If it earns VP on none of those, the unscored tile with species where it earns the most VP |
 
-**Migration, one species at a time.** Rivals never weigh rank gains when choosing a destination; they only avoid losing a rank where they leave. A species may leave a tile the rival does not match (a rescue), or a tile where it has 2+ species and losing one costs no rank. It moves to an adjacent tile the rival matches (Birds: up to two tiles away through existing terrain, as their power allows). Every move must be a rescue or reach a tile the rival is not on yet. Choose rescues first, then the destination with the higher first-place value. At equal value, prefer a destination the rival does not occupy, then the fullest origin, then the destination in board order, then the origin in board order. During one Migration action each tile either sends or receives species: once a tile has sent a species it can only send more, and once it has received one it can only receive more.
+**Migration, one species at a time.** Rivals never weigh rank gains when choosing a destination; they only avoid losing a rank where they leave. A species may leave a tile the rival does not match (a rescue), or a tile where it has 2+ species and losing one costs no rank. It moves to an adjacent tile the rival matches (Birds: up to two tiles away through existing terrain, as their power allows). Every move must be a rescue or reach a tile the rival is not on yet; check this again before each move, so once a species has arrived on a tile, a later move there must be a rescue. Choose rescues first, then the destination with the higher first-place value. At equal value, prefer a destination the rival does not occupy, then the fullest origin, then the destination in board order, then the origin in board order. During one Migration action each tile either sends or receives species: once a tile has sent a species it can only send more, and once it has received one it can only receive more.
 
 **Competition score** for removing one opposing species from a tile:
 
@@ -107,6 +108,8 @@ When a rival's pawn is reached, resolve it with the rule below. If the rule find
 - add it again if that opponent ranks above the rival and no longer does afterwards (a tie goes to the food chain, so 2–2 against a higher animal is not a pass);
 - add half of it if this is that opponent's last species there;
 - add 6 more if it is that opponent's last species there and that opponent is dominant there (so it loses its dominance).
+
+Keep half-points exactly; do not round.
 
 ## Dominance Cards
 

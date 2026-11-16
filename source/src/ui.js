@@ -26,7 +26,9 @@ const A = ids => ids.map(id => [id,nameOf(id)]);
 const cardRows = face => '<div class="card-flow">' + face.rows.map(row => '<span>' + ROW_BY_ID[row].name + '</span>').join('') + '</div>';
 let game = null;
 let undo = [];
-let setup = {human:'amphibians',bots:['birds','arachnids'],short:true,paper:false,extra:-1}; // extra: Standard on the Paper scale
+let setup = {human:'amphibians',bots:['birds','arachnids'],short:true,paper:false,draw:false,extra:-1}; // extra: Standard on the Paper scale
+let drawGame = null; // The Red Queen, cards only (v0.5.6): decks without a board; never set at the same time as game
+const DRAW_KEY = 'dominant-species-red-queen-cards-v1';
 // Re-measured for v0.3.8: +0 is a little easier than an even game, +1 a little tougher, +2 about as tough as the app's rivals.
 // v0.4.0: the rival tie-break makes paper rivals about one pawn stronger, so every level is one pawn lower.
 // v0.5.0: rivals plan first (they place one pawn each before anyone else), which makes them stronger, so the levels
@@ -81,14 +83,33 @@ function save() {
   try {
     if (game) localStorage.setItem(SAVE_KEY, saveContents());
     else localStorage.removeItem(SAVE_KEY);
-    status.textContent = game ? 'Saved on this device' : '';
+    if (drawGame) localStorage.setItem(DRAW_KEY, saveContents());
+    else localStorage.removeItem(DRAW_KEY);
+    status.textContent = game || drawGame ? 'Saved on this device' : '';
   } catch {
-    status.textContent = game ? 'Local saving unavailable. Use Export save.' : '';
+    status.textContent = game || drawGame ? 'Local saving unavailable. Use Export save.' : '';
   }
 }
 function saveContents() {
+  if (!game && drawGame) return JSON.stringify({format:DRAW_FORMAT,draw:drawGame});
   const supply = game.phase === 'supply' ? draft : undefined;
   return JSON.stringify({format:SAVE_KEY,game,supply});
+}
+// A cards-only save: each rival's eight cards split between its draw pile and its discards, and the draw history.
+function validateDraw(s) {
+  function assert(ok) { if (!ok) throw new Error('This is not a valid cards-only save for The Red Queen.'); }
+  assert(s && s.format === DRAW_FORMAT && typeof s.version === 'string' && FOOD.includes(s.human) && Array.isArray(s.rivals) &&
+    s.rivals.length >= 2 && s.rivals.length <= 5 && unique([s.human, ...s.rivals]).length === s.rivals.length + 1 && s.rivals.every(id => FOOD.includes(id)) &&
+    PAPER_LEVELS.some(([n]) => n === s.extra) && num(s.seed) && s.seed <= 0xffffffff && num(s.rng) && s.rng <= 0xffffffff && s.decks &&
+    Object.keys(s.decks).length === s.rivals.length && Array.isArray(s.draws) && s.draws.length <= 200);
+  assert(s.rivals.every(id => {
+    const d = s.decks[id];
+    return d && Array.isArray(d.queue) && Array.isArray(d.discards) && d.queue.length + d.discards.length === 8 &&
+      unique([...d.queue, ...d.discards]).length === 8 && [...d.queue, ...d.discards].every(n => num(n) && n < 8);
+  }));
+  assert(s.draws.every(x => x && s.rivals.includes(x.actor) && num(x.card) && x.card < 8 && typeof x.reshuffled === 'boolean'));
+  s.version = VERSION;
+  return s;
 }
 function readSupplyDraft(s, raw) {
   if (s.phase !== 'supply' || !raw || typeof raw !== 'object') return {};
@@ -113,7 +134,7 @@ function readSupplyDraft(s, raw) {
 function validateState(s) {
   function assert(ok) { if (!ok) throw new Error('This is not a valid Dominant Species companion save.'); }
   recordPaperLevel(s); // before the version is replaced: the level scale depends on it
-  if (s && ['0.1.0', '0.2.0', '0.3.0', '0.3.1', '0.3.2', '0.3.3', '0.3.4', '0.3.5', '0.3.6', '0.3.7', '0.3.8', '0.3.9', '0.4.0', '0.4.1', '0.5.0', '0.5.1', '0.5.2', '0.5.3', '0.5.4'].includes(s.version)) s.version = VERSION;
+  if (s && ['0.1.0', '0.2.0', '0.3.0', '0.3.1', '0.3.2', '0.3.3', '0.3.4', '0.3.5', '0.3.6', '0.3.7', '0.3.8', '0.3.9', '0.4.0', '0.4.1', '0.5.0', '0.5.1', '0.5.2', '0.5.3', '0.5.4', '0.5.5'].includes(s.version)) s.version = VERSION;
   const keys = value => value && typeof value === 'object' ? Object.keys(value) : [];
   assert(s && s.version === VERSION && ['supply','planning','execution','finished'].includes(s.phase) &&
     num(s.turn) && s.turn > 0 && num(s.rng) && s.rng <= 0xffffffff && num(s.seed) && s.seed <= 0xffffffff);
@@ -186,6 +207,8 @@ function restore() {
       draft = readSupplyDraft(game,save.supply);
     }
     if (game) activeTile = game.tiles.D3 ? 'D3' : terrainIds(game)[0];
+    const cards = !game && localStorage.getItem(DRAW_KEY);
+    if (cards) drawGame = validateDraw(JSON.parse(cards).draw);
   } catch (err) {
     if (err.name !== 'SecurityError') initialError = 'The local save could not be opened. Import a previously exported save from the setup screen.';
   }
@@ -239,12 +262,14 @@ function setupPage() {
       (setup.bots.length === n ? ' checked' : '') + '> ' + n + '</label>').join('') + '</div></fieldset><div class="seats">' + seats.map(seat).join('') + '</div><p class="seat-hint">Choosing an animal already at the table swaps the two seats.</p><div class="setup-bottom">' +
     '<fieldset><legend>Rival rules</legend><div class="segment">' +
     '<label><input name="rules" type="radio" value="app"' + (!setup.paper ? ' checked' : '') + '> Tooth &amp; Claw · app rivals</label>' +
-    '<label><input name="rules" type="radio" value="paper"' + (setup.paper ? ' checked' : '') + '> The Red Queen · printed rivals</label></div>' +
+    '<label><input name="rules" type="radio" value="paper"' + (setup.paper && !setup.draw ? ' checked' : '') + '> The Red Queen · printed rivals</label>' +
+    '<label><input name="rules" type="radio" value="draw"' + (setup.draw ? ' checked' : '') + '> The Red Queen · cards only</label></div>' +
+    (setup.draw ? '<p class="seat-hint">The app shuffles and draws each rival’s cards and keeps the rulebook and player aids at hand. You run the rivals yourself; nothing on the board is tracked.</p>' : '') +
     (setup.paper ? '<div class="segment paper-level">' + PAPER_LEVELS.map(([n,name]) => '<label><input name="extra" type="radio" value="' + n + '"' + (setup.extra === n ? ' checked' : '') + '> ' + name + ' · ' + (n === -2 && setup.bots.length === 5 ? '−1 pawn, you +1' : (n < 0 ? '−' + -n : '+' + n) + ' pawn' + (Math.abs(n) === 1 ? '' : 's')) + '</label>').join('') + '</div>' : '') +
     '</fieldset>' +
-    '<fieldset><legend>Dominance deck</legend><div class="segment">' +
+    (setup.draw ? '' : '<fieldset><legend>Dominance deck</legend><div class="segment">' +
     '<label><input name="length" type="radio" value="short"' + (setup.short ? ' checked' : '') + '> Short game · 22 cards</label>' +
-    '<label><input name="length" type="radio" value="full"' + (!setup.short ? ' checked' : '') + '> Full game · 26 cards</label></div></fieldset>' +
+    '<label><input name="length" type="radio" value="full"' + (!setup.short ? ' checked' : '') + '> Full game · 26 cards</label></div></fieldset>') +
     '<div class="form-actions">' + button('Import save','import','subtle') + submit('Start game') + '</div></div></form></section>';
 }
 function tinySlot(key) {
@@ -440,8 +465,8 @@ function showFinished() {
     '</ol>' + button('New game','new','primary') + ' ' + button('Export save','export','subtle');
 }
 function render(focus = false, noScroll = false) {
-  document.getElementById('menu').hidden = !game;
-  if (!game) { setupPage(); return; }
+  document.getElementById('menu').hidden = !game && !drawGame;
+  if (!game) { if (drawGame) drawPage(focus); else setupPage(); return; }
   const roundTitle = game.phase === 'finished' ? 'Game complete' : 'Turn ' + game.turn;
   const score = game.initiative.map(id => {
     const a = game.animals[id];
@@ -458,4 +483,50 @@ function render(focus = false, noScroll = false) {
     esc(notice) + '</div>' + turn + '</section>' + showActionDisplay() + showLog() + '</div><div class="column">' + showEarth() + showMarket() + '</div></div>';
   hydrateFields();
   if (focus) document.getElementById('turn-focus')?.focus({preventScroll:noScroll});
+}
+
+// The Red Queen, cards only (v0.5.6). One deck per rival; the player resolves every rule from the rulebook.
+function rivalPawns(s) {
+  const [pawns, cubes] = SETUP_BY_PLAYERS[s.rivals.length + 1];
+  const scaled = s.extra === -2 && s.rivals.length === 5; // Easy with five rivals: −1 for each rival and +1 for you
+  return {rival: scaled ? pawns - 1 : pawns + s.extra, you: scaled ? pawns + 1 : pawns, cubes};
+}
+function rqCard(actor, index) {
+  const card = DECKS[actor][index];
+  const rows = card.no.rows.map((row, i) => {
+    const weak = i > 0 && PAPER_WEAK.includes(row);
+    const note = weak ? 'Weak action after the first: step 4 skips it' : row === 'regression' && actor === 'reptiles' ? 'always (Reptiles)' : RQ_TARGET[row];
+    return '<li class="' + (weak ? 'weak' : '') + '"><b>' + ROW_BY_ID[row].name + '</b><small>' + esc(note) + '</small></li>';
+  }).join('');
+  return '<article class="rq-card" style="' + animalStyle(actor) + '" aria-label="' + esc(nameOf(actor) + ' card ' + (index + 1) + ', ' + card.title) + '">' +
+    '<div class="rq-head"><span class="rq-who">' + nameOf(actor).toUpperCase() + '</span><span class="rq-meta">' + ELEMENTS[ANIMALS[actor].el].name +
+    ' · ' + RQ_CHAIN[rank(actor)] + '</span><span class="rq-num">' + (index + 1) + '</span></div><h3 class="rq-name">' + esc(card.title) + '</h3>' +
+    '<ol class="rq-acts">' + rows + '</ol><p class="rq-foot">' + esc(RQ_LEGEND) + '</p></article>';
+}
+function drawPage(focus = false) {
+  const s = drawGame;
+  const {rival, you, cubes} = rivalPawns(s);
+  const last = s.draws.at(-1);
+  const decks = s.rivals.map(id => {
+    const d = s.decks[id];
+    const shown = d.discards.at(-1);
+    const fresh = last?.actor === id && last.reshuffled;
+    return '<section class="panel rq-deck" aria-label="' + esc(nameOf(id) + ' deck') + '"><div class="block-head"><h2>' + badge(id) + nameOf(id) + '</h2>' +
+      '<small>' + d.queue.length + ' left · ' + d.discards.length + ' discarded</small></div>' +
+      (shown === undefined ? '<p class="muted rq-empty">No card drawn yet.</p>' : rqCard(id, shown)) +
+      (fresh ? '<p class="rq-note">Its deck ran out, so its discards were reshuffled before this draw.</p>' : '') +
+      button('Draw for ' + nameOf(id), 'rq-draw', 'primary', 'data-animal="' + id + '"') + '</section>';
+  }).join('');
+  const recent = s.draws.slice(-12).reverse().map(x => '<li>' + badge(x.actor, true) + nameOf(x.actor) + ' · ' + (x.card + 1) + ' ' +
+    esc(DECKS[x.actor][x.card].title) + (x.reshuffled ? ' · reshuffled first' : '') + '</li>').join('');
+  main.innerHTML = '<div class="game-top rq-top"><div><p class="eyebrow">The Red Queen · cards only · ' + esc(paperLevel(s.extra)) + '</p><h1>Rival decks</h1></div>' +
+    '<div class="toolrow">' + button('Rules','rules','sm subtle') + button('Player aids','aids','sm subtle') + button('Undo','undo','sm subtle',enable(undo.length > 0)) + '</div></div>' +
+    '<section class="panel block rq-intro"><div id="notice" class="notice" role="alert"' + (notice ? '' : ' hidden') + '>' + esc(notice) + '</div>' +
+    '<h2 id="turn-focus" tabindex="-1">You run the rivals</h2><p class="instruction">Draw a rival’s card each time it places a pawn in Planning, including the pawn it places before anyone else. ' +
+    'Moving a pawn with Initiative or Instinct does not draw a card. Resolve everything else with the rulebook or the player aids.</p>' +
+    '<p class="muted">Setup: ' + (s.rivals.length + 1) + '-player game, ' + cubes + ' cubes per animal. Each rival has ' + rival + ' action pawn' + (rival === 1 ? '' : 's') +
+    ', you have ' + you + '. You play ' + nameOf(s.human) + '.</p></section>' +
+    '<div class="rq-grid">' + decks + '</div>' +
+    (recent ? '<section class="panel block"><div class="block-head"><h3>Recent draws</h3><small>Newest first</small></div><ol class="log-list rq-recent">' + recent + '</ol></section>' : '');
+  if (focus) document.getElementById('turn-focus')?.focus({preventScroll:true});
 }

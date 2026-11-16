@@ -91,8 +91,10 @@ def difficulty(ladder):
                       [("easy", "Easy"), ("standard", "Standard"), ("hard", "Hard"), ("expert", "Expert")]) + "\n"
             "**Playing with the companion app:** the app can run these exact rules, so you don't need to print anything. "
             "On the setup screen choose **The Red Queen** and a level. The app draws each rival's card, names the Planning step "
-            "that chose each space, and spells out every change to make on the board. (The app's other option, Tooth & Claw, "
-            "is a separate set of rivals with their own rules.)")
+            "that chose each space, and spells out every change to make on the board. To run the rivals yourself without printing, "
+            "choose **The Red Queen · cards only**: the app shuffles and draws each rival's cards, with this rulebook and the player "
+            "aids a tap away, and you resolve everything else. (The app's other option, Tooth & Claw, is a separate set of rivals "
+            "with their own rules.)")
 
 
 GREEN = "#2f4a3a"
@@ -151,16 +153,19 @@ CARD_TARGET = {
     "initiative": "it is not first on the Initiative track",
     "adaptation": "the box has an element; its display has under 6",
     "regression": "an added type is in the Adaptation or Regression box",
-    "abundance": "a box element it uses; an empty corner on its tile",
+    "abundance": "a box element it uses; empty corner on its tile (exceptions: aid 1)",
     "wasteland": "the box holds an element it uses",
     "depletion": "a disk on Earth of a box element it doesn't use",
     "glaciation": "a legal tile with opposing species and none of its own",
     "speciation": "gene pool not empty; a disk of that element on Earth",
     "wanderlust": "a face-up tile; an empty spot next to its tiles",
-    "migration": "a rescue, or a spare species to a new matched tile",
+    "migration": "a rescue, or 1 of 2+ species (no rank lost) to a new matched tile",
     "competition": "shares a tile of these terrains or tundra with an opponent",
     "domination": "an unscored tile holds one of its species",
 }
+# The legend at the foot of every card front (also shown under the card in the app's cards-only mode).
+LEGEND = ("Under each action: when it has a target. Grey: a weak action, skipped. "
+          "Planning steps 1–3 come first; if nothing fits, step 5.")
 CHAIN = ["first in the food chain", "second in the food chain", "third in the food chain", "fourth in the food chain",
          "fifth in the food chain", "last in the food chain"]
 
@@ -182,8 +187,7 @@ def card_front(a, i, c, g, weak):
     return (f"<div class='card front' style='--bg:{COLORS[a]};--ink:{INKS[a]}'><div class='head'><span class='who'>{a.upper()}</span>"
             f"<span class='meta'>{el} · {CHAIN[ANIMALS.index(a)]}</span><span class='num'>{i + 1}</span></div>"
             f"<div class='name'>{html.escape(c['title'])}</div><ol class='acts'>{''.join(rows)}</ol>"
-            "<div class='foot'>Small print: when the action has a target. Grey: a weak action, skipped. "
-            "Steps 1–3 come before this card; if no action fits, step 5.</div></div>")
+            f"<div class='foot'>{html.escape(LEGEND)}</div></div>")
 
 
 def card_back(a, g):
@@ -217,7 +221,8 @@ def card_sheet(d, g):
 ELEMENT_ORDER = ["meat", "sun", "seed", "water", "grub", "grass"]
 AID_SCORE = ("<table><tr><td>Start</td><td>the tile's first-place value</td></tr><tr><td>+ value again</td><td>that opponent ranks above "
              "the rival and no longer does afterwards (ties go to the food chain)</td></tr><tr><td>+ half value</td><td>it is that "
-             "opponent's last species there</td></tr><tr><td>+ 6</td><td>removing that last species also ends the opponent's dominance</td></tr></table>")
+             "opponent's last species there</td></tr><tr><td>+ 6</td><td>removing that last species also ends the opponent's dominance</td></tr></table>"
+             "<p class='small'>Keep half-points exactly; do not round.</p>")
 AID_POWER = {
     "mammals": ("Saves one endangered species at Extinction.",
                 "<p><b>Which one:</b> the endangered species on the tile with the highest first-place value (tie: board order).</p>"),
@@ -368,6 +373,27 @@ p{margin:3px 0}
 """
 
 
+# Screen-only additions for the copies shown inside the app (cards-only mode): narrow screens, no fixed page heights.
+EMBED_RULES_CSS = ("@media screen{body{margin:12px auto;padding:0 12px}}@media (max-width:640px){body{font-size:14.5px}"
+                   "h1{font-size:21pt}table{font-size:12.5px}}")
+EMBED_AIDS_CSS = ("@media screen{body{max-width:7.6in;margin:10px auto;padding:0 10px}.page{height:auto;overflow:visible;"
+                  "margin-bottom:28px;border-bottom:1px dashed #9aa39a;padding-bottom:16px}}@media (max-width:720px){.cols{display:block}"
+                  "body{font-size:14px}header{display:block}}")
+
+
+def embed_module(rules_body, aids_page):
+    """source/paper/rq_embed.js: what the app's cards-only mode shows (built into the app by build.py)."""
+    def js(value):
+        return json.dumps(value, ensure_ascii=False).replace("</", "<\\/")
+    rules = ("<!doctype html><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'>"
+             f"<title>The Red Queen</title><style>{CSS}{EMBED_RULES_CSS}</style><body>{rules_body}</body>")
+    aids = aids_page.replace("</style>", EMBED_AIDS_CSS + "</style>", 1).replace(
+        "<style>", "<meta name='viewport' content='width=device-width,initial-scale=1'><style>", 1)
+    return ("// Generated by source/paper/printables.py from RULES.md, AIDS.html and the decks. Do not edit by hand.\n"
+            f"const RQ_TARGET = {js(CARD_TARGET)};\nconst RQ_LEGEND = {js(LEGEND)};\nconst RQ_CHAIN = {js(CHAIN)};\n"
+            f"const RQ_RULES = {js(rules)};\nconst RQ_AIDS = {js(aids)};\n")
+
+
 def duplex_cards(path):
     """Card fronts must start on a right-hand (odd) page so each back prints on the reverse of its front."""
     from pypdf import PdfReader, PdfWriter
@@ -401,7 +427,11 @@ def main():
     page = f"<!doctype html><meta charset='utf-8'><title>The Red Queen — solo rivals for Dominant Species</title><style>{CSS}{CARD_CSS}</style><body>{body}</body>"
     (OUT / "The_Red_Queen_Rulebook.html").write_text(page, encoding="utf-8")
     (OUT / "The_Red_Queen_Cards.html").write_text(card_sheet(d, g), encoding="utf-8")
-    (OUT / "The_Red_Queen_Player_Aids.html").write_text(aids(d, g, ladder, ver), encoding="utf-8")
+    aid_page = aids(d, g, ladder, ver)
+    (OUT / "The_Red_Queen_Player_Aids.html").write_text(aid_page, encoding="utf-8")
+    # In the app the cards are drawn on screen, so its copy of the rules ends with the rival decks (no printable appendix).
+    rules_body = markdown.markdown(md.replace("{{APPENDIX}}", ""), extensions=["tables"])
+    (SRC / "paper/rq_embed.js").write_text(embed_module(rules_body, aid_page), encoding="utf-8")
     if args.pdf:
         from playwright.sync_api import sync_playwright
         with sync_playwright() as pw:

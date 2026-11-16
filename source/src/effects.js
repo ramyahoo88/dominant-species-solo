@@ -13,6 +13,9 @@ function icePoints(s) {
 // app's or the printed rivals' chooser; a human Mammals player is assumed to take its best legal save), Survival and
 // final tile scoring. Actions still to come this turn are outside the snapshot. Before v0.5.5 the estimate saved the
 // first endangered Mammals tile in the order Mammals reached them; PAPER.oldForecast (testing) restores that.
+// v0.5.6 (GPT's v0.5.5 re-audit): a human Mammals player is assumed to make the save that best helps it win: its final
+// place first, then its lead over the best other animal, then its own VP (v0.5.5 took the most VP for Mammals, which can
+// lose a game that a smaller save wins). PAPER.v055Forecast (testing) restores v0.5.5.
 function finalProjection(s) {
   const ice = icePoints(s);
   const run = saved => {
@@ -27,8 +30,18 @@ function finalProjection(s) {
   const chosen = botAction(s,{kind:'extinction',actor:'mammals'})?.saved ?? null;
   if (s.human !== 'mammals') return run(chosen);
   const runs = options.map(tile => ({tile, vp:run(tile)}));
-  const top = Math.max(...runs.map(r => r.vp.mammals));
-  return (runs.find(r => r.tile === chosen && r.vp.mammals === top) || runs.find(r => r.vp.mammals === top)).vp;
+  if (typeof PAPER !== 'undefined' && PAPER.v055Forecast) {
+    const top = Math.max(...runs.map(r => r.vp.mammals));
+    return (runs.find(r => r.tile === chosen && r.vp.mammals === top) || runs.find(r => r.vp.mammals === top)).vp;
+  }
+  const others = s.ids.filter(id => id !== 'mammals');
+  const key = r => [finalPlace(s, r.vp, 'mammals'), Math.max(...others.map(id => r.vp[id])) - r.vp.mammals, -r.vp.mammals, r.tile === chosen ? 0 : 1];
+  const better = (a, b) => { const x = key(a), y = key(b); const i = x.findIndex((v, n) => v !== y[n]); return i >= 0 && x[i] < y[i]; };
+  return runs.reduce((best, r) => better(r, best) ? r : best).vp;
+}
+// An animal's final place for projected VP, with ties to the animal higher in the food chain (as standings() decides).
+function finalPlace(s, vp, id) {
+  return [...s.ids].sort((a, b) => vp[b] - vp[a] || rank(a) - rank(b)).indexOf(id);
 }
 function endEstimate(s, id) {
   if (typeof PAPER !== 'undefined' && PAPER.oldForecast) return endEstimateV054(s, id);
@@ -291,9 +304,16 @@ function pickEffect(s,step) { return chooseEffect(s,step); }
 function cardValue(s, actor, name, tile, quick = false) {
   if (name === 'Ice Age') {
     if (quick) return s.animals[actor].vp >= Math.max(...s.ids.map(id => s.animals[id].vp)) ? 5 : .6;
-    const own = endEstimate(s,actor);
-    const margin = own - Math.max(...s.ids.filter(id => id !== actor).map(id => endEstimate(s,id)));
-    return margin >= 0 ? 7 + Math.min(5,margin*.25) : -Math.min(4,Math.abs(margin)*.35);
+    if (typeof PAPER !== 'undefined' && (PAPER.oldForecast || PAPER.v055Forecast)) {
+      const own = endEstimate(s,actor);
+      const margin = own - Math.max(...s.ids.filter(id => id !== actor).map(id => endEstimate(s,id)));
+      return margin >= 0 ? 7 + Math.min(5,margin*.25) : -Math.min(4,Math.abs(margin)*.35);
+    }
+    // v0.5.6 (GPT's v0.5.5 re-audit): a projected tie is won only by the animal higher in the food chain, so a tie it
+    // would lose counts as a loss (v0.5.5 took Ice Age on any tie).
+    const vp = finalProjection(s);
+    const margin = vp[actor] - Math.max(...s.ids.filter(id => id !== actor).map(id => vp[id]));
+    return finalPlace(s, vp, actor) === 0 ? 7 + Math.min(5,margin*.25) : -Math.min(4,Math.max(1,Math.abs(margin))*.35);
   }
   if (['Biodiversity','Ecodiversity','Fertile','Niche Biomes'].includes(name)) return scoreCardPoints(s,actor,name,tile);
   if (quick || !tile) {

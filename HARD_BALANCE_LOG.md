@@ -552,3 +552,9 @@ Sources: `ba67`, `ba34`, `pb_c1`–`c3`, `pb_e1`, `pb_e2`.
 - **No retuning.** The forecast was wrong only when Mammals had two or more endangered tiles and the first reached was not the one saved, and then only when that changed the Ice Age decision.
 - **Also in v0.5.5:** the names The Red Queen and Tooth & Claw in the app, the rulebook without its Testing section, redesigned cards with backs, Catastrophe and Hibernation wording (P1, P2), `smoke.cjs --check` (T1).
 
+### 23:00 — v0.5.6: cards-only mode; Ice Age decision fixes (GPT's v0.5.5 re-audit F1, F2); card reminders (P3); rulebook clarifications
+
+- **F1:** a human Mammals player is assumed to make the Extinction save that best helps it win (place, then lead, then VP). **F2:** a projected tie that the food chain gives to another animal counts as a loss for the Ice Age decision. `v055Forecast` restores v0.5.5.
+- **Not re-measured** (the user's call: minor). The smoke check is unchanged. The queued PC jobs `bp01`–`bp41` were replaced with no-op selftests before they started.
+- **Cards-only mode** draws with the full game's shuffle and draw code and tracks no board; nothing in play changes.
+

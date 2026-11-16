@@ -7,7 +7,7 @@
 <p><b>Draw the rival's top card</b> (discard it after this placement, whichever step decides). Take the first step that gives a space:</p>
 <div class="step"><b class="n">1</b><div><b>Domination first.</b> A Dominance Card is available, and the rival dominates more unscored tiles than it has pawns on Domination (at most 2) → leftmost open Domination space.</div></div>
 <div class="step"><b class="n">2</b><div><b>Barren Earth</b> (after turn 1). No animal is dominant on any tile → an open Abundance space, unless it already has a pawn there. It may take any element.<br><b>Empty Earth:</b> if no rival has species on Earth (yours may remain), its Abundance may use any empty corner.</div></div>
-<div class="step"><b class="n">3</b><div><b>Block the leader.</b> A card is available, the rival has fewer than 2 pawns on Domination, and the leader dominates an unscored tile → leftmost open Domination space (needs a target).</div></div>
+<div class="step"><b class="n">3</b><div><b>Block the leader.</b> A card is available, the rival has fewer than 2 pawns on Domination, and the leader dominates an unscored tile → leftmost open Domination space (needs a target). This only claims the space; in Execution it scores by the usual Domination rule (sheet 2), not necessarily the leader's tile.</div></div>
 <div class="step"><b class="n">4</b><div><b>Its card.</b> Try the card's three actions in order. Place on the first that:
 <ul><li>is not a row where it already has a pawn;</li><li>is not a <b>weak action</b>, unless it is the card's first action;</li><li>has an open space with a target (table →).</li></ul></div></div>
 <div class="step"><b class="n">5</b><div><b>Fallback.</b> Same tests, but weak actions allowed, in this order:<br>Domination · Wanderlust · Speciation · Adaptation · Competition · Migration · Abundance · Initiative · Regression · Depletion · Wasteland · Glaciation</div></div>
@@ -25,7 +25,7 @@
 <tr><td>Wasteland</td><td>The box holds an element it uses</td></tr>
 <tr><td>Depletion</td><td>A disk on Earth is of a box element it does not use</td></tr>
 <tr><td>Glaciation</td><td>A legal tile holds opposing species and none of its own</td></tr>
-<tr><td>Speciation</td><td>Its gene pool is not empty and a disk of that element is on Earth</td></tr>
+<tr><td>Speciation</td><td>Its gene pool is not empty and a disk matching the element of the space being checked is on Earth</td></tr>
 <tr><td>Wanderlust</td><td>A tile is face up and an empty spot touches a tile it occupies</td></tr>
 <tr><td>Migration</td><td>At least one move is allowed (sheet 2): a rescue, or a species from a tile where it has 2+ (losing no rank) to a matched tile it is not on yet</td></tr>
 <tr><td>Competition</td><td>A tile of that space's terrains, or tundra, holds it and an opponent</td></tr>
@@ -62,7 +62,7 @@
 <ul>
 <li><b>May leave:</b> a tile it does not match (a <b>rescue</b>), or a tile where it has 2+ species and losing one costs no rank.</li>
 <li><b>Goes to:</b> an adjacent tile it matches (Birds: up to two tiles away, through existing terrain).</li>
-<li><b>Every move</b> must be a rescue or reach a tile it is not on yet.</li>
+<li><b>Every move</b> must be a rescue or reach a tile it is not on yet. Check again before each move: once it has arrived on a tile, a later move there must be a rescue.</li>
 <li><b>Choose:</b> rescues first → destination with the higher first-place value → a destination it does not occupy → the fullest origin → destination in board order → origin in board order.</li>
 <li><b>One direction per tile:</b> during this action a tile that has sent can only send; one that has received can only receive.</li>
 <li>Rivals never weigh rank gains at the destination.</li>
@@ -76,6 +76,7 @@
 <tr><td>+ half value</td><td>it is that opponent's last species there</td></tr>
 <tr><td>+ 6</td><td>removing that last species also ends the opponent's dominance</td></tr>
 </table>
+<p class="small">Keep half-points exactly; do not round.</p>
 <h2>First-place values</h2>
 {{VALUES}}
 </div></div>
@@ -139,6 +140,7 @@
 <p><b>Rank on a tile:</b> animals with species there, ordered by number of species; ties to the food chain. Ranks count even below the places that score VP (on tundra, second is still second).</p>
 <p><b>Gains a rank:</b> it ends ranked higher on that tile than before, or now ranks there at all.</p>
 <p><b>First-place value:</b> {{VALUE_LIST}}.</p>
+<p><b>Added elements:</b> keep them in the order gained, oldest on the left; new ones (Metamorphosis replacements too) go at the right end. To remove a type, take its leftmost copy and close the gap.</p>
 <p><b>Ties:</b> between tiles, the higher first-place value, then board order, unless the rule says otherwise. Corners and empty spots: board order after that choice's own priorities.</p>
 <p><b>Board order:</b> furthest left on the board, then highest. For tiles: down the leftmost column, then the next column.</p>
 <p><b>Rivals never break a rule:</b> if a rule points at something illegal, skip to the next option.</p>

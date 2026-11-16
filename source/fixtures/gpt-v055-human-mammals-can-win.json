@@ -1,0 +1,215 @@
+{
+  "format": "dominant-species-solo-v1",
+  "game": {
+    "version": "0.5.5",
+    "human": "mammals",
+    "rivals": [
+      "birds",
+      "insects"
+    ],
+    "ids": [
+      "mammals",
+      "birds",
+      "insects"
+    ],
+    "short": false,
+    "seed": 551114,
+    "rng": 4167636016,
+    "turn": 9,
+    "phase": "execution",
+    "cursor": 42,
+    "planning": 0,
+    "initiative": [
+      "insects",
+      "birds",
+      "mammals"
+    ],
+    "ending": false,
+    "tiles": {
+      "D3": {
+        "terrain": "tundra",
+        "cubes": {
+          "mammals": 0,
+          "birds": 0,
+          "insects": 0
+        }
+      },
+      "D2": {
+        "terrain": "wetland",
+        "cubes": {
+          "mammals": 1,
+          "birds": 0,
+          "insects": 0
+        }
+      },
+      "E3": {
+        "terrain": "savannah",
+        "cubes": {
+          "mammals": 1,
+          "birds": 1,
+          "insects": 0
+        }
+      },
+      "E4": {
+        "terrain": "desert",
+        "cubes": {
+          "mammals": 0,
+          "birds": 0,
+          "insects": 0
+        }
+      },
+      "D4": {
+        "terrain": "mountain",
+        "cubes": {
+          "mammals": 0,
+          "birds": 0,
+          "insects": 0
+        }
+      },
+      "C4": {
+        "terrain": "forest",
+        "cubes": {
+          "mammals": 0,
+          "birds": 0,
+          "insects": 0
+        }
+      },
+      "C3": {
+        "terrain": "jungle",
+        "cubes": {
+          "mammals": 0,
+          "birds": 0,
+          "insects": 0
+        }
+      }
+    },
+    "corners": {
+      "5,-1": "seed"
+    },
+    "pawns": {},
+    "pending": [
+      {
+        "kind": "claim",
+        "actor": "birds",
+        "tile": "E3",
+        "focus": null
+      }
+    ],
+    "scored": [
+      "E3"
+    ],
+    "market": [
+      "Ice Age",
+      "Fertile",
+      null,
+      null,
+      null
+    ],
+    "usedCards": [
+      "Aquatic",
+      "Biodiversity",
+      "Biomass",
+      "Blight",
+      "Catastrophe",
+      "Cold Snap",
+      "Disease",
+      "Ecodiversity",
+      "Evolution",
+      "Fecundity",
+      "Habitat",
+      "Hibernation",
+      "Ice Sheet",
+      "Immigrants",
+      "Instinct",
+      "Intelligence",
+      "Mass Exodus",
+      "Metamorphosis",
+      "Niche Biomes",
+      "Nocturnal",
+      "Omnivore",
+      "Parasitism",
+      "Predator",
+      "Symbiotic"
+    ],
+    "stacks": [
+      {
+        "left": 8,
+        "face": null
+      },
+      {
+        "left": 8,
+        "face": null
+      },
+      {
+        "left": 8,
+        "face": null
+      }
+    ],
+    "boxes": {
+      "adaptation": [],
+      "regression": [],
+      "abundance": [],
+      "wasteland": [],
+      "depletion": [],
+      "wanderlust": []
+    },
+    "animals": {
+      "mammals": {
+        "added": [],
+        "pool": 47,
+        "dead": 0,
+        "vp": 10,
+        "ap": 6,
+        "remaining": 0,
+        "ward": {}
+      },
+      "birds": {
+        "added": [],
+        "pool": 48,
+        "dead": 0,
+        "vp": 11,
+        "ap": 6,
+        "remaining": 0,
+        "ward": {}
+      },
+      "insects": {
+        "added": [],
+        "pool": 49,
+        "dead": 0,
+        "vp": 0,
+        "ap": 6,
+        "remaining": 0,
+        "ward": {}
+      }
+    },
+    "decks": {
+      "birds": {
+        "queue": [
+          5,
+          1,
+          0,
+          3,
+          6,
+          7,
+          2,
+          4
+        ],
+        "discards": []
+      },
+      "insects": {
+        "queue": [
+          0,
+          7,
+          6,
+          5,
+          1,
+          3,
+          4,
+          2
+        ],
+        "discards": []
+      }
+    },
+    "log": []
+  }
+}

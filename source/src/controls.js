@@ -34,7 +34,7 @@ main.addEventListener('change',event => {
     const key=input.name;
     if (key === 'length') setup.short=input.value === 'short';
     if (key === 'rules' || key === 'extra') {
-      if (key === 'rules') setup.paper=input.value === 'paper';
+      if (key === 'rules') { setup.paper=input.value !== 'app'; setup.draw=input.value === 'draw'; }
       if (key === 'extra') setup.extra=Number(input.value);
       render(false);
       main.querySelector('input[name="'+key+'"][value="'+input.value+'"]')?.focus({preventScroll:true});
@@ -69,6 +69,12 @@ main.addEventListener('submit',event => {
   try {
     if (form.dataset.form === 'start') {
       if (setup.paper && !PAPER_LEVELS.some(([n]) => n === setup.extra)) throw new Error('Choose a difficulty level for The Red Queen.');
+      if (setup.draw) {
+        drawGame=newDrawGame(setup.human,[...setup.bots],setup.extra,randomSeed());
+        undo=[]; notice=''; initialError='';
+        save(); render(true);
+        return;
+      }
       game=newGame(setup.human,[...setup.bots],setup.short,randomSeed(),setup.paper ? {extra:setup.extra} : null);
       activeTile='D3'; reveal=null; preview=null; draft={}; undo=[]; notice=''; initialError='';
       save(); render(true);
@@ -155,6 +161,22 @@ function editSupplyDisks(button) {
     main.querySelector('[data-row="' + row + '"][data-do="remove-disk"]');
   (same ?? next)?.focus({preventScroll:true});
 }
+function editDraw(fn) {
+  const old=copy(drawGame);
+  try {
+    fn(drawGame);
+    validateDraw(drawGame);
+  } catch (err) {
+    drawGame=old;
+    fail(err.message);
+    return;
+  }
+  undo.push(old);
+  if (undo.length > 60) undo.shift();
+  notice='';
+  save();
+  render(false);
+}
 function openModal(kind) {
   modalKind=kind;
   renderModal();
@@ -162,8 +184,11 @@ function openModal(kind) {
   else modal.querySelector('[data-do="close"]')?.focus();
 }
 function renderModal() {
-  const titles={help:'How to play',decks:'Bot decks',menu:'Game menu',new:'Start a new game?'};
+  const titles={help:'How to play',decks:'Bot decks',menu:'Game menu',new:'Start a new game?',rules:'Rules',aids:'Player aids'};
   let content='';
+  const doc=modalKind === 'rules' || modalKind === 'aids';
+  modal.classList.toggle('doc-modal',doc);
+  if (doc) content='<iframe class="doc-frame" sandbox title="' + titles[modalKind] + '"></iframe>';
   if (modalKind === 'help') content =
     '<p>Use your physical copy of Chad Jensen’s original GMT game. Set up one animal for yourself and two to five rivals with the base game’s allotment for that player count (6 pawns and 50 cubes per animal with two rivals; 5 and 45 with three; 4 and 40 with four; 3 and 35 with five), including each VP marker. Use the standard starting map shown in the app.</p>' +
     '<ol><li>Enter the actual elements, tile stack faces and Dominance Cards when the app requests them. Keep the official cards and tiles at your table.</li>' +
@@ -171,6 +196,7 @@ function renderModal() {
     '<li>Apply each action to the physical board and confirm it here. The Earth map uses the starting wetland as north. Corner 1 points right, and corners 2–6 follow clockwise. The map shows a shared corner once.</li>' +
     '<li>Follow the app’s Extinction and Survival prompts. After Ice Age, complete the turn and compare the final scores.</li></ol>' +
     '<h3>Rival cards</h3><p>With <b>Tooth &amp; Claw</b>, the app\'s own rivals, each rival shuffles its own eight-card deck, checks one condition per placement and starts on the corresponding face. The action list guides the pawn placement. The bot can take another open space when it sees a stronger opportunity. Targets are chosen when the pawn resolves.</p><p>With <b>The Red Queen</b>, the rivals follow the printed rulebook (The Red Queen: solo rivals for Dominant Species) exactly: always the reverse face of the card, simple counting rules, and a pawn adjustment for difficulty (' + PAPER_LEVELS.map(([n,name]) => name + ' ' + (n < 0 ? '−' + -n : n ? '+' + n : '0')).join(', ') + '; from v0.5.3, Easy with five rivals is −1 for each rival and +1 for you). In Red Queen games started in v0.5.0 or later, the rivals plan first: at the start of each Planning, they place one pawn each before anyone else, in Initiative order. In Red Queen games started in v0.4.0 or later, when only rivals tie for the most matches on a tile, one of them is dominant: from v0.5.4 the rival with the most species there, then the one higher in the food chain (earlier games: the food chain alone); a tie that includes you leaves the tile with no dominant animal. In every Red Queen game (from v0.5.1, saved games included), if no rival has any species left on Earth (from v0.5.4 even if yours remain), a rival\'s Abundance may use any empty corner, so species can return. Use it to learn the printed rules, or to play them without printing anything.</p>' +
+    '<p>With <b>The Red Queen · cards only</b>, you run the rivals yourself from the rulebook, without printing it or the cards. The app shuffles each rival’s eight-card deck, shows the card you draw (reshuffling a rival’s discards when its deck runs out), and keeps the rulebook and player aids a tap away. It does not track the board.</p>' +
     (game?.paper && !game.paper.planFirst ? '<p><b>This saved game</b> was started before ' + (game.paper.rivalTie ? 'v0.5.0' : 'v0.4.0') + ' and keeps these rules from then: ' + esc(paperLevel(game.paper.extra, game.paper)) + ' (' + (game.paper.extra < 0 ? '−' + -game.paper.extra : '+' + game.paper.extra) + ' pawn' + (Math.abs(game.paper.extra) === 1 ? '' : 's') + ' per rival), the rivals place in normal Initiative order' + (game.paper.rivalTie ? '' : ', and a tie between rivals leaves the tile with no dominant animal') + '.</p>' : '') +
     (game?.paper?.planFirst && !game.paper.speciesTie ? '<p><b>This saved game</b> was started before v0.5.4 and keeps its rival tie rule from then: when only rivals tie for the most matches on a tile, the one higher in the food chain is dominant.</p>' : '') +
     '<h3>Board tracking</h3><p>The companion checks cones automatically. When a protected Hibernation cube shares a tile with other cubes of the same animal, the app moves or removes the ordinary cubes first. Confirm each physical move to save it. Undo is available until you close or reload the page. Export a save before switching browsers or devices.</p>' +
@@ -185,13 +211,14 @@ function renderModal() {
     button('Start new game','new-confirm','primary') + button('Export current save','export','subtle') + '</div>';
   modal.innerHTML='<div class="modal-header"><h2 id="modal-heading">'+titles[modalKind]+'</h2>' +
     button('Close','close','sm subtle','autofocus') + '</div><div class="modal-body">'+content+'</div>';
+  if (doc) modal.querySelector('.doc-frame').srcdoc = modalKind === 'rules' ? RQ_RULES : RQ_AIDS;
 }
 function exportSave() {
-  if (!game) return;
+  if (!game && !drawGame) return;
   const body=saveContents();
   const url=URL.createObjectURL(new Blob([body],{type:'application/json'}));
   const a=document.createElement('a');
-  a.href=url; a.download='Dominant_Species_Turn_'+game.turn+'.json';
+  a.href=url; a.download=game ? 'Dominant_Species_Turn_'+game.turn+'.json' : 'The_Red_Queen_Cards_Only.json';
   document.body.append(a); a.click(); a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
@@ -200,10 +227,17 @@ async function importSave(file) {
   try {
     if (file.size > 1_500_000) throw new Error('That file is too large for a companion save.');
     const parsed=JSON.parse(await file.text());
+    if (parsed.format === DRAW_FORMAT) {
+      const cards=validateDraw(parsed.draw);
+      undo=[]; game=null; drawGame=cards; reveal=null; preview=null; draft={}; notice=''; initialError='';
+      if (modal.open) modal.close();
+      save(); render(true);
+      return;
+    }
     if (parsed.format !== SAVE_KEY) throw new Error('Choose a save exported by this companion.');
     const loaded=validateState(parsed.game);
     if (game) undo=[copy(game)]; else undo=[];
-    game=loaded; activeTile='D3'; reveal=null; preview=null; draft=readSupplyDraft(loaded,parsed.supply); notice=''; initialError='';
+    drawGame=null; game=loaded; activeTile='D3'; reveal=null; preview=null; draft=readSupplyDraft(loaded,parsed.supply); notice=''; initialError='';
     if (modal.open) modal.close();
     save(); render(true);
   } catch (err) {
@@ -221,15 +255,22 @@ document.addEventListener('click',event => {
   if (!btn || btn.disabled) return;
   try {
     switch (btn.dataset.do) {
-      case 'decks': case 'help': case 'menu': openModal(btn.dataset.do); break;
+      case 'decks': case 'help': case 'menu': case 'rules': case 'aids': openModal(btn.dataset.do); break;
+      case 'rq-draw':
+        if (drawGame && drawGame.rivals.includes(btn.dataset.animal)) {
+          editDraw(s=>drawFor(s,btn.dataset.animal));
+          main.querySelector('[data-do="rq-draw"][data-animal="'+btn.dataset.animal+'"]')?.focus({preventScroll:true});
+        }
+        break;
       case 'close': modal.close(); break;
       case 'deck-tab':
         deckTab=btn.dataset.animal; renderModal(); modal.querySelector('[data-animal="'+deckTab+'"]')?.focus(); break;
       case 'new': openModal('new'); break;
       case 'new-confirm':
+        if (drawGame) setup={human:drawGame.human,bots:[...drawGame.rivals],short:setup.short,paper:true,draw:true,extra:drawGame.extra};
         // Keep the level by name on the current pawn scale. If an older save's level can't be recovered, the player chooses.
-        setup={human:game.human,bots:[...game.rivals],short:game.short,paper:!!game.paper,extra:game.paper ? paperExtraFor(paperLevel(game.paper.extra, game.paper)) : paperExtraFor('Standard')};
-        game=null; undo=[]; reveal=null; preview=null; draft={}; notice=''; initialError='';
+        else setup={human:game.human,bots:[...game.rivals],short:game.short,paper:!!game.paper,extra:game.paper ? paperExtraFor(paperLevel(game.paper.extra, game.paper)) : paperExtraFor('Standard')};
+        game=null; drawGame=null; undo=[]; reveal=null; preview=null; draft={}; notice=''; initialError='';
         modal.close(); save(); render(false);
         main.focus();
         break;
@@ -264,6 +305,10 @@ document.addEventListener('click',event => {
         break;
       }
       case 'undo':
+        if (!game && drawGame) {
+          if (undo.length) { drawGame=undo.pop(); notice=''; save(); render(true,true); }
+          break;
+        }
         if (reveal || preview) { reveal=null; preview=null; render(true,true); }
         else if (undo.length) {
           game=undo.pop(); reveal=null; preview=null; draft={}; notice='';

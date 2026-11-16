@@ -8,6 +8,7 @@ The player scores an open space as  tuned value + net(board)[space].  Each sampl
 each played out on the same re-dealt futures. Training is pairwise (RankNet): for two candidates whose playout
 utility differs, the better one's score should be higher. Utility = win rate + margin_weight * clip(margin, +-50) / 50.
 The last layer starts at zero, so an untrained net is the tuned player. Prints a JSON report; writes the net as JSON.
+Samples are split train / validation (epoch selection, by default on the validation gain) / test (report only).
 """
 import argparse, json, math, os, sys, time
 import numpy as np
@@ -27,7 +28,9 @@ def parse():
     p.add_argument('--margin-weight', type=float, default=0.5)
     p.add_argument('--min-gap', type=float, default=0.05, help='utility gap below which a pair is ignored')
     p.add_argument('--temp', type=float, default=1.0, help='score units per logit')
-    p.add_argument('--val-frac', type=float, default=0.15)
+    p.add_argument('--val-frac', type=float, default=0.15, help='samples for early stopping / model selection')
+    p.add_argument('--test-frac', type=float, default=0.15, help='samples held out of training AND selection, for the report')
+    p.add_argument('--select', default='gain', choices=['gain', 'loss'], help='keep the epoch with the best validation gain (net pick minus tuned pick, utility) or loss')
     p.add_argument('--seed', type=int, default=1)
     return p.parse_args()
 
@@ -57,17 +60,18 @@ def pairs_of(cands, margin_weight, min_gap):
     slot = np.zeros((n, K), dtype=np.int64)
     tuned = np.full((n, K), -1e4, dtype=np.float32)
     util = np.full((n, K), -1e4, dtype=np.float32)
+    win = np.full((n, K), -1e4, dtype=np.float32)
     pi, pa, pb, pw = [], [], [], []
     for i, c in enumerate(cands):
         u = [w + margin_weight * max(-50.0, min(50.0, mg)) / 50.0 for (_, _, _, w, mg) in c]
-        for k, (s, t, _, _, _) in enumerate(c):
-            slot[i, k], tuned[i, k], util[i, k] = s, t, u[k]
+        for k, (s, t, _, w, _) in enumerate(c):
+            slot[i, k], tuned[i, k], util[i, k], win[i, k] = s, t, u[k], w
         for a in range(len(c)):
             for b in range(len(c)):
                 gap = u[a] - u[b]
                 if gap > min_gap:
                     pi.append(i); pa.append(a); pb.append(b); pw.append(min(1.0, gap))
-    return slot, tuned, util, np.array(pi), np.array(pa), np.array(pb), np.array(pw, dtype=np.float32)
+    return slot, tuned, util, win, np.array(pi), np.array(pa), np.array(pb), np.array(pw, dtype=np.float32)
 
 
 class Net(nn.Module):
@@ -93,21 +97,25 @@ def main():
     dev = 'cuda' if torch.cuda.is_available() else 'cpu'
     t0 = time.time()
     X, cands, meta = load(a.data.split(','))
-    slot, tuned, util, pi, pa, pb, pw = pairs_of(cands, a.margin_weight, a.min_gap)
+    slot, tuned, util, win, pi, pa, pb, pw = pairs_of(cands, a.margin_weight, a.min_gap)
     n, F = X.shape
     n_out = len(meta['slots'])
     # Split by sample.
     order = rng.permutation(n)
-    n_val = int(n * a.val_frac)
+    n_val, n_test = int(n * a.val_frac), int(n * a.test_frac)
     is_val = np.zeros(n, dtype=bool)
     is_val[order[:n_val]] = True
-    mean = X[~is_val].mean(0)
-    std = X[~is_val].std(0)
+    is_test = np.zeros(n, dtype=bool)
+    is_test[order[n_val:n_val + n_test]] = True
+    is_train = ~is_val & ~is_test
+    mean = X[is_train].mean(0)
+    std = X[is_train].std(0)
     std[std < 1e-3] = 1.0
     Xt = torch.tensor((X - mean) / std, device=dev)
     slot_t, tuned_t = torch.tensor(slot, device=dev), torch.tensor(tuned, device=dev)
-    train_pairs = np.where(~is_val[pi])[0]
+    train_pairs = np.where(is_train[pi])[0]
     val_pairs = np.where(is_val[pi])[0]
+    test_pairs = np.where(is_test[pi])[0]
     P = {k: torch.tensor(v, device=dev) for k, v in dict(i=pi, a=pa, b=pb, w=pw).items()}
 
     net = Net(F, [int(h) for h in a.hidden.split(',')], n_out).to(dev)
@@ -127,22 +135,29 @@ def main():
         return loss + a.l2out * (r ** 2).mean(), (diff > 0).float().mean().item()
 
     def evaluate(mask):
-        """Mean utility of the space each scorer would pick, over samples in mask (tuned alone vs tuned + net)."""
+        """Over samples in mask: mean utility and win rate of the space each scorer picks (tuned alone vs tuned + net),
+        and the net's gain over the tuned pick with its standard error. Only meaningful on samples the net never saw."""
         idx = torch.tensor(np.where(mask)[0], device=dev)
         with torch.no_grad():
             s, _ = scores(idx)
         valid = torch.tensor(util[mask] > -1e3, device=dev)
         u = torch.tensor(util[mask], device=dev)
+        wn = torch.tensor(win[mask], device=dev)
         pick_net = torch.where(valid, s, torch.full_like(s, -1e9)).argmax(1)
         pick_tuned = torch.where(valid, tuned_t[idx], torch.full_like(s, -1e9)).argmax(1)
         best = torch.where(valid, u, torch.full_like(u, -1e9)).max(1).values
-        g = lambda pick: u.gather(1, pick[:, None])[:, 0]
-        return {'samples': int(mask.sum()), 'tunedPick': round(g(pick_tuned).mean().item(), 4), 'netPick': round(g(pick_net).mean().item(), 4),
-                'bestPossible': round(best.mean().item(), 4), 'changedPicks': round((pick_net != pick_tuned).float().mean().item(), 3)}
+        g = lambda m, pick: m.gather(1, pick[:, None])[:, 0]
+        du, dw = g(u, pick_net) - g(u, pick_tuned), g(wn, pick_net) - g(wn, pick_tuned)
+        se = lambda d: d.std().item() / math.sqrt(max(1, len(d)))
+        return {'samples': int(mask.sum()), 'tunedPick': round(g(u, pick_tuned).mean().item(), 4), 'netPick': round(g(u, pick_net).mean().item(), 4),
+                'bestPossible': round(best.mean().item(), 4), 'changedPicks': round((pick_net != pick_tuned).float().mean().item(), 3),
+                'gain': round(du.mean().item(), 4), 'gainSE': round(se(du), 4), 'winGain': round(dw.mean().item(), 4), 'winGainSE': round(se(dw), 4)}
 
     history = []
     batch = 4096
-    best_state, best_val = None, None
+    best_state, best_val, best_epoch = None, None, 0
+    if a.select == 'gain':   # epoch 0 is the untrained net, i.e. the tuned player itself: a net must beat it to be kept
+        best_state, best_val = {k: v.detach().clone() for k, v in net.state_dict().items()}, -evaluate(is_val)['gain']
     for epoch in range(a.epochs):
         net.train()
         perm = torch.tensor(rng.permutation(train_pairs), device=dev)
@@ -160,8 +175,9 @@ def main():
                'valPairAcc': round(va, 3), **{'val' + k[0].upper() + k[1:]: v for k, v in ev.items() if k != 'samples'}}
         history.append(row)
         print(json.dumps(row), file=sys.stderr, flush=True)
-        if best_val is None or vl.item() < best_val:
-            best_val = vl.item()
+        crit = -ev['gain'] if a.select == 'gain' else vl.item()
+        if best_val is None or crit < best_val:
+            best_val, best_epoch = crit, epoch + 1
             best_state = {k: v.detach().clone() for k, v in net.state_dict().items()}
     net.load_state_dict(best_state)
     net.eval()
@@ -174,10 +190,11 @@ def main():
                            'b': [round(v, 6) for v in m.bias.detach().cpu().numpy().tolist()]})
     with torch.no_grad():
         tuned_only = {'pairAcc': round(float(((tuned[pi[val_pairs], pa[val_pairs]] - tuned[pi[val_pairs], pb[val_pairs]]) > 0).mean()), 3)}
-    report = {'samples': n, 'validationSamples': n_val, 'pairs': len(pi), 'validationPairs': len(val_pairs), 'device': dev,
+    report = {'samples': n, 'validationSamples': n_val, 'testSamples': n_test, 'pairs': len(pi), 'validationPairs': len(val_pairs), 'device': dev,
               'gpu': torch.cuda.get_device_name(0) if dev == 'cuda' else None, 'seconds': round(time.time() - t0, 1),
-              'args': vars(a), 'tunedOnlyVal': tuned_only, 'final': {**evaluate(is_val), 'train': evaluate(~is_val)},
-              'bestValLoss': round(best_val, 4), 'history': history}
+              'args': vars(a), 'tunedOnlyVal': tuned_only, 'bestEpoch': best_epoch, 'select': a.select,
+              'test': evaluate(is_test) if n_test else None, 'final': {**evaluate(is_val), 'train': evaluate(is_train)},
+              'bestValCriterion': round(best_val, 4), 'history': history}
     net_json = {'featuresVersion': meta['featuresVersion'], 'featureSize': F, 'slots': meta['slots'],
                 'mean': [round(float(v), 6) for v in mean], 'std': [round(float(v), 6) for v in std], 'layers': layers,
                 'trainedOn': a.data, 'report': {k: v for k, v in report.items() if k != 'history'}}

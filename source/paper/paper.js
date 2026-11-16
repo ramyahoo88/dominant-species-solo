@@ -83,14 +83,16 @@ function paperPlacement(s, actor, cardIndex, openOverride = null) {
     return null;
   };
   const doms = pawnCount(s,actor,'domination'), dominated = paperDominated(s,actor).length;
-  const domFirst = !PAPER.noDomFirst && availableCards(s).length && dominated > doms && doms < 2 ? pick(['domination'], true) : null;
+  // Test only (16 Nov): domCap1 lets Domination first and Block the leader claim at most one Domination space a turn (the rule allows two).
+  const domCap = PAPER.domCap1 ? 1 : 2;
+  const domFirst = !PAPER.noDomFirst && availableCards(s).length && dominated > doms && doms < domCap ? pick(['domination'], true) : null;
   const barren = paperBarren(s) ? pick(['abundance']) : null;
   // Option: deny the leader's Domination. If the leader (highest-VP opponent) dominates enough unscored tiles while a card is available,
   // take a Domination space (at most 2) so the leader can't use it.
   const leader = pLeader(s,actor);
   const leaderDom = terrainIds(s).filter(t => !s.scored.includes(t) && cone(s,t) === leader).length;
   const blockMin = PAPER.domBlock2 ? 2 : 1;
-  const block = (PAPER.domBlock || PAPER.domBlock2) && !domFirst && availableCards(s).length && doms < 2 && leaderDom >= blockMin ? pick(['domination'], true) : null;
+  const block = (PAPER.domBlock || PAPER.domBlock2) && !domFirst && availableCards(s).length && doms < domCap && leaderDom >= blockMin ? pick(['domination'], true) : null;
   // The same order as before; also record which Planning step chose the space, for the player.
   const steps = [['Domination first', () => domFirst], ['Barren Earth', () => barren], ['Block the leader', () => block],
     ['Card action', () => pick(face ? face.rows : [], false, !PAPER.noWeak)], ['Fallback', () => pick(PAPER_FALLBACK, false)],
@@ -108,6 +110,8 @@ botPlacement = function(s) {
   const card = drawCard(s,actor);
   const choice = paperPlacement(s,actor,card);
   place(s,choice.slot,choice);
+  // Test only (16 Nov): blockNet marks a pawn placed by Block the leader, so its Domination scores against the leader.
+  if (PAPER.blockNet && choice.reason.includes('Block the leader')) s.pawns[choice.slot].block = true;
   return choice;
 };
 
@@ -221,7 +225,11 @@ function paperPawn(s, step) {
       // Test only (16 Nov, not a rule): domNet scores the tile with the most VP for the rival minus the VP the same scoring gives
       // the leader (the opponent highest on the VP track); domNetYou, minus the VP it gives the player. Then its own VP, then the usual order.
       const other = PAPER.domNetYou ? s.human : PAPER.domNet ? pLeader(s,actor) : null;
-      const t = other ? pBy(pool, t => myVP(t) - tileVP(s,t,other), myVP, t => pFirstVP(s,t)) : pBy(pool, myVP, t => pFirstVP(s,t));
+      // Test only (16 Nov): blockNet, for a pawn placed by Block the leader, scores the tile in the same pool that gives the leader
+      // the fewest VP, then the most VP for the rival, then the usual order.
+      const blocker = PAPER.blockNet && s.pawns[row + '-' + index]?.block;
+      const t = blocker ? pBy(pool, t => -tileVP(s,t,leader), myVP, t => pFirstVP(s,t)) :
+        other ? pBy(pool, t => myVP(t) - tileVP(s,t,other), myVP, t => pFirstVP(s,t)) : pBy(pool, myVP, t => pFirstVP(s,t));
       return {tile:t,label:describeScore(s,t)};
     }
   }

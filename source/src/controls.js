@@ -184,12 +184,24 @@ function openModal(kind) {
   else modal.querySelector('[data-do="close"]')?.focus();
 }
 function renderModal() {
-  const titles={help:'How to play',decks:'Bot decks',menu:'Game menu',new:'Start a new game?',rules:'Rules',aids:'Player aids'};
+  const titles={help:'How to play',decks:'Rival decks',menu:'Game menu',new:'Start a new game?',rules:'Rules',aids:'Player aids'};
   let content='';
   const doc=modalKind === 'rules' || modalKind === 'aids';
   modal.classList.toggle('doc-modal',doc);
   if (doc) content='<iframe class="doc-frame" sandbox title="' + titles[modalKind] + '"></iframe>';
-  if (modalKind === 'help') content =
+  // v0.5.7 (GPT's v0.5.6 re-audit): the header's references follow the mode. In cards-only play the app tracks no board, so
+  // How to play starts with that mode and Rival decks shows the printed card faces.
+  const queen = !!(game ? game.paper : drawGame || setup.paper);
+  const cardsOnly = !game && (drawGame ? true : !!setup.draw);
+  if (modalKind === 'help' && cardsOnly) content =
+    '<p>You are playing <b>The Red Queen · cards only</b>: you run the rivals yourself, by the printed rules, on your physical copy of Chad Jensen’s original GMT game. The app keeps each rival’s deck; it does not track the board.</p>' +
+    '<ol><li>Set up the base game for your player count, with the pawns the app shows for your level (the rulebook’s Setup and difficulty).</li>' +
+    '<li>Each time a rival places a pawn in Planning, including the pawn it places before anyone else, tap <b>Draw</b> for that rival and follow Planning steps 1–6 with that card. Moving a pawn with Initiative or Instinct does not draw a card.</li>' +
+    '<li>Resolve everything else yourself: <b>Rules</b> opens the full rulebook and <b>Player aids</b> the ten reference sheets, both inside the app.</li>' +
+    '<li>When a rival’s deck runs out, the app reshuffles its discards and says so. <b>Undo</b> takes back the last draw. The decks are saved on this device; export a save before switching browsers or devices.</li></ol>' +
+    '<p>To let the app run the rivals and track the board instead, start a new game and choose <b>The Red Queen · printed rivals</b> or <b>Tooth &amp; Claw</b>.</p>' +
+    '<p><a href="'+RULEBOOK+'" target="_blank" rel="noopener noreferrer">GMT rulebook</a> · <a href="'+PHOTO+'" target="_blank" rel="noopener noreferrer">Portage Glacier photo, USGS</a></p>';
+  else if (modalKind === 'help') content =
     '<p>Use your physical copy of Chad Jensen’s original GMT game. Set up one animal for yourself and two to five rivals with the base game’s allotment for that player count (6 pawns and 50 cubes per animal with two rivals; 5 and 45 with three; 4 and 40 with four; 3 and 35 with five), including each VP marker. Use the standard starting map shown in the app.</p>' +
     '<ol><li>Enter the actual elements, tile stack faces and Dominance Cards when the app requests them. Keep the official cards and tiles at your table.</li>' +
     '<li>Place your own pawns. Reveal a card for each rival placement and mirror the indicated slot on your action display.</li>' +
@@ -201,7 +213,11 @@ function renderModal() {
     (game?.paper?.planFirst && !game.paper.speciesTie ? '<p><b>This saved game</b> was started before v0.5.4 and keeps its rival tie rule from then: when only rivals tie for the most matches on a tile, the one higher in the food chain is dominant.</p>' : '') +
     '<h3>Board tracking</h3><p>The companion checks cones automatically. When a protected Hibernation cube shares a tile with other cubes of the same animal, the app moves or removes the ordinary cubes first. Confirm each physical move to save it. Undo is available until you close or reload the page. Export a save before switching browsers or devices.</p>' +
     '<p><a href="'+RULEBOOK+'" target="_blank" rel="noopener noreferrer">GMT rulebook</a> · <a href="'+PHOTO+'" target="_blank" rel="noopener noreferrer">Portage Glacier photo, USGS</a></p>';
-  if (modalKind === 'decks') content='<div class="deck-tabs" role="group" aria-label="Animal deck">' + FOOD.map(id=>button(nameOf(id),'deck-tab','sm',
+  if (modalKind === 'decks' && queen) content='<div class="deck-tabs" role="group" aria-label="Animal deck">' + FOOD.map(id=>button(nameOf(id),'deck-tab','sm',
+    'data-animal="'+id+'" aria-pressed="'+(id===deckTab)+'"')).join('') + '</div><p class="actorline">' + badge(deckTab) + ANIMALS[deckTab].power + '</p>' +
+    '<p class="muted">The Red Queen always uses these faces (the reverse, No, face of each card).</p><div class="rq-grid rq-deck-grid">' +
+    DECKS[deckTab].map((card,i)=>rqCard(deckTab,i)).join('') + '</div>';
+  else if (modalKind === 'decks') content='<div class="deck-tabs" role="group" aria-label="Animal deck">' + FOOD.map(id=>button(nameOf(id),'deck-tab','sm',
     'data-animal="'+id+'" aria-pressed="'+(id===deckTab)+'"')).join('') + '</div><p class="actorline">' + badge(deckTab) + ANIMALS[deckTab].power + '</p>' +
     '<div class="deck-grid">' + DECKS[deckTab].map(card=>'<article class="deck-card"><h3>'+card.title+'</h3><p>'+CHECKS[card.check]+'?</p>' +
     '<details><summary>Yes · '+FOCUSES[card.yes.focus]+'</summary>'+cardRows(card.yes)+'</details>' +

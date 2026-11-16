@@ -1,6 +1,6 @@
 # The Red Queen
 
-**Solo rivals for *Dominant Species*** · Version 0.5.6 · 15 November 2026 · An unofficial solo variant for *Dominant Species* (designed by Chad Jensen, published by GMT Games), for one player against two to five rival animals.
+**Solo rivals for *Dominant Species*** · Version 0.5.7 · 15 November 2026 · An unofficial solo variant for *Dominant Species* (designed by Chad Jensen, published by GMT Games), for one player against two to five rival animals.
 
 *In biology, the Red Queen hypothesis says a species must keep evolving just to hold its place against its rivals. These rivals make you do exactly that.*
 

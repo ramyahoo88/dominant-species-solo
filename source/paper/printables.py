@@ -444,6 +444,8 @@ def main():
                     duplex_cards(OUT / f"{name}.pdf")
             b.close()
     print("Wrote", ", ".join(sorted(f.name for f in OUT.iterdir())))
+    if not args.pdf:
+        print("PDFs not rebuilt: run with --pdf before a release (check_print_fit.py fails on stale PDFs).")
 
 
 if __name__ == "__main__":

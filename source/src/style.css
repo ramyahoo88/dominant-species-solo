@@ -214,6 +214,7 @@ dialog::backdrop{background:#132d2c88}
 .rq-foot{margin-top:6px;padding-top:5px;border-top:1px solid #9aa39a;font:11.5px/1.35 var(--body);color:#666}
 .rq-note{font-size:13px;color:#8a3b1c}.rq-empty{padding:12px 0;color:var(--muted)}
 .rq-recent li{display:flex;align-items:center;gap:6px}
+.rq-deck-grid{grid-template-columns:repeat(auto-fill,minmax(260px,1fr));margin-top:10px}
 dialog.doc-modal{width:min(980px,calc(100% - 16px))}dialog.doc-modal .modal-body{padding:0}
 .doc-frame{display:block;width:100%;height:calc(100dvh - 125px);border:0;background:#fff}
 @media(max-width:670px){

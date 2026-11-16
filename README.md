@@ -64,6 +64,7 @@ See [benchmark instructions](source/benchmark/README.md) and [results](BENCHMARK
 - **Paper rivals** — rules for running the rivals at the table without the app. See [PAPER_RIVALS.md](PAPER_RIVALS.md).
 - **v0.3.5** — two to five rivals, with the base game's pawns and cubes for each player count; seven-change quick mode for paper rivals.
 - **v0.3.6** — the app can run the printed Paper Rivals rules (four levels); one paper version with Block the leader.
+- **v0.5.7** — fresh PDFs and a check that catches stale ones; in cards-only play, How to play and Rival decks follow the mode (GPT's v0.5.6 re-audit).
 - **v0.5.6** — The Red Queen · cards only: the app draws each rival's cards and shows the rulebook and player aids, and you run the rivals yourself; Ice Age decision fixes and fuller card reminders for GPT's v0.5.5 re-audit; rulebook clarifications.
 - **v0.5.5** — the app names its two rival systems: Tooth & Claw (the app's own) and The Red Queen (the printed rules); a correct Ice Age forecast; printed Catastrophe and Hibernation details; a professional rulebook with card fronts and species backs; fixes for GPT's v0.5.4 comprehensive audit.
 - **Printables update** (no app change) — player aids (four reference sheets and one per rival), the rulebook in the aids' design with the cut-out cards in its appendix, and the Mass Exodus fallback from GPT's v0.5.4 re-audit.

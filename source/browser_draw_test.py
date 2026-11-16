@@ -34,6 +34,16 @@ with sync_playwright() as pw:
     expect(page.locator('h1')).to_have_text('Rival decks')
     expect(page.locator('.eyebrow').first).to_contain_text('The Red Queen · cards only · Hard')
     expect(page.locator('.rq-intro')).to_contain_text('Each rival has 5 action pawns, you have 5')
+    # The header's references follow the mode (GPT v0.5.6 re-audit): Red Queen card faces and cards-only help.
+    page.locator('header [data-do=decks]').click()
+    expect(page.locator('#modal-heading')).to_have_text('Rival decks')
+    expect(page.locator('.modal-body .rq-card')).to_have_count(8)
+    expect(page.locator('.modal-body details')).to_have_count(0)
+    page.locator('[data-do=close]').click()
+    page.locator('header [data-do=help]').click()
+    expect(page.locator('.modal-body p').first).to_contain_text('The Red Queen · cards only')
+    expect(page.locator('.modal-body')).not_to_contain_text('Enter the actual elements')
+    page.locator('[data-do=close]').click()
     rivals = stored(page)['draw']['rivals']
     assert len(rivals) == 3 and stored(page, FULL_KEY) is None
     expect(page.locator('[data-do=rq-draw]')).to_have_count(3)

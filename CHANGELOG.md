@@ -1,5 +1,13 @@
 # Release notes
 
+## v0.5.7 · November 15, 2026 · fixes for GPT's v0.5.6 re-audit: fresh PDFs; header references follow the cards-only mode
+
+- **PDFs regenerated (GPT finding 1):** v0.5.6's three PDFs were built before the last rulebook clarifications and card reminders (the HTML, Markdown and the app's built-in copy were current; the PDFs were not rebuilt). They now match the sources. `printables.py` says when it leaves the PDFs untouched, and `source/paper/check_print_fit.py` now also fails on stale PDFs: it checks the version, every card reminder and the legend, and every paragraph and list item of the rulebook's prose against the PDF text.
+- **Header references follow the mode (GPT finding 2):** in cards-only play, **How to play** starts with the cards-only steps (draw on every Planning placement, resolve everything else from Rules and Player aids, reshuffles and Undo) instead of the board-tracking steps, and **Rival decks** (renamed from Bot decks) shows The Red Queen's card faces, styled like the printed fronts. In Red Queen games run by the app, Rival decks shows the same faces; with Tooth & Claw it still shows both conditional faces.
+- No change to play. 58 rules tests; the cards-only browser test now also checks both header references.
+- Reproducible build: SHA-256 7cf16470… (full hash in `HANDOFF.md`); accepts v0.1–v0.5.6 saves.
+- See [AUDIT_RESPONSE_v0.5.6.md](AUDIT_RESPONSE_v0.5.6.md).
+
 ## v0.5.6 · November 15, 2026 · The Red Queen, cards only; Ice Age decision fixes and card reminders for GPT's v0.5.5 re-audit; rulebook clarifications
 
 - **The Red Queen · cards only (new, the user's request):** a third choice on the setup screen for players who want to run the printed rivals themselves without printing anything. The app shuffles each rival's eight-card deck and shows the card you draw, styled like the printed front (number, three actions with a reminder of when each has a target, weak actions in grey). It reshuffles a rival's discards when its deck runs out and says so, keeps a list of recent draws, and offers Undo. The rulebook and all ten player aids open inside the app, offline. Nothing on the board is tracked. The setup screen keeps the rival count, animals and level, which sets the pawn reminder. The game saves on the device under its own key, and Export and Import work; a cards-only save and a full-game save are never read as each other.

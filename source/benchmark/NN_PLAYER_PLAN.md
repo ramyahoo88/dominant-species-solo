@@ -29,6 +29,32 @@ pooled 648 decisions clear the bar I had set (gain above 0.01 with the 95% range
 - The rules changed in v0.5.0 (rivals plan first) and the reference player is now v4, so any new attempt
   needs new data against v0.5.0 rivals with v4. Paused; whether to reopen is the director's call.
 
+## Reopened (15 Nov 2026, 18:30): test player on v0.5.4+, reference pb5
+
+The user reopened the network as a *test player* (assignment 10 in `COORDINATION.md`). Base and reference: **pb5**
+(`tuned_weights_pb5.json`), which beats v4 against v0.5.4 paper rivals at every level (`bm50`/`bm51` against
+`bm40`/`bm41`: +0.8 to +6.5 points).
+
+**Step 0, headroom gate on v0.5.4 — passed.** Jobs `pb_h1`–`pb_h3` (`--nn-data --k 4 --m 16 --rate .03 --raw`,
+seeds 550000/551000/552000): 1,263 Planning decisions over App and Easy–Expert with 2–5 rivals, 1,408 games,
+0 errors, 0 stalls. Choosing the best of pb5's top 4 spaces on 8 playouts and scoring it on the other 8
+(50 splits):
+
+| Per decision | Win probability | Utility (win + margin/100) |
+|---|---|---|
+| Realisable gain, choosing on wins | **+0.0154 (95% +0.010 to +0.021)** | |
+| Realisable gain, choosing on win + margin/100 | +0.0168 (±0.0060) | +0.0307 (±0.0094) |
+| pb5's 2nd / 3rd / 4th choice minus its pick | −0.001 / −0.004 / −0.010 | |
+| Perfect chooser among the 4 (rough empirical-Bayes) | +0.019 | +0.036 |
+
+By table (choosing on wins): App +0.018 (±0.016), Easy +0.007 (±0.006), Standard +0.008 (±0.011), Hard +0.026
+(±0.015), Expert +0.019 (±0.013); by rivals 2 / 3 / 4 / 5: +0.017 / +0.014 / +0.015 / +0.018. The headroom is
+largest at Hard and Expert. All candidates were identical in every future in 11% of decisions.
+
+**Step 1 (started 19:45):** features v2 (the level block now separates −2..+3 and scaled Easy; v1 lumped Easy,
+Standard and Hard together). Labels: pb5's top 4 spaces, 8 playouts each on shared re-dealt futures, kept raw
+(`pb_q*`, seeds 5601xx onwards, v0.5.5 rules on the PC).
+
 The original proposal follows.
 
 ## Proposal (14 Nov)

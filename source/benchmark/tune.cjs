@@ -109,7 +109,7 @@ function worker() {
   parentPort.on('message', ({id, weights, scenarios, nn}) => {
     if (weights) setTuned(weights);
     const out = scenarios.map(sc => {
-      game.run('Object.assign(PAPER, ' + JSON.stringify(sc.mode === 'app' ? {place: false, all: false, extraAP: 0} : {place: true, all: true, extraAP: sc.mode, ...options}) + ')');
+      game.run('Object.assign(PAPER, ' + JSON.stringify(sc.mode === 'app' ? {place: false, all: false, extraAP: 0, oldForecast: !!options.oldForecast} : {place: true, all: true, extraAP: sc.mode, ...options}) + ')'); // v0.5.5: oldForecast also reaches App games
       try {
         if (nn) {
           const {game: g, samples} = sampleGame(sc, nnPlayer, nn);

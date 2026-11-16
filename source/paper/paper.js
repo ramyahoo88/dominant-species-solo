@@ -218,7 +218,10 @@ function paperPawn(s, step) {
       const mine = tiles.filter(t => cone(s,t) === actor);
       const safe = tiles.filter(t => !cone(s,t) || cone(s,t) === actor);
       const pool = mine.length && availableCards(s).length ? mine : safe.filter(t => myVP(t) > 0).length ? safe : tiles;
-      const t = pBy(pool, myVP, t => pFirstVP(s,t));
+      // Test only (16 Nov, not a rule): domNet scores the tile with the most VP for the rival minus the VP the same scoring gives
+      // the leader (the opponent highest on the VP track); domNetYou, minus the VP it gives the player. Then its own VP, then the usual order.
+      const other = PAPER.domNetYou ? s.human : PAPER.domNet ? pLeader(s,actor) : null;
+      const t = other ? pBy(pool, t => myVP(t) - tileVP(s,t,other), myVP, t => pFirstVP(s,t)) : pBy(pool, myVP, t => pFirstVP(s,t));
       return {tile:t,label:describeScore(s,t)};
     }
   }

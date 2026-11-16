@@ -1,0 +1,163 @@
+<!-- Player aids, sheets 1-4. Hand-condensed from RULES.md: change both together. printables.py fills {{...}} and adds one sheet per rival. -->
+<div class="page">
+<header><h1>1 · Planning: a rival places a pawn</h1><span>{{AID 1}}</span></header>
+<div class="cols"><div style="flex:1.15">
+<h2>Each time a rival places</h2>
+<p><b>Rivals plan first:</b> at the start of Planning each rival places 1 pawn, in Initiative order (skip a rival with no pawn left to place). Then go round the Initiative order as usual.</p>
+<p><b>Draw the rival's top card</b> (discard it after this placement, whichever step decides). Take the first step that gives a space:</p>
+<div class="step"><b class="n">1</b><div><b>Domination first.</b> A Dominance Card is available, and the rival dominates more unscored tiles than it has pawns on Domination (at most 2) → leftmost open Domination space.</div></div>
+<div class="step"><b class="n">2</b><div><b>Barren Earth</b> (after turn 1). No animal is dominant on any tile → an open Abundance space, unless it already has a pawn there. It may take any element.<br><b>Empty Earth:</b> if no rival has species on Earth (yours may remain), its Abundance may use any empty corner.</div></div>
+<div class="step"><b class="n">3</b><div><b>Block the leader.</b> A card is available, the rival has fewer than 2 pawns on Domination, and the leader dominates an unscored tile → leftmost open Domination space (needs a target).</div></div>
+<div class="step"><b class="n">4</b><div><b>Its card.</b> Try the card's three actions in order. Place on the first that:
+<ul><li>is not a row where it already has a pawn;</li><li>is not a <b>weak action</b>, unless it is the card's first action;</li><li>has an open space with a target (table →).</li></ul></div></div>
+<div class="step"><b class="n">5</b><div><b>Fallback.</b> Same tests, but weak actions allowed, in this order:<br>Domination · Wanderlust · Speciation · Adaptation · Competition · Migration · Abundance · Initiative · Regression · Depletion · Wasteland · Glaciation</div></div>
+<div class="step"><b class="n">6</b><div><b>Last resort.</b> Repeat step 5, allowing rows where it already has a pawn. If nothing qualifies, the first open space.</div></div>
+<div class="box"><b>Weak actions:</b> Abundance, Glaciation, Wasteland, Depletion, Regression, Initiative.</div>
+<div class="box"><b>Which space in the row?</b><br><b>Speciation:</b> the element whose disks touch the most tiles the rival matches.<br><b>Competition:</b> the space whose terrains (plus tundra) hold the most tiles it shares with an opponent.<br>Tie, or any other row: the leftmost open space.</div>
+<div class="box"><b>Full display:</b> if every space is taken, Planning ends at once. Unplaced pawns wait for next turn.</div>
+</div><div>
+<h2>Has a target when…</h2>
+<table>
+<tr><td>Initiative</td><td>It is not first on the Initiative track</td></tr>
+<tr><td>Adaptation</td><td>The box holds an element and its display has fewer than 6</td></tr>
+<tr><td>Regression</td><td>An added element's type is in the Adaptation or Regression box (Reptiles: always)</td></tr>
+<tr><td>Abundance</td><td>The box holds an element it uses (any, during Barren Earth), and a tile it occupies has an empty corner (Empty Earth: any empty corner)</td></tr>
+<tr><td>Wasteland</td><td>The box holds an element it uses</td></tr>
+<tr><td>Depletion</td><td>A disk on Earth is of a box element it does not use</td></tr>
+<tr><td>Glaciation</td><td>A legal tile holds opposing species and none of its own</td></tr>
+<tr><td>Speciation</td><td>Its gene pool is not empty and a disk of that element is on Earth</td></tr>
+<tr><td>Wanderlust</td><td>A tile is face up and an empty spot touches a tile it occupies</td></tr>
+<tr><td>Migration</td><td>At least one move is allowed (sheet 2): a rescue, or a species from a tile where it has 2+ (losing no rank) to a matched tile it is not on yet</td></tr>
+<tr><td>Competition</td><td>A tile of that space's terrains, or tundra, holds it and an opponent</td></tr>
+<tr><td>Domination</td><td>An unscored tile holds one of its species</td></tr>
+</table>
+<h2>Counting for rivals</h2>
+<p><b>Matches:</b> printed element count (2; Amphibians 3) + added elements, capped at the number of disks on the tile. Types don't matter. You count your own animal normally.</p>
+<p><b>Rival ties for dominance:</b> most species on the tile, then higher in the food chain. A tie that includes you: no one is dominant.</p>
+<p><b>Uses an element:</b> it is on the rival's display (printed or added).</p>
+<p><b>Leader:</b> first of the rival's opponents in VP order (ties: food chain).</p>
+</div></div>
+</div>
+
+<div class="page">
+<header><h1>2 · Execution: resolving a rival's action</h1><span>{{AID 2}}</span></header>
+<p>If the rule finds nothing legal, the rival forfeits the action. <b>Ties</b> left over: between tiles, the higher first-place value, then board order; between corners or empty spots, board order (furthest left, then highest).</p>
+<table>
+<tr><th style="width:1in">Action</th><th>What the rival does</th></tr>
+<tr><td>Initiative</td><td>Advances one place, then moves this pawn to an open space later in this turn's order, chosen by Planning steps 1–3, 5 and 6 (no card). None open: it still advances and the pawn returns to it.</td></tr>
+<tr><td>Adaptation</td><td>Its own printed element if the box offers it; otherwise the leftmost element.</td></tr>
+<tr><td>Regression</td><td>Nothing to decide: the pawn protects an element as usual. When it must lose one: the added element on the fewest corners of tiles it occupies (tie: the one further left in the Regression box).</td></tr>
+<tr><td>Abundance</td><td>Takes the leftmost box element it uses (else the leftmost). Corner: touching the most tiles it occupies → touching the highest first-place value (any touching tile) → board order. <b>Empty Earth:</b> any empty corner, first in board order.</td></tr>
+<tr><td>Wasteland</td><td>Removes the leftmost box element it uses. Uses none: forfeits.</td></tr>
+<tr><td>Depletion</td><td>Removes a disk of a box element it does not use: touching the most tiles the leader dominates → the most tiles any opponent dominates → board order.</td></tr>
+<tr><td>Glaciation</td><td>Among legal tiles, prefers those with none of its species. Then the most opposing species → the fewest of its own.</td></tr>
+<tr><td>Speciation</td><td>Disk of that element touching the most tiles it matches → highest total first-place value of those tiles → board order. On each of those tiles (highest value first), places the terrain maximum while its gene pool lasts.</td></tr>
+<tr><td>Wanderlust</td><td><b>Spot:</b> next to its own tiles, touching the most tiles → the most of its own → board order. <b>Tile:</b> face-up tile with the highest first-place value (tie: leftmost stack). <b>Element:</b> if the box holds one it uses, the leftmost such, on the new tile's corner touching the most of its tiles → board order. <b>Arriving:</b> if it matches the new tile, moves 1 species from each adjacent tile where it has 2+ and losing one costs no rank.</td></tr>
+<tr><td>Migration</td><td>Moves one species at a time, up to the space's number (below).</td></tr>
+<tr><td>Competition</td><td>One elimination per terrain of the space (and tundra), on a tile it shares: the highest Competition score (below). Tie: the opponent earlier in VP order → board order.</td></tr>
+<tr><td>Domination</td><td><b>Tile:</b> if a card is available and it dominates unscored tiles, the one of those where it earns the most VP. Otherwise the unscored tile no opponent dominates where it earns the most VP. Earns none there: the unscored tile with species where it earns the most. <b>Card:</b> sheet 3.</td></tr>
+</table>
+<div class="cols" style="margin-top:8px"><div style="flex:1.25">
+<h2>Migration, one species at a time</h2>
+<ul>
+<li><b>May leave:</b> a tile it does not match (a <b>rescue</b>), or a tile where it has 2+ species and losing one costs no rank.</li>
+<li><b>Goes to:</b> an adjacent tile it matches (Birds: up to two tiles away, through existing terrain).</li>
+<li><b>Every move</b> must be a rescue or reach a tile it is not on yet.</li>
+<li><b>Choose:</b> rescues first → destination with the higher first-place value → a destination it does not occupy → the fullest origin → destination in board order → origin in board order.</li>
+<li><b>One direction per tile:</b> during this action a tile that has sent can only send; one that has received can only receive.</li>
+<li>Rivals never weigh rank gains at the destination.</li>
+</ul>
+</div><div>
+<h2>Competition score</h2>
+<p>For removing one opposing species from a tile:</p>
+<table>
+<tr><td>Start</td><td>the tile's first-place value</td></tr>
+<tr><td>+ value again</td><td>that opponent ranks above the rival and no longer does afterwards (ties go to the food chain)</td></tr>
+<tr><td>+ half value</td><td>it is that opponent's last species there</td></tr>
+<tr><td>+ 6</td><td>removing that last species also ends the opponent's dominance</td></tr>
+</table>
+<h2>First-place values</h2>
+{{VALUES}}
+</div></div>
+</div>
+
+<div class="page">
+<header><h1>3 · Dominance Cards</h1><span>{{AID 3}}</span></header>
+<div class="cols"><div style="flex:.62">
+<h2>Which card it takes</h2>
+<p>The first available card in this order:</p>
+<ol class="small" style="columns:2;column-gap:10px">
+<li>Omnivore <span class="skip">A</span></li><li>Intelligence <span class="skip">A</span></li><li>Parasitism <span class="skip">A</span></li><li>Evolution</li><li>Catastrophe</li><li>Ice Sheet</li><li>Aquatic</li><li>Mass Exodus</li><li>Habitat</li><li>Instinct</li><li>Blight</li><li>Metamorphosis <span class="skip">B</span></li><li>Symbiotic</li><li>Nocturnal <span class="skip">C</span></li><li>Immigrants</li><li>Biomass</li><li>Disease <span class="skip">D</span></li><li>Fecundity</li><li>Predator</li><li>Hibernation <span class="skip">E</span></li><li>Cold Snap</li><li>Biodiversity</li><li>Ecodiversity</li><li>Fertile</li><li>Niche Biomes <span class="skip">F</span></li><li>Ice Age <span class="skip">G</span></li>
+</ol>
+<div class="box small"><b>Skip the card if…</b><br>
+<span class="skip">A</span> it has 10 action pawns.<br>
+<span class="skip">B</span> it has no added element, or the bag is empty.<br>
+<span class="skip">C</span> it is first on the Initiative track.<br>
+<span class="skip">D</span> no opponent has both more elements on its animal (printed + added) than the rival and at least one added element.<br>
+<span class="skip">E</span> it has no eliminated species.<br>
+<span class="skip">F</span> no opponent has more VP.<br>
+<span class="skip">G</span> it neither leads nor ties for the lead on VP.<br>
+<b>Would skip every available card:</b> take the first in the list anyway.</div>
+<div class="box small"><b>No choice for the taker</b> (follow the card): Biodiversity, Cold Snap, Disease, Ecodiversity, Ice Age, Immigrants, Intelligence, Niche Biomes, Nocturnal, Omnivore, Parasitism, Symbiotic.</div>
+<div class="box small"><b>Element order</b> (Habitat, Aquatic, Metamorphosis ties): Meat, Sun, Seed, Water, Grub, Grass.</div>
+</div><div>
+<h2>What it chooses</h2>
+<table class="small">
+<tr><td>Aquatic</td><td>If the bag has an element and a sea or wetland tile has a free corner, only those tiles are candidates. Adds 4 species (fewer if its gene pool is short), counted with its element on the tile's first free corner in board order: the tile where they make it first → where they gain a rank → one it matches → any (tie: value → board order). Element: its printed one if in the bag; otherwise as Habitat.</td></tr>
+<tr><td>Biomass</td><td>On each crowded tile: a species of the first opponent in VP order present, else its own.</td></tr>
+<tr><td>Blight</td><td>The tile and kept disk leaving the most opposing species on surrounding tiles without a match (its own count −2 each). Tie: higher value → the tile's board order → the kept disk's.</td></tr>
+<tr><td>Catastrophe</td><td>Tile removing the most opposing species (its own count −2). Keeps its own species there, else the lowest-VP opponent's (tie: lower in the food chain). On each adjacent tile removes the first opponent in VP order present; its own only if alone.</td></tr>
+<tr><td>Evolution</td><td>Replaces one species of each of two opponents, in VP order (fewer if its gene pool is short). Only tiles it matches; an opponent with none is skipped. Score each tile: 2× value if the swap puts the rival first; 1× if it otherwise gains a rank or enters the ranking; else 0; +3 if it ends dominant. Highest score (tie: value → board order).</td></tr>
+<tr><td>Fecundity</td><td>Tiles it matches first, then by first-place value.</td></tr>
+<tr><td>Fertile</td><td>Its tile with the most species of all animals (tie: board order). It scores 1 VP per species there, anyone's.</td></tr>
+<tr><td>Habitat</td><td><b>Element:</b> its printed one; else one it added (earliest first); else the first in the bag by element order. <b>Corner:</b> touching the most tiles it occupies → touching the highest value (any touching tile) → board order. Occupies no tile with an empty corner: first empty corner in board order.</td></tr>
+<tr><td>Hibernation</td><td>A tile it matches: tundra first → a tile it is not on → where the returned species gain a rank.</td></tr>
+<tr><td>Ice Sheet</td><td>As the Glaciation action.</td></tr>
+<tr><td>Instinct</td><td>An open space not yet resolved this turn, by Planning steps 1–3, 5 and 6. None: an open space already resolved; the pawn waits there for next turn (not on the final turn).</td></tr>
+<tr><td>Mass Exodus</td><td>Among occupied tiles with an adjacent tile on Earth, prefer one without its own species; then the one holding the most opposing species (tie: higher value → board order). Its own go to the adjacent tile it matches best (tie: higher value → board order); each opponent's to the one that opponent matches least (tie: lower value → board order).</td></tr>
+<tr><td>Metamorphosis</td><td>Swaps the added element on the fewest corners of its tiles (tie: added earliest) for the bag element on the most (tie: its printed type → element order).</td></tr>
+<tr><td>Predator</td><td>On each of its tiles: a species of the first opponent in VP order present.</td></tr>
+</table>
+</div></div>
+</div>
+
+<div class="page">
+<header><h1>4 · Setup, terms and other decisions</h1><span>{{AID 4}}</span></header>
+<div class="cols"><div>
+<h2>Setup</h2>
+<ol>
+<li>Normal setup for your player count.</li>
+<li>Shuffle each rival's eight cards face down (reshuffle the discards when a deck runs out).</li>
+<li>Adjust <b>each rival's</b> action pawns for the level.</li>
+<li>Place the dominance cones using the rivals' matching count and tie rule. Only an animal that is present and matches at least one element can be dominant. Update the cones whenever the result changes.</li>
+</ol>
+<table>
+{{PAWNS}}</table>
+<p class="small">Level columns: pawns for each rival. You keep the base count. *Easy with five rivals: each rival has 2 and <b>you take 1 extra (4)</b>.</p>
+<h2>Terms</h2>
+<p><b>Opponents in VP order:</b> the rival's opponents (you and the other rivals), highest VP first; ties to the animal higher in the food chain. The first is the <b>leader</b>.</p>
+<p><b>Rank on a tile:</b> animals with species there, ordered by number of species; ties to the food chain. Ranks count even below the places that score VP (on tundra, second is still second).</p>
+<p><b>Gains a rank:</b> it ends ranked higher on that tile than before, or now ranks there at all.</p>
+<p><b>First-place value:</b> {{VALUE_LIST}}.</p>
+<p><b>Ties:</b> between tiles, the higher first-place value, then board order, unless the rule says otherwise. Corners and empty spots: board order after that choice's own priorities.</p>
+<p><b>Board order:</b> furthest left on the board, then highest. For tiles: down the leftmost column, then the next column.</p>
+<p><b>Rivals never break a rule:</b> if a rule points at something illegal, skip to the next option.</p>
+</div><div>
+<h2>Other decisions</h2>
+<table>
+<tr><td style="white-space:normal;width:1.15in">Arachnids' free Competition</td><td>One elimination on any tile it shares: highest Competition score (tie: opponent earlier in VP order → board order).</td></tr>
+<tr><td style="white-space:normal">Insects' free species</td><td>On a tile it matches: one where it gains a rank → one it is already on → by first-place value.</td></tr>
+<tr><td style="white-space:normal">Mammals' save in Extinction</td><td>The endangered species on the tile with the highest first-place value (tie: board order).</td></tr>
+<tr><td style="white-space:normal">Losing an element</td><td>The added element on the fewest corners of tiles it occupies. Tie, Regression: the one further left in the Regression box. Tie, Disease: the one it added earliest.</td></tr>
+<tr><td style="white-space:normal">Immigrants</td><td>In order: discard a duplicate added element (several duplicated: the type whose second copy was added earliest) → if it has at most 2 species on every tile, keep one per tile → discard the added element on the fewest corners of its tiles (tie: added earliest) → lose a pawn: an unplaced one, else its last pawn on the display (reading top to bottom, left to right).</td></tr>
+<tr><td style="white-space:normal">Hibernation-protected cubes</td><td>When protected and ordinary cubes of one animal share a tile and some must move or go, take the ordinary cubes first.</td></tr>
+</table>
+<h2>Each turn at a glance</h2>
+<ol>
+<li><b>Planning.</b> Each rival places 1 pawn first, in Initiative order. Then everyone places in Initiative order; for a rival, draw its card and use sheet 1.</li>
+<li><b>Execution.</b> Resolve the display top to bottom, left to right. For a rival's pawn use sheet 2 (Domination cards: sheet 3).</li>
+<li><b>After any change</b> to species, elements or tiles: recount matches and move the dominance cones.</li>
+<li><b>Reset</b> as in the normal rules.</li>
+</ol>
+</div></div>
+</div>

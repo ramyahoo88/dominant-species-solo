@@ -29,10 +29,11 @@ function playBenchmark({human, rivals, seed, short, policy}, player, trace = fal
   const seats = Object.fromEntries(s.ids.map(id => [id, {rows: {}, blocks: 0, optionalDeclines: 0}]));
   const events = [];
   let openingSupply;
-  for (let stepCount = 0; stepCount < 1800; stepCount++) {
+  const cap = typeof BENCH_TURN_CAP === 'number' ? BENCH_TURN_CAP : 30; // diagnostics may raise the stall cap
+  for (let stepCount = 0; stepCount < Math.max(1800, 60 * cap); stepCount++) {
     validateState(s);
     // A crowded table can strip Earth of elements so no one can dominate or take a card. Score such a stall as it stands.
-    const stalled = s.turn > 30;
+    const stalled = s.turn > cap;
     if (s.phase === 'finished' || stalled) {
       if (!stalled && !s.usedCards.includes('Ice Age')) throw new Error('Finished without Ice Age.');
       const [winner, runnerUp] = standings(s);
@@ -53,6 +54,13 @@ function playBenchmark({human, rivals, seed, short, policy}, player, trace = fal
       const placement = actor === human ? {slot: player.place(s, actor, policy)} : botPlacement(s);
       if (actor === human) place(s, placement.slot);
       if (placement.blockedRival) seats[actor].blocks++;
+      // Card check (v0.5.4 work): which Planning step placed each paper rival's pawn, by the deck card it drew.
+      const why = actor !== human && /^Paper rule, ([^:]+):/.exec(placement.reason || '')?.[1];
+      if (why && placement.card !== null && placement.card !== undefined) {
+        const deck = seats[actor].deck ??= {};
+        const tally = deck[placement.card + 1] ??= {};
+        tally[why] = (tally[why] || 0) + 1;
+      }
       if (trace) events.push({turn: s.turn, actor, slot: placement.slot, reason: placement.reason});
       continue;
     }
@@ -68,7 +76,22 @@ function playBenchmark({human, rivals, seed, short, policy}, player, trace = fal
     } else if (actor && (choice.pass || step.kind === 'spider' && !choice.hits.length || step.kind === 'arrival' && !choice.moves.length)) {
       seats[actor].optionalDeclines++;
     }
+    // Card check: for each Dominance Card a seat takes, whether its effect changed the board and what it scored.
+    const watch = actor && (step.kind === 'effect' || step.kind === 'claim');
+    // A queued step is still first on the pending list until it runs; leave it out of the 'before' picture.
+    const snap = (pending = s.pending) => JSON.stringify({...s, log: null, rng: null, pending});
+    const before = watch ? snap(step.queued ? s.pending.slice(1) : s.pending) : null, vpBefore = watch ? s.animals[actor].vp : 0;
     runStep(s, step, copy(choice));
+    if (watch) {
+      const cards = seats[actor].cards ??= {};
+      if (step.kind === 'claim' && choice.card) (cards[choice.card] ??= {taken:0, empty:0, vp:0}).taken++;
+      if (step.kind === 'effect') {
+        const rec = cards[step.name] ??= {taken:0, empty:0, vp:0};
+        rec.used = (rec.used || 0) + 1;
+        if (snap() === before) rec.empty++;
+        rec.vp += s.animals[actor].vp - vpBefore;
+      }
+    }
   }
   throw new Error('Reached the step limit at turn ' + s.turn + ' in ' + s.phase + '.');
 }

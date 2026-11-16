@@ -1,5 +1,7 @@
 # Self-tuning test player
 
+> **Note (15 Nov 2026, v0.5.0):** the results below were measured against v0.4.x paper rivals, on that release's level scale (Easy −1 … Expert +2). Since v0.5.0 the paper rivals plan first and the levels are Easy −2 … Expert +1. The overnight balance work, the re-tuned checkpoint v4 (`tuned_weights_v4.json`) and its held-out evaluation are in `HARD_BALANCE_LOG.md`.
+
 The tuned player is the opponent used to look for strategies that beat the rivals. It is opt-in: plain
 `node source/benchmark.cjs` runs never load it, so the published benchmark is unaffected.
 

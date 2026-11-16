@@ -26,15 +26,22 @@ const {readFileSync, writeFileSync} = require('node:fs');
 const {Worker, isMainThread, parentPort, workerData} = require('node:worker_threads');
 const {load, PLAYER_REFERENCE} = require('./load.cjs');
 
-// Rival tables: the app's rivals, or paper rivals with that many extra pawns. From v0.4.0 the levels are
-// Easy -1, Standard 0, Hard +1, Expert +2; +3 is beyond Expert. Before v0.4.0 they were Easy 0 .. Expert 3.
-const MODES = ['app', -1, 0, 1, 2];                 // default for tuning, data and evaluation
-const ALL_MODES = ['app', 0, 1, 2, 3, -1];          // evaluation cell order: the first five keep their earlier seeds
-const MODE_NAME = {app: 'App', '-1': 'Easy', 0: 'Standard', 1: 'Hard', 2: 'Expert', 3: 'Beyond Expert (+3)'};
+// Rival tables: the app's rivals, or paper rivals with that many extra pawns. From v0.5.0 (rivals plan first) the levels
+// are Easy -2, Standard -1, Hard 0, Expert +1; +2 and +3 are beyond Expert. v0.4.0-v0.4.1: Easy -1 .. Expert +2 (run those
+// rules with --paper-options noPlanFirst). Before v0.4.0: Easy 0 .. Expert 3.
+const MODES = ['app', -2, -1, 0, 1];                // default for tuning, data and evaluation
+const ALL_MODES = ['app', 0, 1, 2, 3, -1, -2];      // evaluation cell order: earlier cells keep their seeds
+const MODE_NAME = {app: 'App', '-2': 'Easy', '-1': 'Standard', 0: 'Hard', 1: 'Expert', 2: 'Beyond Expert (+2)', 3: 'Beyond Expert (+3)'};
 // '--modes=app,-1,0' or 'app,m1,0' (m1 = -1, for job files).
-const parseModes = list => list.split(',').filter(Boolean).map(m => m === 'app' ? 'app' : +m.replace(/^m/, '-'));
+// Each table once: 'm2' and '-2' are the same table, and a repeat would play the same seeds twice (GPT v0.5.0 audit B1).
+const parseModes = list => {
+  const modes = list.split(',').filter(Boolean).map(m => m === 'app' ? 'app' : +m.replace(/^m/, '-'));
+  assert(modes.length && modes.every(m => ALL_MODES.includes(m)), 'Unknown rival table in ' + JSON.stringify(list) + '; use app or -2..3 (m2 = -2).');
+  assert(new Set(modes).size === modes.length, 'Rival table listed twice in ' + JSON.stringify(list) + ' (m2 and -2 are the same table); list each once.');
+  return modes;
+};
 const BOTS = [2, 3, 4, 5];
-// --bots 2,3 limits which rival counts run (cell seeds stay as with all four); the paper rules are for 2-3 rivals.
+// --bots 3,4 limits which rival counts run (cell seeds stay as with all four).
 let RUN_BOTS = BOTS;
 const EVEN = {2: 1 / 3, 3: 1 / 4, 4: 1 / 5, 5: 1 / 6};
 
@@ -298,13 +305,13 @@ async function evaluate(args, pool, animals) {
   const table = [];
   const games = Object.fromEntries(columns.map(c => [c.label, {}]));
   // Each cell's seeds stay the same whichever cells run. Cells of the earlier five tables (App, 0..3) keep their
-  // earlier seeds; -1 cells come after them.
+  // earlier seeds; -1 cells come after them, then -2 cells (v0.5.0).
   const cellSeed = (bots, mode) => {
     const b = BOTS.indexOf(bots), m = ALL_MODES.indexOf(mode);
-    return +args.seed + (m < 5 ? b * 5 + m : BOTS.length * 5 + b * (ALL_MODES.length - 5) + (m - 5));
+    return +args.seed + (m < 5 ? b * 5 + m : m === 5 ? BOTS.length * 5 + b : BOTS.length * 6 + b);
   };
   for (const bots of RUN_BOTS) for (const mode of modes) {
-    assert(ALL_MODES.includes(mode), 'Unknown rival table ' + mode + '; use app or -1..3.');
+    assert(ALL_MODES.includes(mode), 'Unknown rival table ' + mode + '; use app or -2..3.');
     const base = scenarios(cellSeed(bots, mode), +args['per-cell'], animals, {bots, mode});
     const jobs = columns.map(c => ({weights: c.weights, scenarios: base.map(s => ({...s, policy: c.policy}))}));
     const res = await pool.run(jobs);
@@ -402,7 +409,11 @@ async function main(argv) {
     features: {type: 'string'}, resume: {type: 'string'}, compare: {type: 'string'}, ablate: {type: 'string'}, bots: {type: 'string'},
   }}).values;
   assert(['majority', 'dominance', 'reach'].includes(args.focus), 'Focus is majority, dominance or reach.');
-  if (args.bots) { RUN_BOTS = args.bots.split(',').map(Number); assert(RUN_BOTS.length && RUN_BOTS.every(b => BOTS.includes(b)), 'Rival counts are 2, 3, 4 or 5.'); }
+  if (args.bots) {
+    RUN_BOTS = args.bots.split(',').map(Number);
+    assert(RUN_BOTS.length && RUN_BOTS.every(b => BOTS.includes(b)), 'Rival counts are 2, 3, 4 or 5.');
+    assert(new Set(RUN_BOTS).size === RUN_BOTS.length, 'Rival count listed twice in --bots ' + args.bots + '; a repeat plays the same seeds twice.');
+  }
   const pool = await makePool(Math.max(1, Math.min(64, +args.workers)), args['paper-options'].split(',').filter(Boolean), args.net || null);
   const animals = [...load(PLAYER_REFERENCE, ['player']).get('FOOD')];
   try {

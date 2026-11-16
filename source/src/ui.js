@@ -26,10 +26,13 @@ const A = ids => ids.map(id => [id,nameOf(id)]);
 const cardRows = face => '<div class="card-flow">' + face.rows.map(row => '<span>' + ROW_BY_ID[row].name + '</span>').join('') + '</div>';
 let game = null;
 let undo = [];
-let setup = {human:'amphibians',bots:['birds','arachnids'],short:true,paper:false,extra:0};
+let setup = {human:'amphibians',bots:['birds','arachnids'],short:true,paper:false,extra:-1}; // extra: Standard on the Paper scale
 // Re-measured for v0.3.8: +0 is a little easier than an even game, +1 a little tougher, +2 about as tough as the app's rivals.
 // v0.4.0: the rival tie-break makes paper rivals about one pawn stronger, so every level is one pawn lower.
-const PAPER_LEVELS = [[-1,'Easy'],[0,'Standard'],[1,'Hard'],[2,'Expert']];
+// v0.5.0: rivals plan first (they place one pawn each before anyone else), which makes them stronger, so the levels
+// moved down again. Every new Paper game records its level name (paper.level), so a later scale change can't misread it.
+const PAPER_LEVELS = [[-2,'Easy'],[-1,'Standard'],[0,'Hard'],[1,'Expert']];
+const PAPER_LEVELS_V04 = [[-1,'Easy'],[0,'Standard'],[1,'Hard'],[2,'Expert']]; // v0.4.0–v0.4.1 games (tie-break, no planning first)
 const PAPER_LEVELS_V03 = [[0,'Easy'],[1,'Standard'],[2,'Hard'],[3,'Expert']]; // v0.3.7–v0.3.9 games (no tie-break)
 const PAPER_LEVELS_V036 = [[-1,'Easy'],[0,'Standard'],[1,'Hard'],[2,'Expert']]; // v0.3.6 games (no tie-break)
 const PAPER_LEVEL_NAMES = ['Easy','Standard','Hard','Expert'];
@@ -37,15 +40,20 @@ const PAPER_LEVEL_NAMES = ['Easy','Standard','Hard','Expert'];
 // pawn scale changed twice (v0.3.6: -1..+2, v0.3.7-v0.3.9: 0..+3). null = the name could not be recovered.
 function paperLevel(extra, paper = null) {
   if (paper && paper.level !== undefined) return paper.level ?? 'Unknown level';
-  const table = paper && !paper.rivalTie ? PAPER_LEVELS_V03 : PAPER_LEVELS;
+  const table = !paper || paper.planFirst ? PAPER_LEVELS : paper.rivalTie ? PAPER_LEVELS_V04 : PAPER_LEVELS_V03;
   return (table.find(([n]) => n === extra) || [0,'Custom'])[1];
 }
 function recordPaperLevel(s) {
-  if (!s?.paper || s.paper.rivalTie || s.paper.level !== undefined) return;
+  if (!s?.paper || s.paper.level !== undefined || s.paper.planFirst) return;
+  // v0.4.0-v0.4.1 games: the tie-break without planning first, on that release's scale (the version check is not needed).
+  if (s.paper.rivalTie) { s.paper.level = (PAPER_LEVELS_V04.find(([n]) => n === s.paper.extra) || [0, null])[1]; return; }
+  // Before v0.4.0, -1 existed only on the v0.3.6 scale (Easy) and +3 only on the v0.3.7-v0.3.9 scale (Expert). These two
+  // endpoints are recovered whichever version saved the file last (GPT v0.4.1 follow-up R2).
+  if (s.paper.extra === -1 || s.paper.extra === 3) { s.paper.level = s.paper.extra === -1 ? 'Easy' : 'Expert'; return; }
   const scale = s.version === '0.3.6' ? PAPER_LEVELS_V036 : ['0.3.7','0.3.8','0.3.9'].includes(s.version) ? PAPER_LEVELS_V03 : null;
   if (scale) s.paper.level = (scale.find(([n]) => n === s.paper.extra) || [0, null])[1];
   // Saved again by v0.4.0, which overwrote the version: only -1 (v0.3.6 Easy) and +3 (v0.3.7+ Expert) are unambiguous.
-  else if (s.version === '0.4.0') s.paper.level = s.paper.extra === -1 ? 'Easy' : s.paper.extra === 3 ? 'Expert' : null;
+  else if (s.version === '0.4.0') s.paper.level = null; // any other offset re-saved by v0.4.0 is ambiguous
 }
 // The pawn offset for a level name on the current scale, or null if the name is unknown.
 function paperExtraFor(name) { return PAPER_LEVELS.find(([,n]) => n === name)?.[0] ?? null; }
@@ -105,7 +113,7 @@ function readSupplyDraft(s, raw) {
 function validateState(s) {
   function assert(ok) { if (!ok) throw new Error('This is not a valid Dominant Species companion save.'); }
   recordPaperLevel(s); // before the version is replaced: the level scale depends on it
-  if (s && ['0.1.0', '0.2.0', '0.3.0', '0.3.1', '0.3.2', '0.3.3', '0.3.4', '0.3.5', '0.3.6', '0.3.7', '0.3.8', '0.3.9', '0.4.0'].includes(s.version)) s.version = VERSION;
+  if (s && ['0.1.0', '0.2.0', '0.3.0', '0.3.1', '0.3.2', '0.3.3', '0.3.4', '0.3.5', '0.3.6', '0.3.7', '0.3.8', '0.3.9', '0.4.0', '0.4.1', '0.5.0', '0.5.1', '0.5.2', '0.5.3'].includes(s.version)) s.version = VERSION;
   const keys = value => value && typeof value === 'object' ? Object.keys(value) : [];
   assert(s && s.version === VERSION && ['supply','planning','execution','finished'].includes(s.phase) &&
     num(s.turn) && s.turn > 0 && num(s.rng) && s.rng <= 0xffffffff && num(s.seed) && s.seed <= 0xffffffff);
@@ -114,7 +122,11 @@ function validateState(s) {
     s.rivals.every(id => id !== s.human && s.ids.includes(id)) && typeof s.short === 'boolean');
   assert(s.paper === undefined || (s.paper && Number.isInteger(s.paper.extra) && s.paper.extra >= -2 && s.paper.extra <= 4 &&
     (s.paper.level === undefined || s.paper.level === null || PAPER_LEVEL_NAMES.includes(s.paper.level)) &&
-    Array.isArray(s.paperRivals) && s.paperRivals.length === s.rivals.length && s.paperRivals.every(id => s.rivals.includes(id))));
+    Array.isArray(s.paperRivals) && s.paperRivals.length === s.rivals.length && s.paperRivals.every(id => s.rivals.includes(id)) &&
+    (s.paper.planFirst === undefined || s.paper.planFirst === true && s.paper.rivalTie === true) &&
+    (s.paper.speciesTie === undefined || s.paper.speciesTie === true && s.paper.planFirst === true) &&
+    (s.paper.pre === undefined || s.phase === 'planning' && s.paper.planFirst === true && Array.isArray(s.paper.pre) && s.paper.pre.length > 0 &&
+      unique(s.paper.pre).length === s.paper.pre.length && s.paper.pre.every(id => s.paperRivals.includes(id) && s.animals[id].remaining > 0))));
   assert(Array.isArray(s.initiative) && s.initiative.length === s.ids.length && unique(s.initiative).length === s.ids.length && s.initiative.every(id => s.ids.includes(id)) &&
     num(s.cursor) && s.cursor <= EXECUTION.length && num(s.planning) && s.planning < s.ids.length && typeof s.ending === 'boolean');
   assert(s.tiles && s.corners && s.pawns && s.animals && s.boxes && s.decks && terrainIds(s).length >= 7 && Object.keys(INITIAL_TILES).every(id => s.tiles[id]));
@@ -221,14 +233,14 @@ function setupPage() {
   main.innerHTML = '<section class="hero" aria-labelledby="hero-title"><div class="hero-copy"><p class="eyebrow">Tabletop solo companion</p>' +
     '<h1 id="hero-title">Dominant Species</h1><p>Take one animal into the Ice Age. Card-driven rivals compete for the same world.</p></div></section>' +
     '<section class="panel setup-panel"><div class="setup-title"><h2>Set up your game</h2><p>Use the ' + (setup.bots.length + 1) + '-player setup in your GMT box: ' + pawns + ' pawns and ' + cubes + ' cubes per animal' +
-      (setup.paper && setup.extra ? ', with ' + (pawns + setup.extra) + ' pawns for each rival' : '') + '.</p></div>' +
+      (setup.paper && setup.extra ? (setup.extra === -2 && setup.bots.length === 5 ? ', with ' + (pawns - 1) + ' pawns for each rival and ' + (pawns + 1) + ' for you (Easy with five rivals)' : ', with ' + (pawns + setup.extra) + ' pawns for each rival') : '') + '.</p></div>' +
     '<div class="notice" role="alert" id="notice"' + (notice || initialError ? '' : ' hidden') + '>' + esc(notice || initialError) + '</div>' +
     '<form data-form="start"><fieldset class="rival-count"><legend>Rivals</legend><div class="segment">' + [2,3,4,5].map(n => '<label><input name="count" type="radio" value="' + n + '"' +
       (setup.bots.length === n ? ' checked' : '') + '> ' + n + '</label>').join('') + '</div></fieldset><div class="seats">' + seats.map(seat).join('') + '</div><p class="seat-hint">Choosing an animal already at the table swaps the two seats.</p><div class="setup-bottom">' +
     '<fieldset><legend>Rival rules</legend><div class="segment">' +
     '<label><input name="rules" type="radio" value="app"' + (!setup.paper ? ' checked' : '') + '> App rivals</label>' +
     '<label><input name="rules" type="radio" value="paper"' + (setup.paper ? ' checked' : '') + '> Paper rules · as printed</label></div>' +
-    (setup.paper ? '<div class="segment paper-level">' + PAPER_LEVELS.map(([n,name]) => '<label><input name="extra" type="radio" value="' + n + '"' + (setup.extra === n ? ' checked' : '') + '> ' + name + ' · ' + (n < 0 ? '−' + -n : '+' + n) + ' pawn' + (Math.abs(n) === 1 ? '' : 's') + '</label>').join('') + '</div>' : '') +
+    (setup.paper ? '<div class="segment paper-level">' + PAPER_LEVELS.map(([n,name]) => '<label><input name="extra" type="radio" value="' + n + '"' + (setup.extra === n ? ' checked' : '') + '> ' + name + ' · ' + (n === -2 && setup.bots.length === 5 ? '−1 pawn, you +1' : (n < 0 ? '−' + -n : '+' + n) + ' pawn' + (Math.abs(n) === 1 ? '' : 's')) + '</label>').join('') + '</div>' : '') +
     '</fieldset>' +
     '<fieldset><legend>Dominance deck</legend><div class="segment">' +
     '<label><input name="length" type="radio" value="short"' + (setup.short ? ' checked' : '') + '> Short game · 22 cards</label>' +
@@ -325,7 +337,10 @@ function showSupply() {
     [field('Wanderlust stack ' + (i+1),select('stack-'+i,LARGE_TERRAIN.map(t=>[t,terrainName(t)])))] : []).join('');
   const instruction = game.turn === 1 ?
     'For each animal, set out ' + ['','','','six','five','four','three'][game.ids.length] + ' action pawns and ' + SETUP_BY_PLAYERS[game.ids.length][1] + ' cubes. Use one cube to mark VP, put four on the map and leave ' + (SETUP_BY_PLAYERS[game.ids.length][1] - 5) + ' in the gene pool.' +
-    (game.paper?.extra ? ' Each rival ' + (game.paper.extra > 0 ? 'takes ' + game.paper.extra + ' extra' : 'returns ' + -game.paper.extra) + ' action pawn' + (Math.abs(game.paper.extra) === 1 ? '' : 's') + ' (paper rules, ' + paperLevel(game.paper.extra, game.paper) + ').' : '') +
+    // GPT v0.5.3 re-audit (medium): scaled Easy (five rivals) is −1 for each rival and +1 for you, not −2.
+    (game.paper?.extra ? (([rd, yd]) => ' Each rival ' + (rd > 0 ? 'takes ' + rd + ' extra' : 'returns ' + -rd) + ' action pawn' + (Math.abs(rd) === 1 ? '' : 's') +
+      (yd ? ' and you take ' + yd + ' extra' : '') + ': each rival has ' + (SETUP_BY_PLAYERS[game.ids.length][0] + rd) + (yd ? ' and you have ' + (SETUP_BY_PLAYERS[game.ids.length][0] + yd) : '') +
+      ' (paper rules, ' + paperLevel(game.paper.extra, game.paper) + ').')(game.paper.scaledEasy ? [-1, 1] : [game.paper.extra, 0]) : '') +
     ' Match the Earth map with Wetland at the top.' :
     'Slide the physical action display as usual. Refill the three draw rows, turn up any face-down tile stacks, and fill the open card spaces.';
   return '<div class="block-head"><h2 id="turn-focus" tabindex="-1">Enter board draws</h2><span class="phase-badge">' + (game.turn === 1 ? 'Setup' : 'Reseed') +

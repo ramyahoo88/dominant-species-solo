@@ -17,8 +17,8 @@ verify('GMT p. 4: six APs and 50 cubes include one VP marker and four starting s
   }
 `);
 
-verify('v0.1 through v0.4.0 save migration preserves inventory, pending choices, and random state', `
-  for (const version of ['0.1.0','0.2.0','0.3.0','0.3.1','0.3.2','0.3.3','0.3.4','0.3.5','0.3.6','0.3.7','0.3.8','0.3.9','0.4.0']) {
+verify('v0.1 through v0.5.3 save migration preserves inventory, pending choices, and random state', `
+  for (const version of ['0.1.0','0.2.0','0.3.0','0.3.1','0.3.2','0.3.3','0.3.4','0.3.5','0.3.6','0.3.7','0.3.8','0.3.9','0.4.0','0.4.1','0.5.0','0.5.1','0.5.2','0.5.3']) {
     const s = newGame('insects',['mammals','birds'],true,51);
     s.version = version;
     s.phase = 'execution';
@@ -182,7 +182,7 @@ verify('v0.3.6: paper-rules games add difficulty pawns, use the printed rules, a
   const app = newGame('insects',['birds','arachnids'],true,40);
   assert.equal(app.paper, undefined);
   const s = newGame('insects',['birds','arachnids','mammals'],true,40,{extra:1});
-  assert.deepEqual(s.paper, {extra:1, rivalTie:true});
+  assert.deepEqual(s.paper, {extra:1, rivalTie:true, planFirst:true, speciesTie:true, level:'Expert'});
   for (const id of s.rivals) assert.equal(s.animals[id].ap, 6);
   assert.equal(s.animals.insects.ap, 5);
   validateState(JSON.parse(JSON.stringify(s)));
@@ -510,13 +510,20 @@ test('v0.4.0 rival tie-break: the benchmark player sees the same dominant animal
   assert.equal(player.get('cone')(JSON.parse(state), 'C4'), 'birds');
 });
 
-verify('v0.4.0 levels: Easy -1, Standard 0, Hard +1, Expert +2; games started before v0.4.0 keep their level names', `
-  assert.deepEqual(PAPER_LEVELS, [[-1,'Easy'],[0,'Standard'],[1,'Hard'],[2,'Expert']]);
-  const s = newGame('mammals',['birds','insects'],true,7,{extra:0});
-  assert.equal(paperLevel(s.paper.extra, s.paper), 'Standard');
+verify('v0.5.0 levels: Easy -2, Standard -1, Hard 0, Expert +1, recorded by name; v0.4.x games keep their level names', `
+  assert.deepEqual(PAPER_LEVELS, [[-2,'Easy'],[-1,'Standard'],[0,'Hard'],[1,'Expert']]);
+  const s = newGame('mammals',['birds','insects'],true,7,{extra:-1});
+  assert.equal(s.paper.level, 'Standard'); assert.equal(paperLevel(s.paper.extra, s.paper), 'Standard');
   assert.equal(paperLevel(1, {extra:1}), 'Standard', 'a v0.3.x game at +1 was Standard');
-  assert.equal(paperLevel(1, {extra:1, rivalTie:true}), 'Hard');
-  const easy = newGame('mammals',['birds','insects'],true,7,{extra:-1});
+  assert.equal(paperLevel(1, {extra:1, rivalTie:true}), 'Hard', 'a v0.4.x game at +1 was Hard');
+  assert.equal(paperLevel(0, {extra:0, rivalTie:true, planFirst:true}), 'Hard');
+  // A v0.4.1 save (tie-break, no planning first) records its name on load and restarts at that name on the new scale.
+  const v041 = newGame('mammals',['birds','insects'],true,7,{extra:1});
+  delete v041.paper.planFirst; delete v041.paper.speciesTie; delete v041.paper.level; v041.version = '0.4.1';
+  validateState(v041);
+  assert.equal(v041.paper.level, 'Hard'); assert.equal(paperExtraFor(v041.paper.level), 0);
+  assert.equal(v041.paper.planFirst, undefined, 'the saved game keeps its Planning order');
+  const easy = newGame('mammals',['birds','insects'],true,7,{extra:-2});
   for (const id of easy.rivals) assert.equal(easy.animals[id].ap, s.animals[id].ap - 1);
   validateState(JSON.parse(JSON.stringify(easy)));
 `);
@@ -524,28 +531,461 @@ verify('v0.4.0 levels: Easy -1, Standard 0, Hard +1, Expert +2; games started be
 verify('GPT v0.4.0 audit F1: older paper saves keep their level name, and a restart maps it to the current scale', `
   const old = (version, extra, tie = false) => {
     const s = newGame('amphibians',['birds','arachnids'],true,949381806,{extra});
+    delete s.paper.level; delete s.paper.planFirst; delete s.paper.speciesTie;
     if (!tie) delete s.paper.rivalTie;
     s.version = version;
     validateState(s);
     return s;
   };
   const e36 = old('0.3.6', -1);
-  assert.equal(e36.paper.level, 'Easy'); assert.equal(paperLevel(e36.paper.extra, e36.paper), 'Easy'); assert.equal(paperExtraFor('Easy'), -1);
+  assert.equal(e36.paper.level, 'Easy'); assert.equal(paperLevel(e36.paper.extra, e36.paper), 'Easy'); assert.equal(paperExtraFor('Easy'), -2);
   const s36 = old('0.3.6', 0);
-  assert.equal(paperLevel(s36.paper.extra, s36.paper), 'Standard'); assert.equal(paperExtraFor('Standard'), 0);
+  assert.equal(paperLevel(s36.paper.extra, s36.paper), 'Standard'); assert.equal(paperExtraFor('Standard'), -1);
   const s39 = old('0.3.9', 1);
   assert.equal(paperLevel(s39.paper.extra, s39.paper), 'Standard');
   const x39 = old('0.3.9', 3);
-  assert.equal(paperLevel(x39.paper.extra, x39.paper), 'Expert'); assert.equal(paperExtraFor('Expert'), 2);
+  assert.equal(paperLevel(x39.paper.extra, x39.paper), 'Expert'); assert.equal(paperExtraFor('Expert'), 1);
   // Re-saved by v0.4.0 (version overwritten): +1 could be v0.3.6 Hard or v0.3.7+ Standard, so the player must choose.
   const amb = old('0.4.0', 1);
   assert.equal(amb.paper.level, null); assert.equal(paperLevel(amb.paper.extra, amb.paper), 'Unknown level'); assert.equal(paperExtraFor(paperLevel(amb.paper.extra, amb.paper)), null);
   assert.equal(old('0.4.0', -1).paper.level, 'Easy');
   // New games (tie-break) keep using the current scale and record no level.
-  const now = newGame('amphibians',['birds','arachnids'],true,7,{extra:1});
-  validateState(now); assert.equal(now.paper.level, undefined); assert.equal(paperLevel(1, now.paper), 'Hard');
+  const now = newGame('amphibians',['birds','arachnids'],true,7,{extra:0});
+  validateState(now); assert.equal(now.paper.level, 'Hard'); assert.equal(paperLevel(0, now.paper), 'Hard');
   // A save can't carry an unknown level name.
   const bad = old('0.3.9', 1); bad.paper.level = 'Legendary';
   assert.throws(() => validateState(bad));
   for (const s of [e36, s36, s39, x39, amb]) assert.equal(s.version, VERSION);
 `);
+
+verify('GPT v0.4.1 follow-up R2: an Easy save re-exported by v0.3.7-v0.3.9 is still recovered as Easy', `
+  const old = (version, extra) => {
+    const s = newGame('amphibians',['birds','arachnids'],true,949381806,{extra});
+    delete s.paper.rivalTie; delete s.paper.planFirst; delete s.paper.speciesTie; delete s.paper.level;
+    s.version = version;
+    validateState(s);
+    return s;
+  };
+  // -1 was only ever the v0.3.6 Easy setting, and +3 only the v0.3.7-v0.3.9 Expert setting, whoever saved the file last.
+  for (const v of ['0.3.6','0.3.7','0.3.8','0.3.9','0.4.0']) assert.equal(old(v, -1).paper.level, 'Easy', v);
+  for (const v of ['0.3.7','0.3.9','0.4.0']) assert.equal(old(v, 3).paper.level, 'Expert', v);
+  assert.equal(paperExtraFor(old('0.3.9', -1).paper.level), -2);
+  // The documented limit: a v0.3.6 Standard (0) re-saved by v0.3.9 is identical to a v0.3.9 Easy game.
+  assert.equal(old('0.3.9', 0).paper.level, 'Easy');
+  assert.equal(old('0.4.0', 0).paper.level, null);
+`);
+
+verify('v0.5.0 candidate: rivals plan first; the rule is in the save and survives a save made mid pre-round', `
+  const human = 'insects', rivals = ['mammals','birds','reptiles'];
+  const s = newGame(human, rivals, true, 11, {extra:0});
+  assert.equal(s.paper.planFirst, true);
+  const sup = makeSupplies(s, 11);
+  enterSupply(s, nextSupply(s, sup, 11));
+  assert.equal(s.initiative[0], human, 'the player starts first in Initiative here');
+  const order = s.initiative.filter(id => rivals.includes(id));
+  const seen = [];
+  for (let i = 0; i < order.length; i++) {
+    const p = currentPlanner(s);
+    seen.push(p.actor);
+    const copy = JSON.parse(JSON.stringify(s));
+    validateState(copy);
+    assert.equal(currentPlanner(copy).actor, p.actor, 'a save made mid pre-round resumes with the same rival');
+    botPlacement(s);
+  }
+  assert.deepEqual(seen, order, 'each rival places one pawn first, in Initiative order');
+  assert.equal(s.paper.pre, undefined);
+  assert.equal(currentPlanner(s).actor, human, 'then Planning starts again from the top of the Initiative order');
+  // A game saved before the rule keeps the earlier order: the player places first.
+  const old = newGame(human, rivals, true, 11, {extra:0});
+  delete old.paper.planFirst; delete old.paper.speciesTie;
+  enterSupply(old, nextSupply(old, makeSupplies(old, 11), 11));
+  assert.equal(currentPlanner(old).actor, human);
+  // A bad opening-round list is rejected.
+  const bad = JSON.parse(JSON.stringify(s)); bad.phase = 'planning'; bad.paper.pre = [human];
+  assert.throws(() => validateState(bad));
+  // A rival whose pawns are all on the display already (Instinct can park one) skips the opening round.
+  const park = newGame(human, rivals, true, 11, {extra:-2});
+  const sp = makeSupplies(park, 11);
+  const first = park.initiative.find(id => rivals.includes(id));
+  park.pawns['wanderlust-0'] = {actor:first, card:null, focus:null};
+  enterSupply(park, nextSupply(park, sp, 11));
+  assert.equal(park.animals[first].remaining, park.animals[first].ap - 1);
+  if (park.animals[first].remaining === 0) assert.ok(!park.paper.pre.includes(first));
+  const tight = newGame(human, ['mammals','birds','reptiles','amphibians','arachnids'], true, 12, {extra:-2, flatEasy:true});
+  const r1 = tight.initiative.find(id => tight.rivals.includes(id));
+  assert.equal(tight.animals[r1].ap, 1, 'five rivals at the old flat Easy have one pawn each');
+  tight.pawns['wanderlust-0'] = {actor:r1, card:null, focus:null};
+  enterSupply(tight, nextSupply(tight, makeSupplies(tight, 12), 12));
+  assert.equal(tight.animals[r1].remaining, 0);
+  assert.ok(!tight.paper.pre.includes(r1), 'a rival with no pawn to place is not in the opening round');
+  assert.notEqual(currentPlanner(tight).actor, r1);
+`);
+
+// GPT v0.5.0 audit G1 and v0.5.1 re-audit E1. Fresh runtimes: switching paper rules on must not leak into the shared
+// runtime above. Expected corners are computed from the "x,y" board coordinates, never from storage order.
+const FIX = name => JSON.parse(require('node:fs').readFileSync(require('node:path').join(__dirname, 'fixtures', name), 'utf8')).game;
+const boardFirst = keys => [...keys].sort((a, b) => { const [ax, ay] = a.split(',').map(Number), [bx, by] = b.split(',').map(Number); return ax - bx || ay - by; })[0];
+
+test('v0.5.2 board order: a corner tie goes to the leftmost corner, then the uppermost (not storage or string order)', () => {
+  const g = load('worktree', ['game']);
+  g.get('globalThis').assert = assert;
+  g.get('globalThis').boardFirst = boardFirst;
+  g.run(`(() => {
+    // String order would pick "-10,-4"; board order picks the left tip "-11,-3" (A1 corner 4), then "-10,-4" above "-10,-2".
+    assert.equal(pBy([{tile:'-7,-3'},{tile:'-10,-4'},{tile:'-11,-3'},{tile:'-10,-2'}]).tile, '-11,-3');
+    assert.equal(pBy([{tile:'-7,-3'},{tile:'-10,-2'},{tile:'-10,-4'}]).tile, '-10,-4');
+    assert.equal(pBy(['B2','A3','A1']), 'A1', 'tiles: leftmost column, then top');
+    const s = newGame('birds',['mammals','insects'],true,7,{extra:-1});
+    // Aquatic's free corner on a tile: board order, not the clockwise storage order that starts at the right tip.
+    for (const t of terrainIds(s)) {
+      const free = VERTICES_OF[t].filter(k => !s.corners[k]);
+      if (free.length) assert.equal(pFreeCorner(s,t), boardFirst(free), t);
+    }
+    // Blight: equal options on one tile fall to the kept disk in board order.
+    assert.equal(pBy([{tile:'A1',keep:'-7,-3'},{tile:'A1',keep:'-11,-3'}]).keep, '-11,-3');
+    // Migration: equal moves to one destination fall to the origin in board order (not the order tiles were placed).
+    assert.equal(pBy([{tile:'C3',from:'D2'},{tile:'C3',from:'B3'},{tile:'C3',from:'C2'}]).from, 'B3');
+    PAPER.oldCornerOrder = true;
+    assert.equal(pBy([{tile:'-7,-3'},{tile:'-10,-4'},{tile:'-11,-3'}]).tile, '-10,-4', 'testing switch: the v0.5.1 string order');
+    delete PAPER.oldCornerOrder;
+  })()`);
+});
+
+verify('v0.5.3 scaled Easy: with five rivals each rival has 2 pawns and you have 4; other table sizes keep Easy at -2', `
+  const five = ['mammals','birds','reptiles','amphibians','arachnids'];
+  const s = newGame('insects', five, true, 21, {extra:-2});
+  assert.deepEqual(five.map(id => s.animals[id].ap), [2,2,2,2,2]);
+  assert.equal(s.animals.insects.ap, 4);
+  assert.equal(s.paper.scaledEasy, true);
+  assert.equal(s.paper.level, 'Easy');
+  validateState(s);
+  for (const [rivals, base] of [[five.slice(0,4), 4], [five.slice(0,3), 5], [five.slice(0,2), 6]]) {
+    const g = newGame('insects', rivals, true, 21, {extra:-2});
+    assert.ok(rivals.every(id => g.animals[id].ap === base - 2) && g.animals.insects.ap === base && !g.paper.scaledEasy, rivals.length + ' rivals');
+  }
+  for (const extra of [-1, 0, 1]) {
+    const g = newGame('insects', five, true, 21, {extra});
+    assert.ok(five.every(id => g.animals[id].ap === 3 + extra) && g.animals.insects.ap === 3 && !g.paper.scaledEasy, 'level ' + extra);
+  }
+  const flat = newGame('insects', five, true, 21, {extra:-2, flatEasy:true});
+  assert.ok(five.every(id => flat.animals[id].ap === 1) && flat.animals.insects.ap === 3, 'testing switch: the flat -2');
+  // A five-rival Easy game saved before v0.5.3 keeps its pawn counts.
+  const old = JSON.parse(JSON.stringify(flat)); old.version = '0.5.2'; delete old.paper.scaledEasy;
+  validateState(old);
+  assert.ok(five.every(id => old.animals[id].ap === 1) && old.animals.insects.ap === 3);
+`);
+
+verify('v0.5.4 Migration placement: a rival takes Migration only when Execution allows a move (rescue, or a spare species to a new matched tile)', `
+  Object.assign(PAPER, {place:true, all:true, extraAP:0});
+  // Seed 1 start: Birds can only shuffle species between tiles they already hold, which Execution never allows.
+  const s = newGame('insects',['mammals','birds','reptiles'],true,1,{extra:0});
+  PAPER.oldMigTest = true; assert.ok(paperLegal(s,'birds','migration',0), 'the old test let Birds take Migration'); delete PAPER.oldMigTest;
+  assert.equal(paperMigration(s,'birds',7).moves.length, 0, 'and Execution then moves nothing');
+  assert.ok(!paperLegal(s,'birds','migration',0), 'the new test agrees with Execution');
+  // Everywhere: the test is exactly "Execution would make a first move" (checked over several starts and every rival).
+  for (let seed = 1; seed <= 12; seed++) {
+    const g = newGame('insects',['mammals','birds','reptiles','amphibians'],seed % 2 === 0,seed,{extra:0});
+    for (const a of g.rivals) assert.equal(paperLegal(g,a,'migration',0), paperMigration(g,a,1).moves.length > 0, seed + ' ' + a);
+  }
+`);
+
+verify('v0.5.4 rival ties: when only rivals tie on matches, the most species wins, then the food chain; older saves keep the food chain alone', `
+  Object.assign(PAPER, {place:true, all:true, extraAP:0});
+  const s = newGame('birds',['mammals','insects'],true,7,{extra:0});
+  assert.equal(s.paper.speciesTie, true);
+  const t = terrainIds(s).find(t => VERTICES_OF[t].filter(k => s.corners[k]).length >= 2);
+  for (const id of s.ids) s.tiles[t].cubes[id] = 0;
+  s.tiles[t].cubes.mammals = 1; s.tiles[t].cubes.insects = 2;
+  assert.equal(match(s,t,'mammals'), match(s,t,'insects'), 'fixture: equal flat matches');
+  assert.equal(cone(s,t), 'insects', 'more species wins, though lower in the food chain');
+  s.tiles[t].cubes.mammals = 2;
+  assert.equal(cone(s,t), 'mammals', 'equal species: the food chain');
+  s.tiles[t].cubes.mammals = 1;
+  const old = JSON.parse(JSON.stringify(s)); delete old.paper.speciesTie;
+  assert.equal(cone(old,t), 'mammals', 'a save without speciesTie keeps the food chain alone');
+  const v053 = newGame('birds',['mammals','insects'],true,7,{extra:0}); delete v053.paper.speciesTie; v053.version = '0.5.3';
+  validateState(v053); assert.equal(v053.paper.speciesTie, undefined, 'a v0.5.3 save loads and keeps its tie rule');
+  // A tie that includes the player still leaves the tile with no dominant animal.
+  s.tiles[t].cubes.birds = 2;
+  if (match(s,t,'birds') === match(s,t,'insects')) assert.equal(cone(s,t), null);
+  // Testing switch: new games without it.
+  PAPER.oldRivalTie = true; assert.equal(newGame('birds',['mammals','insects'],true,7).paper?.speciesTie, undefined); delete PAPER.oldRivalTie;
+  assert.equal(newGame('birds',['mammals','insects'],true,7,{extra:0, oldRivalTie:true}).paper.speciesTie, undefined);
+`);
+
+verify('v0.5.4 card skips: a rival skips Metamorphosis, Disease, Niche Biomes, Nocturnal and Hibernation when they would do nothing', `
+  Object.assign(PAPER, {place:true, all:true, extraAP:0});
+  const s = newGame('birds',['mammals','insects'],true,7,{extra:0});
+  const a = 'mammals', claim = list => { s.market = [...list]; return paperClaim(s,a,null).card; };
+  // Fresh game: no added elements, no eliminated species, nobody ahead on VP; Mammals may or may not lead Initiative.
+  s.initiative = ['mammals','birds','insects'];
+  assert.equal(claim(['Metamorphosis','Disease','Niche Biomes','Nocturnal','Hibernation','Fertile']), 'Fertile', 'all five idle: skipped');
+  assert.equal(claim(['Metamorphosis','Disease','Niche Biomes','Nocturnal','Hibernation']), 'Metamorphosis', 'all idle and nothing else: the first on the list anyway');
+  s.animals.mammals.added = ['meat'];
+  assert.equal(claim(['Metamorphosis','Fertile']), 'Metamorphosis', 'an added element to swap');
+  s.animals.mammals.added = [];
+  s.animals.birds.added = ['seed'];
+  assert.equal(claim(['Disease','Fertile']), 'Disease', 'Birds have more elements (2+1 against 2) and an added one');
+  s.animals.mammals.added = ['meat'];
+  assert.equal(claim(['Disease','Fertile']), 'Fertile', 'equal elements: Disease would hit no one');
+  s.animals.mammals.added = []; s.animals.birds.added = [];
+  // Niche Biomes is last but Ice Age on the list: with no one ahead it is idle and Ice Age (allowed when level) comes first.
+  assert.equal(claim(['Niche Biomes','Ice Age']), 'Ice Age', 'nobody has more VP: Niche Biomes skipped');
+  s.animals.insects.vp = 5;
+  assert.equal(claim(['Niche Biomes','Ice Age']), 'Niche Biomes', 'an opponent has more VP (and Ice Age waits)');
+  s.initiative = ['birds','mammals','insects'];
+  assert.equal(claim(['Nocturnal','Fertile']), 'Nocturnal', 'not first on Initiative');
+  s.animals.mammals.dead = 2;
+  assert.equal(claim(['Hibernation','Fertile']), 'Hibernation', 'eliminated species to return');
+  // Testing switch: the v0.5.3 list.
+  s.animals.mammals.dead = 0; PAPER.noCardSkip = true;
+  assert.equal(claim(['Hibernation','Fertile']), 'Hibernation'); delete PAPER.noCardSkip;
+`);
+
+test('v0.5.4 Empty Earth: no rival species on Earth is enough (a 5-rival Hard test game stalled with only the player left)', () => {
+  const g = load('worktree', ['game']);
+  const p = load(PLAYER_REFERENCE, ['player']);
+  const strategy = {place: p.get('playerPlacement'), choose: p.get('playerChoice')};
+  const sc = {human:'mammals', rivals:['reptiles','amphibians','insects','arachnids','birds'], seed:3880436785, short:false, policy:'majority'};
+  g.run('Object.assign(PAPER, {place:true, all:true, extraAP:0, oldEmptyEarth:true})');
+  assert.equal(g.get('playBenchmark')(sc, strategy).stalled, true, 'with the v0.5.1 condition the game stalls (one Mammal left, no disks)');
+  g.run('delete PAPER.oldEmptyEarth');
+  const fixed = g.get('playBenchmark')(sc, strategy);
+  assert.equal(fixed.stalled, undefined, 'reaches Ice Age'); assert.ok(fixed.turns < 20, 'turn ' + fixed.turns);
+  g.get('globalThis').assert = assert;
+  g.run(`(() => {
+    const s = newGame('mammals',['birds','insects'],true,7,{extra:0});
+    for (const t of terrainIds(s)) for (const id of s.ids) if (id !== 'mammals') s.tiles[t].cubes[id] = 0;
+    assert.ok(occupied(s,'mammals').length > 0 && paperEmptyEarth(s), 'only the player has species: Empty Earth');
+    PAPER.oldEmptyEarth = true; assert.ok(!paperEmptyEarth(s), 'old condition: no species at all'); delete PAPER.oldEmptyEarth;
+    s.tiles[occupied(s,'mammals')[0]].cubes.birds = 1;
+    assert.ok(!paperEmptyEarth(s), 'a rival species on Earth: not Empty Earth');
+  })()`);
+});
+
+test('v0.5.3 Mammals Extinction save: equal first-place values go to board order, not the order Mammals reached the tiles', () => {
+  const g = load('worktree', ['game']);
+  g.get('globalThis').assert = assert;
+  g.run(`(() => {
+    Object.assign(PAPER, {place:true, all:true, extraAP:-1});
+    const s = newGame('birds',['mammals','insects'],true,7,{extra:-1});
+    // Two Sea tiles with endangered Mammals: C4 is further left than E4, but Mammals reached E4 first.
+    for (const t of ['C4','E4']) { s.tiles[t].terrain = 'sea'; for (const k of VERTICES_OF[t]) delete s.corners[k]; }
+    const options = extinctionOptions(s,'mammals');
+    assert.ok(options.indexOf('E4') < options.indexOf('C4'), 'fixture: E4 comes first in placement order');
+    assert.equal(botAction(s,{kind:'extinction',actor:'mammals'}).saved, 'C4');
+    // A higher first-place value still comes first: make E4 the only Sea.
+    s.tiles.C4.terrain = 'wetland';
+    assert.equal(botAction(s,{kind:'extinction',actor:'mammals'}).saved, 'E4');
+    s.tiles.C4.terrain = 'sea';
+    // Testing switches: the app's chooser (placement order), as in v0.5.2 and earlier.
+    PAPER.oldExtinction = true;
+    assert.equal(botAction(s,{kind:'extinction',actor:'mammals'}).saved, 'E4');
+    delete PAPER.oldExtinction; PAPER.oldCornerOrder = true;
+    assert.equal(botAction(s,{kind:'extinction',actor:'mammals'}).saved, 'E4');
+    delete PAPER.oldCornerOrder;
+    // No Mammals at the table: nothing to save.
+    assert.equal(botAction(s,{kind:'extinction',actor:null}).saved, null);
+  })()`);
+});
+
+test('v0.5.3 Mammals Extinction save on GPT\'s v0.5.2 positions: B2 over C2 (seed 960021), and C3 over D3 for 3 Survival VP', () => {
+  const g = load('worktree', ['game']);
+  Object.assign(g.get('globalThis'), {assert, played:FIX('gpt-v052-extinction-played.json'), tie:FIX('gpt-v052-extinction-tie.json')});
+  g.run(`(() => {
+    const check = (s, released, expected) => {
+      validateState(s);
+      assert.equal(s.version, VERSION, 'a v0.5.2 save loads');
+      const step = nextStep(s);
+      assert.equal(step.kind, 'extinction');
+      PAPER.oldExtinction = true; assert.equal(botAction(s,step).saved, released, 'v0.5.2 choice'); delete PAPER.oldExtinction;
+      const choice = botAction(s,step);
+      assert.equal(choice.saved, expected);
+      runStep(s,step,choice);
+      validateState(s);
+      return s;
+    };
+    // Seed 960021, turn 5 (Reptiles against five Paper Hard rivals): two endangered Sea tiles; B2 is further left.
+    check(copy(played), 'C2', 'B2');
+    // Two tundra tiles; one D3 Mammal is protected by Hibernation. Saving the C3 cube keeps Mammals on both tundra tiles.
+    const before = tie.animals.mammals.vp;
+    const s = check(copy(tie), 'D3', 'C3');
+    assert.equal(s.animals.mammals.vp - before, 3, 'Survival: 3 VP');
+    // The app's own rivals keep the app's chooser.
+    const app = copy(tie); delete app.paper; delete app.paperRivals;
+    assert.equal(botAction(app,nextStep(app)).saved, 'D3');
+  })()`);
+});
+
+test('v0.5.1 Empty Earth: with no species on Earth a rival may take Abundance and seed any empty corner, in board order', () => {
+  const g = load('worktree', ['game']);
+  g.get('globalThis').assert = assert;
+  g.get('globalThis').boardFirst = boardFirst;
+  // GPT's re-audit fixture: seed 200074 at turn 31, no species or disks on Earth, Mammals to resolve Abundance.
+  g.get('globalThis').FIXTURE = FIX('gpt-v050-empty-abundance.json');
+  g.run(`(() => {
+    const s = validateState(FIXTURE);
+    const step = nextStep(s);
+    assert.equal(step.actor, 'mammals');
+    assert.ok(paperEmptyEarth(s));
+    const vacant = activeCorners(s).filter(k => !s.corners[k]);
+    const expected = boardFirst(vacant);
+    assert.notEqual(expected, vacant[0], 'storage order and board order differ here');
+    const choice = paperPawn(s, step);
+    assert.equal(choice.corner, expected, 'leftmost empty corner, then uppermost');
+    assert.match(choice.label, /Empty Earth/);
+    // Habitat's fallback (it occupies no tile with an empty corner) uses the same order.
+    assert.equal(paperEffect(s, {kind:'effect', name:'Habitat', actor:'mammals'}).corner, expected);
+    // Once that corner is taken, the next rival Abundance takes the next empty corner in board order.
+    runStep(s, step, choice);
+    validateState(s);
+    assert.ok(s.corners[expected], 'the element is on that corner');
+    const next = nextStep(s);
+    if (next.row === 'abundance' && next.actor !== s.human && paperEmptyEarth(s))
+      assert.equal(paperPawn(s, next).corner, boardFirst(activeCorners(s).filter(k => !s.corners[k])));
+  })()`);
+  g.run(`(() => {
+    const s = newGame('birds',['mammals','insects'],true,7,{extra:-1});
+    s.turn = 5;
+    for (const t of terrainIds(s)) for (const id of s.ids) { s.animals[id].pool += s.tiles[t].cubes[id]; s.tiles[t].cubes[id] = 0; }
+    for (const k of Object.keys(s.corners)) delete s.corners[k];
+    s.boxes.abundance = ['grub','water',null,null];
+    validateState(JSON.parse(JSON.stringify(s)));
+    const step = {row:'abundance', index:0, actor:'mammals', key:'abundance-0'};
+    assert.ok(paperEmptyEarth(s) && paperBarren(s));
+    assert.ok(paperLegal(s,'mammals','abundance',0), 'a rival with no species has a target on an empty Earth');
+    const choice = paperPawn(s, step);
+    assert.equal(choice.corner, boardFirst(activeCorners(s).filter(k => !s.corners[k])));
+    assert.equal(choice.pick, 0, 'Mammals use neither element, so the leftmost');
+    // One species anywhere on Earth: the normal rule (an empty corner of a tile the rival occupies) applies again.
+    s.tiles[terrainIds(s)[0]].cubes.insects = 1;
+    assert.ok(!paperEmptyEarth(s));
+    assert.ok(!paperLegal(s,'mammals','abundance',0));
+    assert.ok(paperPawn(s, step).pass);
+    s.tiles[terrainIds(s)[0]].cubes.insects = 0;
+    // Saved games from earlier versions get the rule too: v0.4.1-shaped (no planFirst, no level name) and pre-v0.4.0
+    // (no tie-break), each loaded through validateState; and a v0.5.0 save.
+    for (const strip of [['planFirst','speciesTie','level'], ['planFirst','speciesTie','level','rivalTie']]) {
+      const old = JSON.parse(JSON.stringify(s));
+      for (const k of strip) delete old.paper[k];
+      old.version = strip.length === 2 ? '0.4.1' : '0.3.9';
+      validateState(old);
+      assert.ok(paperLegal(old,'mammals','abundance',0) && paperPawn(old, step).corner === choice.corner, 'saved ' + old.version + ' game');
+    }
+    for (const v of ['0.5.0', '0.5.1', '0.5.2', '0.5.3']) {
+      const saved = JSON.parse(JSON.stringify(s)); saved.version = v;
+      validateState(saved);
+      assert.equal(saved.version, VERSION, 'a v' + v + ' Paper save loads');
+    }
+    // The testing switch restores the v0.5.0 rule.
+    PAPER.noEmptyEarth = true;
+    assert.ok(!paperLegal(s,'mammals','abundance',0));
+    delete PAPER.noEmptyEarth;
+  })()`);
+});
+
+test('v0.5.1 Empty Earth regression: the audited stall (seed 200074) finishes, and so does its turn-31 position', () => {
+  const g = load('worktree', ['game']);
+  const p = load(PLAYER_REFERENCE, ['player']);
+  const strategy = {place: p.get('playerPlacement'), choose: p.get('playerChoice')};
+  const sc = {human:'birds', rivals:['mammals','reptiles','amphibians','arachnids','insects'], seed:200074, short:true, policy:'expansion'};
+  // With the v0.5.1 corner order the game follows the audited path: it stalls without Empty Earth and finishes with it.
+  // (v0.5.4: the old Migration test, food-chain rival ties and card list too, so the path is the audited one.)
+  g.run('Object.assign(PAPER, {place:true, all:true, extraAP:-1, oldCornerOrder:true, oldMigTest:true, oldRivalTie:true, noCardSkip:true})');
+  const fixed = g.get('playBenchmark')(sc, strategy);
+  assert.equal(fixed.stalled, undefined, 'reaches Ice Age within 30 turns');
+  assert.ok(fixed.turns < 15, 'turn ' + fixed.turns);
+  g.run('PAPER.noEmptyEarth = true');
+  assert.equal(g.get('playBenchmark')(sc, strategy).stalled, true, 'without the rule this game stalls (the audited case)');
+  // GPT's saved turn-31 position (no species, no disks) under the current rules: Ice Age is reached.
+  g.run('delete PAPER.noEmptyEarth; delete PAPER.oldCornerOrder; delete PAPER.oldMigTest; delete PAPER.oldRivalTie; delete PAPER.noCardSkip');
+  g.get('globalThis').FIXTURE = FIX('gpt-v050-stall-200074-turn31.json');
+  g.get('globalThis').STRATEGY = strategy;
+  const end = JSON.parse(g.run(`(() => {
+    const s = validateState(FIXTURE), supply = {cards:[], stacks:[[],[],[]]};
+    for (let n = 0; n < 6000 && s.phase !== 'finished' && s.turn <= 60; n++) {
+      if (s.phase === 'supply') { enterSupply(s, nextSupply(s, supply, s.seed)); continue; }
+      if (s.phase === 'planning') { const {actor} = currentPlanner(s); if (actor === s.human) place(s, STRATEGY.place(s, actor, 'expansion')); else botPlacement(s); continue; }
+      const step = nextStep(s);
+      const choice = step.kind === 'symbiosis' ? symbioticDraw(s, step, s.seed) : step.actor === s.human ? STRATEGY.choose(s, step, 'expansion') : botAction(s, step);
+      runStep(s, step, copy(choice));
+      validateState(s);
+    }
+    return JSON.stringify({phase: s.phase, turn: s.turn, iceAge: s.usedCards.includes('Ice Age')});
+  })()`));
+  assert.ok(end.phase === 'finished' && end.iceAge, JSON.stringify(end));
+});
+
+test('Printables update: Mass Exodus prefers a tile without the rival, else the most opposing species anyway (GPT v0.5.4 re-audit, P2)', () => {
+  const g = load('worktree', ['game']);
+  g.get('globalThis').assert = assert;
+  g.run(`(() => {
+    Object.assign(PAPER, {place:true, all:true, extraAP:-1});
+    const s = newGame('birds',['mammals','insects'],true,7,{extra:-1});
+    const land = terrainIds(s);
+    const opp = t => s.tiles[t].cubes.birds + s.tiles[t].cubes.insects;
+    // A tile without Mammals comes first while one exists (E3 and C3 here), even with fewer opposing species than C4.
+    assert.equal(paperEffect(s,{kind:'effect',name:'Mass Exodus',actor:'mammals'}).tile, 'E3');
+    // Mammals on every tile: the most opposing species anyway (C4 and E3 have 2), then the higher first-place value (E3 Savannah 7 over C4 Forest 5).
+    for (const t of land) if (!s.tiles[t].cubes.mammals) { s.tiles[t].cubes.mammals = 1; s.animals.mammals.pool--; }
+    assert.deepEqual(land.filter(t => opp(t) === 2).sort(), ['C4','E3']);
+    assert.equal(paperEffect(s,{kind:'effect',name:'Mass Exodus',actor:'mammals'}).tile, 'E3');
+    s.tiles.C4.terrain = 'sea';
+    assert.equal(paperEffect(s,{kind:'effect',name:'Mass Exodus',actor:'mammals'}).tile, 'C4');
+  })()`);
+  // GPT's v0.5.4 save: Mammals on all seven tiles, three Insects on D3. Mass Exodus leaves D3: 1 Mammal to D2, 3 Insects to D4.
+  Object.assign(g.get('globalThis'), {exodus:FIX('gpt-v054-mass-exodus-own-everywhere.json')});
+  g.run(`(() => {
+    const s = copy(exodus);
+    validateState(s);
+    const step = nextStep(s);
+    assert.equal(step.name, 'Mass Exodus');
+    assert.ok(terrainIds(s).every(t => s.tiles[t].cubes.mammals > 0), 'fixture: Mammals on every tile');
+    const choice = botAction(s,step);
+    assert.equal(choice.tile, 'D3');
+    assert.deepEqual(choice.moves, {mammals:[{from:'D3',to:'D2',n:1}], insects:[{from:'D3',to:'D4',n:3}]});
+    runStep(s,step,choice);
+    validateState(s);
+    assert.equal(s.tiles.D4.cubes.insects, 3);
+  })()`);
+});
+
+test('Aquatic adds only the species left in the gene pool, and takes a tile it does not match only if it matches none (GPT, printables check)', () => {
+  const g = load('worktree', ['game']);
+  g.get('globalThis').assert = assert;
+  g.run(`(() => {
+    Object.assign(PAPER, {place:true, all:true, extraAP:-1});
+    const s = newGame('birds',['mammals','insects'],true,7,{extra:-1});
+    // C4 Sea: Birds 3, Mammals 0. D2 Wetland: Insects 2, Mammals 1.
+    s.tiles.C4.terrain = 'sea'; s.tiles.C4.cubes.mammals = 0; s.tiles.C4.cubes.birds = 3; s.tiles.D2.cubes.mammals = 1; s.tiles.D2.cubes.insects = 2;
+    const aquatic = () => paperEffect(s,{kind:'effect',name:'Aquatic',actor:'mammals'});
+    // Four species make Mammals first on either tile: Sea is worth more.
+    s.animals.mammals.pool = 4;
+    assert.deepEqual([aquatic().tile, aquatic().n], ['C4', 4]);
+    // One species left: it makes Mammals first only on D2 (2-2, food chain); on C4 it only enters the ranking.
+    s.animals.mammals.pool = 1;
+    assert.deepEqual([aquatic().tile, aquatic().n], ['D2', 1]);
+    // No element to place and no disks on either tile: it matches neither, and still takes the higher value (C4 Sea).
+    s.animals.mammals.pool = 4;
+    for (const t of ['C4','D2']) for (const k of VERTICES_OF[t]) delete s.corners[k];
+    const bag = globalThis.bagCount; globalThis.bagCount = () => 0;
+    try {
+      assert.deepEqual(elementOptions(s), []);
+      assert.equal(match(s,'C4','mammals') + match(s,'D2','mammals'), 0);
+      assert.equal(aquatic().tile, 'C4');
+    } finally { globalThis.bagCount = bag; }
+  })()`);
+  // GPT's printables-audit save: Birds have one species left. One makes them first only on D2 Wetland; four would on E2 Sea too.
+  Object.assign(g.get('globalThis'), {aq:FIX('gpt-v054p-aquatic-one-species.json')});
+  g.run(`(() => {
+    const s = copy(aq);
+    validateState(s);
+    const step = nextStep(s);
+    assert.equal(step.name, 'Aquatic');
+    assert.equal(s.animals.birds.pool, 1);
+    const choice = botAction(s,step);
+    assert.deepEqual([choice.tile, choice.n, choice.type], ['D2', 1, 'seed']);
+    runStep(s,step,choice);
+    validateState(s);
+  })()`);
+});

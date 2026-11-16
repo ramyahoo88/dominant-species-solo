@@ -80,6 +80,11 @@ function worker() {
   const strategy = {place: player.get('playerPlacement'), choose: player.get('playerChoice')};
   const runs = refs.map((ref, i) => {
     const runtime = load(ref, ['game']);
+    // v0.5.5: oldForecast (the v0.5.4 Ice Age forecast) is an app-bot switch, so it applies to both sides, app rivals included.
+    // v0.5.6: v055Forecast (the v0.5.5 forecast: human Mammals take their most VP, any tie takes Ice Age) works the same way.
+    for (const flag of ['oldForecast', 'v055Forecast']) {
+      if (workerData.paperOptions.includes(flag) && runtime.run("typeof PAPER === 'object'")) runtime.run('PAPER.' + flag + ' = true;');
+    }
     if (i === 1 && workerData.paper !== null) {
       // Paper rivals: table-playable rules from source/paper/paper.js, with extra action pawns as the difficulty level.
       const options = JSON.stringify(Object.fromEntries(workerData.paperOptions.map(o => [o, true])));

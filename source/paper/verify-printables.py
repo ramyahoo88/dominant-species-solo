@@ -123,30 +123,127 @@ def strip_continuation_headers(doc, body):
     return "\n".join(texts), removed
 
 
-def card_faces(doc, start, decks, animals, label):
-    checked = []
-    for i, animal in enumerate(animals):
-        page = doc[start + i]
-        assert page.rect.width == 612 and page.rect.height == 792, f"{label}: not Letter"
-        assert normal(animal + " cards") in normal(page.get_textbox(fitz.Rect(0, 0, 612, 45)))
-        # Discover the dashed cut lines, not the former table appendix or a
-        # hard-coded heading offset. The physical cards remain 3.5 x 2.4 in.
-        lines = [d["rect"] for d in page.get_drawings()
-                 if abs(d["rect"].width - 252) < .1 and 0 < d["rect"].height <= 1]
-        xs = sorted({round(r.x0, 2) for r in lines})
-        ys = sorted({round(r.y0, 2) for r in lines})
-        assert len(xs) == 2 and len(ys) == 8, f"{label} {animal}: missing cut lines"
-        tops = ys[::2]
-        for slot, card in enumerate(decks[animal]):
-            x, y = xs[slot % 2], tops[slot // 2]
-            rect = fitz.Rect(x, y, x + 252, y + 172.5)
-            expected = animal + str(slot + 1) + card["title"] + "".join(
-                f"{n}. {row.title()}" for n, row in enumerate(card["no"]["rows"], 1)
-            ) + "Paper Rivals · try the actions in order"
-            assert normal(page.get_textbox(rect)) == normal(expected), f"{label} {animal} card {slot + 1}"
-            checked.append({"page": start + i + 1, "animal": animal, "card": slot + 1,
-                            "title": card["title"], "actions": card["no"]["rows"]})
-    return checked
+def card_rectangles(page, side, label):
+    """Read actual cut boundaries from Chromium's PDF paths in points."""
+    drawings = page.get_drawings()
+    if side == "front":
+        # Dashed horizontal borders are emitted as groups of filled paths.
+        lines = [d["rect"] for d in drawings if d["type"] == "f" and
+                 abs(d["rect"].width - 252) < .1 and 0 < d["rect"].height <= 1]
+        columns = sorted({line.x0 for line in lines})
+        assert len(lines) == 16 and len(columns) == 2, f"{label}: expected 16 front cut edges"
+        rectangles = []
+        for x in columns:
+            column = sorted((line for line in lines if line.x0 == x), key=lambda line: line.y0)
+            assert len(column) == 8, f"{label}: missing cut edges in one column"
+            rectangles.extend(fitz.Rect(top.x0, top.y0, top.x1, bottom.y1)
+                              for top, bottom in zip(column[::2], column[1::2]))
+    else:
+        # The solid back borders are stroked about their centerlines.
+        rectangles = []
+        for drawing in drawings:
+            rect = drawing["rect"]
+            if drawing["type"] == "s" and abs(rect.width - 251.25) < .1:
+                inset = drawing["width"] / 2
+                rectangles.append(rect + (-inset, -inset, inset, inset))
+    assert len(rectangles) == 8, f"{label}: expected eight {side} cut rectangles"
+    for rect in rectangles:
+        assert abs(rect.width - 252) <= .6 and abs(rect.height - 172.8) <= .6, f"{label}: card size"
+        assert page.rect.contains(rect), f"{label}: card extends outside the page"
+    return sorted(rectangles, key=lambda rect: (rect.y0, rect.x0))
+
+
+def child_text(node, cls):
+    return next(node.all(cls=cls)).text()
+
+
+def check_card_text(page, rect, node, rows, label):
+    actual = normal(page.get_textbox(rect))
+    # Card step numbers are CSS counters, extracted separately from the HTML
+    # text. Check every character and the order of each action's label and note.
+    expected = normal(node.text() + ("123" if rows else ""))
+    assert Counter(actual) == Counter(expected), f"{label}: text missing or changed"
+    for cls in (("head", "name", "foot") if rows else ("brand", "animal", "line", "power", "game")):
+        if cls == "head":
+            # PDF extraction puts the number before the element and food chain.
+            for part in ("who", "meta", "num"):
+                assert normal(child_text(node, part)) in actual, f"{label}: {part}"
+        else:
+            assert normal(child_text(node, cls)) in actual, f"{label}: {cls}"
+    previous_end = 0
+    for position, row in enumerate(rows, 1):
+        phrase = normal(row.text() + str(position))
+        start = actual.find(phrase, previous_end)
+        assert start >= 0, f"{label}: card action {position} missing or out of order"
+        previous_end = start + len(phrase)
+
+
+def card_spans(page, rect):
+    return [span for block in page.get_text("dict", clip=rect)["blocks"] if "lines" in block
+            for line in block["lines"] for span in line["spans"]]
+
+
+def card_faces(doc, start, body, data, weak_actions, label):
+    layouts = list(body.all("section", "cardpage"))
+    animals, decks = data["animals"], data["decks"]
+    assert len(layouts) == 2 * len(animals), f"{label}: missing HTML card pages"
+    css = next(body.parent.all("style")).text()
+    tint = re.search(r"\bli\.weak b[^{}]*\{[^}]*\bcolor:\s*#([0-9a-fA-F]{6})\b", css)
+    assert tint, f"{label}: missing weak action ink"
+    weak_ink = int(tint.group(1), 16)
+    fronts, backs, duplex = [], [], []
+    chain = ("first", "second", "third", "fourth", "fifth", "last")
+    for i, (animal, animal_data) in enumerate(animals.items()):
+        element = data["elements"][animal_data["el"]]["name"]
+        identity = normal(f"{element} · {chain[i]} in the food chain")
+        name = animal_data["name"]
+        front_page, back_page = doc[start + 2 * i], doc[start + 2 * i + 1]
+        for page, side in [(front_page, "fronts"), (back_page, "backs")]:
+            heading = normal(page.get_textbox(fitz.Rect(0, 0, 612, 45)))
+            assert heading.startswith(normal(f"{name} · card {side}")), f"{label}: unexpected page {page.number + 1}"
+        front_rects = card_rectangles(front_page, "front", f"{label} {name}")
+        back_rects = card_rectangles(back_page, "back", f"{label} {name}")
+        front_nodes = list(layouts[2 * i].all("div", "front"))
+        back_nodes = list(layouts[2 * i + 1].all("div", "back"))
+        assert len(front_nodes) == len(back_nodes) == len(decks[animal]) == 8, f"{label} {name}: missing cards"
+        worst = 0
+        for slot, (front_rect, front_node, card) in enumerate(zip(front_rects, front_nodes, decks[animal])):
+            front_label = f"{label} {name} front {slot + 1}"
+            assert normal(child_text(front_node, "who")) == normal(name), front_label
+            assert normal(child_text(front_node, "meta")) == identity, front_label
+            assert child_text(front_node, "num") == str(slot + 1), front_label
+            assert child_text(front_node, "name") == card["title"], front_label
+            rows = list(front_node.all("li"))
+            actions = [next(row.all("b")).text().casefold() for row in rows]
+            assert actions == card["no"]["rows"], front_label
+            spans = card_spans(front_page, front_rect)
+            for j, (row, action) in enumerate(zip(rows, actions)):
+                is_weak = j > 0 and action in weak_actions
+                assert ("weak" in row.attrs["class"].split()) == is_weak, f"{front_label}: weak marker"
+                colors = [span["color"] for span in spans if normal(span["text"]) == action]
+                assert len(colors) == 1 and (colors[0] == weak_ink) == is_weak, f"{front_label}: printed weak marker"
+            check_card_text(front_page, front_rect, front_node, rows, front_label)
+            fronts.append({"page": front_page.number + 1, "animal": animal, "card": slot + 1,
+                           "title": card["title"], "actions": actions})
+
+            opposite = slot ^ 1  # long-edge flip mirrors columns, preserving rows
+            back_rect = back_rects[opposite]
+            back_node = back_nodes[opposite]
+            back_label = f"{label} {name} back for front {slot + 1}"
+            assert normal(child_text(back_node, "animal")) == normal(name), back_label
+            assert normal(child_text(back_node, "line")) == identity, back_label
+            assert normal(child_text(back_node, "brand")) == normal("The Red Queen"), back_label
+            assert child_text(back_node, "power").strip(), f"{back_label}: missing power"
+            check_card_text(back_page, back_rect, back_node, [], back_label)
+            mirror = fitz.Rect(612 - front_rect.x1, front_rect.y0, 612 - front_rect.x0, front_rect.y1)
+            error = max(abs(a - b) for a, b in zip(mirror, back_rect))
+            assert error <= .75, f"{back_label}: long-edge duplex misalignment ({error:.2f} pt)"
+            worst = max(worst, error)
+            backs.append({"page": back_page.number + 1, "animal": animal, "forFront": slot + 1,
+                          "power": child_text(back_node, "power")})
+        duplex.append({"animal": animal, "frontPage": front_page.number + 1,
+                       "backPage": back_page.number + 1, "maxErrorPt": round(worst, 3)})
+    return fronts, backs, duplex
 
 
 def verify(repo, output, rebuild=False, rebuild_pdfs=False):
@@ -154,32 +251,43 @@ def verify(repo, output, rebuild=False, rebuild_pdfs=False):
     code = """const fs=require('node:fs'),vm=require('node:vm');
     let c=vm.createContext({});
     for(const f of ['data','decks']) vm.runInContext(fs.readFileSync(process.argv[1]+'/source/src/'+f+'.js','utf8'),c);
-    console.log(vm.runInContext('JSON.stringify({version:VERSION,decks:DECKS,animals:ANIMALS,setup:SETUP_BY_PLAYERS,terrain:TERRAIN})',c));"""
+    console.log(vm.runInContext('JSON.stringify({version:VERSION,decks:DECKS,animals:ANIMALS,elements:ELEMENTS,setup:SETUP_BY_PLAYERS,terrain:TERRAIN})',c));"""
     data = json.loads(subprocess.check_output(["node", "-e", code, str(repo)]))
     animals, decks = list(data["animals"]), data["decks"]
     names = ["Rulebook", "Cards", "Player_Aids"]
-    docs = {n: fitz.open(paper / f"Paper_Rivals_{n}.pdf") for n in names}
-    htmls = {n: Document((paper / f"Paper_Rivals_{n}.html").read_text()).body for n in names}
+    docs = {n: fitz.open(paper / f"The_Red_Queen_{n}.pdf") for n in names}
+    htmls = {n: Document((paper / f"The_Red_Queen_{n}.html").read_text()).body for n in names}
+    for name, doc in docs.items():
+        assert all(p.rect.width == 612 and p.rect.height == 792 for p in doc), f"{name}: expected US Letter"
     cards, book, aids = (docs[n] for n in ["Cards", "Rulebook", "Player_Aids"])
-    appendix = [i for i, p in enumerate(book) if normal(p.get_text()).startswith(normal(animals[0] + " cards · cut along"))]
+    appendix = [i for i, p in enumerate(book) if normal(p.get_text()).startswith(normal(animals[0] + " · card fronts"))]
     assert len(appendix) == 1, "Cannot uniquely locate the first appendix card page"
     start = appendix[0]
-    assert len(cards) == len(animals) and len(book) - start == len(animals), "Expected one standalone and appendix card page per animal"
-    standalone_faces = card_faces(cards, 0, decks, animals, "standalone")
-    appendix_faces = card_faces(book, start, decks, animals, "appendix")
+    assert start % 2 == 0, "Rulebook's first card front must be an odd-numbered page for duplex printing"
+    card_pages = 2 * len(animals)
+    assert len(cards) == card_pages and len(book) - start == card_pages, "Expected a front and back page for each animal"
+    paper_code = (repo / "source/paper/paper.js").read_text()
+    arrays = {name: re.findall(r"'([^']+)'", re.search(r"const " + name + r" = \[([^;]+)\];", paper_code).group(1))
+              for name in ["PAPER_CARD_ORDER", "PAPER_FALLBACK", "PAPER_WEAK"]}
+    standalone_faces, standalone_backs, standalone_duplex = card_faces(
+        cards, 0, htmls["Cards"], data, arrays["PAPER_WEAK"], "standalone")
+    appendix_faces, appendix_backs, appendix_duplex = card_faces(
+        book, start, htmls["Rulebook"], data, arrays["PAPER_WEAK"], "appendix")
     appendix_pixels = []
-    for i in range(len(animals)):
-        assert normal(cards[i].get_text()) == normal(book[start + i].get_text()), "Appendix card page differs"
+    for i in range(card_pages):
+        assert normal(cards[i].get_text()) == normal(book[start + i].get_text()), f"Appendix card page {i + 1} text differs"
         appendix_pixels.append(cards[i].get_pixmap().samples == book[start + i].get_pixmap().samples)
-    note = f"Generated from source/src/decks.js for app v{data['version']}."
-    assert note in cards[-1].get_text() and note in book[-1].get_text()
-    ruletext, headers = strip_continuation_headers(book, htmls["Rulebook"])
-    fidelity = {"rulebook": text_fidelity(htmls["Rulebook"], ruletext, "rulebook", book=True),
-                "cards": text_fidelity(htmls["Cards"], "\n".join(p.get_text() for p in cards), "cards")}
+    rules_body = htmls["Rulebook"]
+    rules_body.children = [node for node in rules_body.children
+                           if not isinstance(node, Node) or "cardpage" not in node.attrs.get("class", "").split()]
+    assert all(normal(h.text()) != "testing" for h in rules_body.all("h2")), "Rulebook still contains a Testing section"
+    ruletext, headers = strip_continuation_headers(book[:start], rules_body)
+    fidelity = {"rulebook": text_fidelity(rules_body, ruletext, "rulebook", book=True)}
     aid_pages = list(htmls["Player_Aids"].all(cls="page"))
     assert len(aid_pages) == len(aids) == 4 + len(animals), "Expected four references plus one aid per rival"
     for i, (node, page) in enumerate(zip(aid_pages, aids)):
-        assert f"Player aid {i + 1} of {len(aids)} · app v{data['version']}" in page.get_text()
+        footer = f"The Red Queen · player aid {i + 1} of {len(aids)} · version {data['version']}"
+        assert normal(footer) in normal(page.get_text()), f"Aid {i + 1}: wrong release footer"
         fidelity[f"aid{i + 1}"] = text_fidelity(node, page.get_text(), f"aid {i + 1}")
     # Check each table separately: a Planning row must not conceal a missing
     # Execution row with the same name (the producer's global search can).
@@ -195,9 +303,6 @@ def verify(repo, output, rebuild=False, rebuild_pdfs=False):
         actual = [normal(next(row.all("td")).text()) for row in table.all("tr") if any(row.all("td"))]
         assert actual == expected, f"Aid {aid_index + 1} table rows: {actual} vs {expected}"
         table_checks.append({"aid": aid_index + 1, "rows": len(actual)})
-    paper_code = (repo / "source/paper/paper.js").read_text()
-    arrays = {name: re.findall(r"'([^']+)'", re.search(r"const " + name + r" = \[([^;]+)\];", paper_code).group(1))
-              for name in ["PAPER_CARD_ORDER", "PAPER_FALLBACK", "PAPER_WEAK"]}
     order = next(aid_pages[2].all("ol"))
     card_order = [re.sub(r"\s+[A-G]$", "", li.text().strip()) for li in order.all("li")]
     assert card_order == arrays["PAPER_CARD_ORDER"], "Aid Dominance Card order differs from app"
@@ -241,10 +346,12 @@ def verify(repo, output, rebuild=False, rebuild_pdfs=False):
     report = {"appVersion": data["version"], "rulebookPages": len(book), "rulesPages": start,
               "appendixStartPage": start + 1, "cardSheetPages": len(cards), "aidPages": len(aids),
               "standaloneCardsChecked": standalone_faces, "appendixCardsChecked": appendix_faces,
+              "standaloneBacksChecked": standalone_backs, "appendixBacksChecked": appendix_backs,
+              "longEdgeDuplex": {"standalone": standalone_duplex, "appendix": appendix_duplex},
               "aidDeckRowsChecked": aid_decks, "textFidelity": fidelity,
               "separateAidTablesChecked": table_checks, "appPriorityListsChecked": list(arrays),
               "continuationHeadersRemoved": headers, "appendixStandalonePixelEquality": appendix_pixels,
-              "pdfSha256": {n: hashlib.sha256((paper / f"Paper_Rivals_{n}.pdf").read_bytes()).hexdigest() for n in names},
+              "pdfSha256": {n: hashlib.sha256((paper / f"The_Red_Queen_{n}.pdf").read_bytes()).hexdigest() for n in names},
               "scope": "Publication fidelity and generated data; manual rule-to-app review is still required."}
     if rebuild or rebuild_pdfs:
         target = output / "print-rebuild"
@@ -257,7 +364,7 @@ def verify(repo, output, rebuild=False, rebuild_pdfs=False):
             producer()
         finally:
             sys.argv = old_argv
-        files = ["Paper_Rivals_Rulebook.md"] + [f"Paper_Rivals_{n}.html" for n in names]
+        files = ["The_Red_Queen_Rulebook.md"] + [f"The_Red_Queen_{n}.html" for n in names]
         report["regeneratedTextMatches"] = {f: (target / f).read_bytes() == (paper / f).read_bytes() for f in files}
         assert all(report["regeneratedTextMatches"].values()), "Generated text drift"
         if rebuild_pdfs:
@@ -269,14 +376,15 @@ def verify(repo, output, rebuild=False, rebuild_pdfs=False):
                 browser = pw.chromium.launch(**options)
                 for name in names:
                     page = browser.new_page()
-                    page.goto((target / f"Paper_Rivals_{name}.html").as_uri())
-                    page.pdf(path=str(target / f"Paper_Rivals_{name}.pdf"), print_background=True,
+                    page.goto((target / f"The_Red_Queen_{name}.html").as_uri())
+                    page.pdf(path=str(target / f"The_Red_Queen_{name}.pdf"), print_background=True,
                              format="Letter", prefer_css_page_size=True)
                     page.close()
                 browser.close()
+            producer.__globals__["duplex_cards"](target / "The_Red_Queen_Rulebook.pdf")
             checks = {}
             for name in names:
-                regenerated = fitz.open(target / f"Paper_Rivals_{name}.pdf")
+                regenerated = fitz.open(target / f"The_Red_Queen_{name}.pdf")
                 original = docs[name]
                 assert len(regenerated) == len(original), f"{name} rebuild pagination differs"
                 checks[name] = [{"text": normal(a.get_text()) == normal(b.get_text()),
@@ -286,8 +394,9 @@ def verify(repo, output, rebuild=False, rebuild_pdfs=False):
             report["regeneratedPDFs"] = checks
     output.mkdir(parents=True, exist_ok=True)
     (output / "print-observations.json").write_text(json.dumps(report, indent=2) + "\n")
-    print(f"PASS: {start} rules pages + {len(animals)} card appendix pages; "
-          f"{len(standalone_faces) + len(appendix_faces)} card faces; "
+    print(f"PASS: {start} rules pages + {card_pages} card appendix pages; "
+          f"{len(standalone_faces) + len(appendix_faces)} fronts, "
+          f"{len(standalone_backs) + len(appendix_backs)} backs and their duplex alignment; "
           f"{len(aids)} aid sheets and {len(aid_decks)} aid deck rows.")
     return report
 

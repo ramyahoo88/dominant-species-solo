@@ -56,6 +56,21 @@ function drawCard(s, actor) {
   d.discards.push(index);
   return index;
 }
+// The Red Queen, cards only (v0.5.6): the app keeps each rival's deck and the player runs the printed rules. No board is
+// tracked, so this is its own small state, saved under its own key; it shares the deck shuffle and draw with full games.
+const DRAW_FORMAT = 'red-queen-cards-only-v1';
+function newDrawGame(human, rivals, extra, seed) {
+  const s = {format: DRAW_FORMAT, version: VERSION, human, rivals: [...rivals], extra, seed, rng: seed, decks: {}, draws: []};
+  for (const id of s.rivals) s.decks[id] = {queue: shuffle(s, DECKS[id].map((_, i) => i)), discards: []};
+  return s;
+}
+function drawFor(s, actor) {
+  const reshuffled = !s.decks[actor].queue.length;
+  const card = drawCard(s, actor);
+  s.draws.push({actor, card, reshuffled});
+  if (s.draws.length > 200) s.draws.shift();
+  return card;
+}
 function note(s, title, body = '', actor = null, card = null) {
   s.log.push({turn:s.turn, title, body, actor, card});
   if (s.log.length > 650) s.log.shift();

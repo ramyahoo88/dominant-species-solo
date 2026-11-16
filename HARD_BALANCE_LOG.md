@@ -540,3 +540,21 @@ Sources: `ba67`, `ba34`, `pb_c1`–`c3`, `pb_e1`, `pb_e2`.
 - **Fresh Hard X35:** −0.43 (95% −0.73 to −0.10) on seed block 1140000, 14,400 games, no errors or stalls. By rivals: 2 −0.72 (control), 3 −0.53, 4 −0.52, 5 −0.25. Now in the Testing text with the earlier four.
 - **P2 (low, printed only):** Mass Exodus had no printed fallback when the rival is on every tile. GPT's wording adopted; its save is a test.
 - **Printables update (no app change):** player aids, rulebook in the aids' design with the cut-out cards, Competition +6 wording.
+
+### 21:50 — v0.5.5: Ice Age forecast fix (GPT's comprehensive audit of 4f32abb, A1); P1, P2 wording; T1 smoke check
+
+- **A1:** `endEstimate` now plays out the real final reset on a copy (Ice Age points, Extinction with the save the step itself would make, Survival, final scoring). `oldForecast` restores v0.5.4 and now reaches both `benchmark.cjs` sides and `tune.cjs` App rows.
+- **Checks:** anchor `bn01` 745/269; `bn02` (with `oldForecast`) equals `bm16` game for game.
+- **Same setups as the release:**
+  - ladder (`bn10`–`bn17`, `bn26`–`bn33`; `bn18`–`bn25` ran too few games for 4–5 rivals and are not used): The Red Queen identical (5,760 games); Tooth & Claw 6 of 1,440 games differ, same winners;
+  - tuned players (`bn40`–`bn55`, about 86,000 games): one win changes (always-Domination, 2 rivals, App, 470000: 27% → 28%); X35 and best against best unchanged (see the v0.5.4 entry).
+- **Fresh setups (seed 620000, Hard; `bn60`–`bn69`):** The Red Queen identical (1,440); Tooth & Claw 4 of 1,440 differ, one winner flips toward the rival; v4 at App keeps every win (2,880).
+- **No retuning.** The forecast was wrong only when Mammals had two or more endangered tiles and the first reached was not the one saved, and then only when that changed the Ice Age decision.
+- **Also in v0.5.5:** the names The Red Queen and Tooth & Claw in the app, the rulebook without its Testing section, redesigned cards with backs, Catastrophe and Hibernation wording (P1, P2), `smoke.cjs --check` (T1).
+
+### 23:00 — v0.5.6: cards-only mode; Ice Age decision fixes (GPT's v0.5.5 re-audit F1, F2); card reminders (P3); rulebook clarifications
+
+- **F1:** a human Mammals player is assumed to make the Extinction save that best helps it win (place, then lead, then VP). **F2:** a projected tie that the food chain gives to another animal counts as a loss for the Ice Age decision. `v055Forecast` restores v0.5.5.
+- **Not re-measured** (the user's call: minor). The smoke check is unchanged. The queued PC jobs `bp01`–`bp41` were replaced with no-op selftests before they started.
+- **Cards-only mode** draws with the full game's shuffle and draw code and tracks no board; nothing in play changes.
+

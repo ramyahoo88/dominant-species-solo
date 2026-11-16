@@ -55,7 +55,7 @@ function playBenchmark({human, rivals, seed, short, policy}, player, trace = fal
       if (actor === human) place(s, placement.slot);
       if (placement.blockedRival) seats[actor].blocks++;
       // Card check (v0.5.4 work): which Planning step placed each paper rival's pawn, by the deck card it drew.
-      const why = actor !== human && /^Paper rule, ([^:]+):/.exec(placement.reason || '')?.[1];
+      const why = actor !== human && /^(?:Red Queen|Paper rule), ([^:]+):/.exec(placement.reason || '')?.[1];
       if (why && placement.card !== null && placement.card !== undefined) {
         const deck = seats[actor].deck ??= {};
         const tally = deck[placement.card + 1] ??= {};

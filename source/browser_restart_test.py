@@ -58,11 +58,11 @@ for case in [("0.3.6", -1, -2), ("0.3.6", 0, -1), ("0.3.9", 1, -1), ("0.3.9", 3,
     print("PASS", run(*case))
 # R1: a legacy save's Help names its level and the old tie result; a new game's Help has no such notice.
 legacy = help_text(old_save("0.3.6", 0))
-assert "This saved game was started before v0.4.0" in legacy and "Standard (+0 pawns per rival)" in legacy and "In Paper games started in v0.4.0 or later" in legacy, legacy
+assert "This saved game was started before v0.4.0" in legacy and "Standard (+0 pawns per rival)" in legacy and "In Red Queen games started in v0.4.0 or later" in legacy, legacy
 v04 = help_text(old_save("0.4.1", 1, True))
 assert "This saved game was started before v0.5.0" in v04 and "Hard (+1 pawn per rival)" in v04, v04
 fresh = help_text(None)
-assert "This saved game" not in fresh and "In Paper games started in v0.4.0 or later" in fresh and "place one pawn each before anyone else" in fresh and "any empty corner" in fresh and "any empty corner" in legacy, fresh
+assert "This saved game" not in fresh and "In Red Queen games started in v0.4.0 or later" in fresh and "place one pawn each before anyone else" in fresh and "any empty corner" in fresh and "any empty corner" in legacy, fresh
 print("PASS Help notice for a legacy Paper save")
 
 # Restart from an App-rivals game, then switch to Paper rules: Standard (-1) is preselected, not the old 0 (now Hard).

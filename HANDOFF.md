@@ -1,6 +1,6 @@
 # Dominant Species solo companion audit handoff
 
-Current review build is v0.5.4: two to five rivals, and a choice between the app's rivals and the printed Paper Rivals rules (printable copies in [`paper/`](paper/)). See [release notes](CHANGELOG.md), [the response to GPT's v0.5.4 re-audit](AUDIT_RESPONSE_v0.5.4.md), [the response to GPT's v0.5.3 re-audit](AUDIT_RESPONSE_v0.5.3.md), [the response to GPT's v0.5.2 re-audit](AUDIT_RESPONSE_v0.5.2.md), [the response to GPT's v0.5.1 re-audit](AUDIT_RESPONSE_v0.5.1.md), [the response to GPT's v0.5.0 audit](AUDIT_RESPONSE_v0.5.0.md), [the response to GPT's v0.4.1 follow-up](AUDIT_RESPONSE_v0.4.1.md), [the response to GPT's v0.4.0 audit](AUDIT_RESPONSE_v0.4.0.md), [the response to GPT's v0.3.8 re-audit](AUDIT_RESPONSE_v0.3.8.md), [the response to GPT's v0.3.7 re-audit](AUDIT_RESPONSE_v0.3.7.md), [the response to GPT's v0.3.6 audit](AUDIT_RESPONSE_v0.3.6.md), [the v0.3.5 audit](AUDIT_v0.3.5.md), [paired benchmark results](BENCHMARK_RESULTS.md), and [Claude’s v0.2.0 review](REVIEW.md). The first-build handoff below records the original v0.1.0 scope and baseline. The source accepts v0.1 through v0.5.2 saves. UI regressions: `source/browser_test.py`, `source/browser_migration_test.py`, `source/browser_game_test.py`, `source/browser_restart_test.py`.
+Current review build is v0.5.6: two to five rivals, and a choice between the app's own rivals (Tooth & Claw), the printed rivals run by the app (The Red Queen), and The Red Queen in cards-only mode, where the app draws the cards and you run the rules (printable copies in [`paper/`](paper/)). See [release notes](CHANGELOG.md), [the response to GPT's v0.5.5 re-audit](AUDIT_RESPONSE_v0.5.5.md), [the response to GPT's v0.5.4 re-audits](AUDIT_RESPONSE_v0.5.4.md), [the response to GPT's v0.5.3 re-audit](AUDIT_RESPONSE_v0.5.3.md), [the response to GPT's v0.5.2 re-audit](AUDIT_RESPONSE_v0.5.2.md), [the response to GPT's v0.5.1 re-audit](AUDIT_RESPONSE_v0.5.1.md), [the response to GPT's v0.5.0 audit](AUDIT_RESPONSE_v0.5.0.md), [the response to GPT's v0.4.1 follow-up](AUDIT_RESPONSE_v0.4.1.md), [the response to GPT's v0.4.0 audit](AUDIT_RESPONSE_v0.4.0.md), [the response to GPT's v0.3.8 re-audit](AUDIT_RESPONSE_v0.3.8.md), [the response to GPT's v0.3.7 re-audit](AUDIT_RESPONSE_v0.3.7.md), [the response to GPT's v0.3.6 audit](AUDIT_RESPONSE_v0.3.6.md), [the v0.3.5 audit](AUDIT_v0.3.5.md), [paired benchmark results](BENCHMARK_RESULTS.md), and [Claude’s v0.2.0 review](REVIEW.md). The first-build handoff below records the original v0.1.0 scope and baseline. The source accepts v0.1 through v0.5.5 saves. UI regressions: `source/browser_test.py`, `source/browser_migration_test.py`, `source/browser_game_test.py`, `source/browser_restart_test.py`, `source/browser_setup_text_test.py`, `source/browser_draw_test.py`.
 
 For the next audit, run the targeted rules and Chromium checks in the README, then compare rival changes on fresh seeds. Open items: the paper rivals ([PAPER_RIVALS.md](PAPER_RIVALS.md)) have not been played at a real table; card-chasing remains the strongest scripted strategy against all rivals; the Empty Earth rule (v0.5.1) ends the known six-animal stalls, but one reseeded disk does not guarantee species return, so the benchmark still reports games that reach its 30-turn cap. Prioritize exact card effects, hard cases around Instinct or queued Glaciation, and which starting animals the scripts favor. Keep role-specific results separate from animal balance claims.
 
@@ -33,13 +33,13 @@ From the extracted package directory, use Python 3 and a current Node.js release
 
 ```sh
 python3 source/build.py
-node source/smoke.cjs
+node source/smoke.cjs --check
 ```
 
 The build produces `source/dist/Dominant_Species_Solo.html`. Its expected SHA-256 is:
 
 ```text
-4ed8110d6d15be58759fab88ec26e6611dc784812c83aecb03a77f8de44afadf
+bd7afbb90abc3f1727baacb3d7fa6e170ad3db37ce801eb058ad00fd42218530
 ```
 
 The smoke check finished all 60 matchups through Ice Age and final scoring. It used one seeded game per matchup, split evenly between short and full games, with seeds 100–159. The human seat uses a bot heuristic in the harness. Terrain reveals are sampled with replacement, and `maxTime` is an environment-dependent timing field. Treat this as reachability and state validation. Balance, rules parity in unusual situations, and human play quality still need dedicated evidence.

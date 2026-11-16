@@ -1,4 +1,4 @@
-"""Build the Paper Rivals rulebook and printable cards from one source.
+"""Build The Red Queen (the paper rivals) rulebook, cards and player aids from one source.
 
     python3 source/paper/printables.py            # Markdown + HTML
     python3 source/paper/printables.py --pdf      # also PDFs (needs Playwright + Chromium)
@@ -59,27 +59,22 @@ CARDS_MARK = "CARD-PAGES-GO-HERE"
 
 def appendix_html():
     return ("## Appendix: printable rival cards\n\n"
-            "Cut out the cards on the next six pages along the dashed lines (the same sheets are in `paper/Paper_Rivals_Cards.pdf`). "
-            "Each card shows its animal, its number (for a d8 instead of cards) and its three actions in order.\n\n" + CARDS_MARK + "\n")
+            "Each rival has a sheet of fronts followed by a sheet of backs. Print them double-sided, flipping on the long edge, so every back "
+            "lines up with its front, then cut along the lines. Each front shows the card's number (for a d8 instead of cards), its three actions "
+            "in order and when each has a target. A weak action after the first is shown in grey: step 4 never takes it. "
+            "Each back shows the rival in its own colour, with its element, food-chain place and power.\n\n" + CARDS_MARK + "\n")
 
 
 def appendix(d):
     out = ["## Appendix: printable rival cards", "",
-           "Print `paper/Paper_Rivals_Cards.pdf` (one animal per page, cut along the dashed lines), or cut these tables apart. "
-           "Each card shows its animal, its number (for a d8 instead of cards) and its three actions in order.", ""]
+           "The printed rulebook has full cards, with fronts and backs, to print double-sided and cut out. "
+           "Here each card shows its animal, its number (for a d8 instead of cards) and its three actions in order.", ""]
     for a in ANIMALS:
         out += [f"### {title(a)} cards", "", "| Card | Card |", "| --- | --- |"]
         cells = [f"**{a.upper()} {i + 1}** · {c['title']} — " + " · ".join(f"{n + 1}. {title(r)}" for n, r in enumerate(c['no']['rows']))
                  for i, c in enumerate(d[a])]
         out += [f"| {cells[i]} | {cells[i + 1]} |" for i in range(0, 8, 2)] + [""]
     return "\n".join(out)
-
-
-def ladder_table(ladder):
-    rows = ["| Rivals (even game) | Easy | Standard | Hard | Expert | App's rivals |", "| --- | --- | --- | --- | --- | --- |"]
-    for r in ladder["rows"]:
-        rows.append(f"| {r['rivals']} ({r['even']}%) | " + " | ".join(f"{r[k]}%" for k in ["easy", "standard", "hard", "expert", "app"]) + " |")
-    return "\n".join(rows)
 
 
 def pawns(n):
@@ -94,33 +89,12 @@ def difficulty(ladder):
     return ("| Level | Each rival's pawns |\n| --- | --- |\n"
             + "".join(f"| {name} | {pawns(off[key])}{EASY_FIVE if key == 'easy' else ''} |\n" for key, name in
                       [("easy", "Easy"), ("standard", "Standard"), ("hard", "Hard"), ("expert", "Expert")]) + "\n"
-            "**Playing in the app instead:** the app can run these exact rules, so you don't need to print anything. "
-            "On the setup screen choose **Paper rules** and a level. The app draws each rival's card, names the Planning step "
-            "that chose each space, and spells out every change to make on the board.")
-
-
-def testing(ladder):
-    return "\n\n".join([
-        "## Testing",
-        "Every rule was built in the app's simulator and judged by win rate: how often a fixed scripted player beats the rivals. "
-        "The player uses three strategies (tile majorities, Dominance Cards, expansion) and, since v0.3.7, reads the board with the "
-        "rivals' flat matching. " + ladder["method"],
-        ladder_table(ladder),
-        ladder["strategy"],
-        "**How the rules got here.** The first version scored every Dominance Card, checked each card's condition and counted element "
-        "types and rank gains. Lighter rules played as well or better and take roughly 15 minutes less upkeep per rival per game, so that "
-        "version was retired. Ideas that tested weaker and were left out: the card's Yes face, the leftmost space instead of the best, "
-        "simpler Competition targets, one generic effect for every card, no Wanderlust element, a fixed card position, a center-out "
-        "tie-breaker, and dropping Domination first. For v0.5.0, against a self-tuned test player: holding the Initiative space against you, "
-        "climbing past you, racing or blocking you for the first Domination space, rival-favoured ties with you, scoring the tile that gains "
-        "the most over you, and taking VP cards first. Rivals planning first beat them all.",
-        "**Stalls.** " + ladder["stalls"],
-        "**Limits.** The scripted player is a fixed strategy, not a person, so expect a strong human to win more often at every level. "
-        "These rules have not yet been played at a real table.",
-        "The rules live in `source/paper/paper.js`. For example, `node source/benchmark.cjs --base <commit> --candidate <commit> --paper="
-        + str(ladder["offsets"]["hard"]) + " --bots 3 --seed 200000 --repeats 2` repeats the Hard test against three rivals (360 games; pin both "
-        "sides to the release commit).",
-    ])
+            "**Playing with the companion app:** the app can run these exact rules, so you don't need to print anything. "
+            "On the setup screen choose **The Red Queen** and a level. The app draws each rival's card, names the Planning step "
+            "that chose each space, and spells out every change to make on the board. To run the rivals yourself without printing, "
+            "choose **The Red Queen · cards only**: the app shuffles and draws each rival's cards, with this rulebook and the player "
+            "aids a tap away, and you resolve everything else. (The app's other option, Tooth & Claw, is a separate set of rivals "
+            "with their own rules.)")
 
 
 GREEN = "#2f4a3a"
@@ -148,42 +122,107 @@ body>ol>li::before{content:counter(step);position:absolute;left:10px;top:3px;fon
 
 CARD_CSS = """
 .cardpage{page:cards;page-break-before:always;break-before:page}
-.cardpage h4{width:7in;font:bold 9pt Helvetica,Arial,sans-serif;text-transform:uppercase;letter-spacing:.05em;color:#fff;background:#2f4a3a;padding:2px 6px;margin:0 0 6px}
-.grid{display:grid;grid-template-columns:repeat(2,3.5in);grid-auto-rows:2.4in;gap:0}
-.card{border:1px dashed #777;padding:10px 12px;display:flex;flex-direction:column;font-family:Georgia,serif}
-.card .head{display:flex;justify-content:space-between;align-items:center;background:var(--bg);color:var(--ink);padding:4px 8px;border-radius:4px;border:1px solid #777;font:bold 10pt Helvetica,Arial,sans-serif;letter-spacing:.05em}
-.card .head span{font-size:16pt;line-height:1}.card .name{font-size:13pt;margin:8px 0 2px;color:#2f4a3a;font-weight:bold}
-.card ol{list-style:decimal;margin:4px 0 0 20px;padding:0;font-size:13pt;line-height:1.5;border:0}.card ol li{border:0;padding:0;margin:0}.card ol li::before{content:none}
-.card .foot{margin-top:auto;font:7.5pt Helvetica,Arial,sans-serif;color:#666;border-top:1px solid #9aa39a;padding-top:3px}
-.cardnote{font:8pt Helvetica,Arial,sans-serif;color:#666;margin:4px 0 0}
+.cardpage h4{width:7in;margin:0 auto 6px;font:bold 9pt Helvetica,Arial,sans-serif;text-transform:uppercase;letter-spacing:.05em;color:#fff;background:#2f4a3a;padding:2px 6px}
+.grid{display:grid;grid-template-columns:repeat(2,3.5in);grid-auto-rows:2.4in;width:7in;margin:0 auto}
+.card{border:1px dashed #8a8a8a;padding:8px 10px;display:flex;flex-direction:column;font-family:Georgia,serif;overflow:hidden}
+.card .head{display:flex;align-items:center;gap:8px;background:var(--bg);color:var(--ink);padding:3px 8px;border-radius:4px;border:1px solid rgba(0,0,0,.35)}
+.card .who{font:bold 9.5pt Helvetica,Arial,sans-serif;letter-spacing:.08em}
+.card .meta{font:7.5pt Helvetica,Arial,sans-serif;opacity:.85;flex:1}
+.card .num{font:bold 17pt/1 Helvetica,Arial,sans-serif}
+.card .name{font-size:12pt;font-weight:bold;color:#2f4a3a;margin:5px 0 3px}
+.card ol.acts{list-style:none;margin:0;padding:0;counter-reset:act;border:0}
+.card ol.acts li{counter-increment:act;position:relative;padding:1px 0 3px 24px;margin:0;border:0;border-bottom:1px solid #e1e5df}
+.card ol.acts li:last-child{border-bottom:0}
+.card ol.acts li::before{content:counter(act);position:absolute;left:0;top:2px;width:17px;height:17px;border-radius:50%;background:#2f4a3a;color:#fff;font:bold 9pt/17px Helvetica,Arial,sans-serif;text-align:center}
+.card ol.acts b{display:block;font-size:11.5pt;line-height:1.2}
+.card ol.acts small{display:block;font:7.4pt/1.25 Helvetica,Arial,sans-serif;color:#555}
+.card ol.acts li.weak b,.card ol.acts li.weak small{color:#9a9a9a}.card ol.acts li.weak::before{background:#b9b9b9}
+.card .foot{margin-top:auto;font:6.8pt/1.3 Helvetica,Arial,sans-serif;color:#666;border-top:1px solid #9aa39a;padding-top:3px}
+.card.back{border:1px solid #c9c9c9;padding:7px}
+.card.back .inner{flex:1;background:var(--bg);color:var(--ink);border-radius:8px;border:2px solid rgba(0,0,0,.25);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px;position:relative}
+.card.back .inner::after{content:"";position:absolute;inset:5px;border:1px solid currentColor;border-radius:6px;opacity:.35}
+.card.back .brand{font:bold 8pt Helvetica,Arial,sans-serif;letter-spacing:.3em;opacity:.8}
+.card.back .animal{font:bold 26pt/1.1 Georgia,serif;margin:4px 0 2px;letter-spacing:.02em}
+.card.back .line{font:8.5pt Helvetica,Arial,sans-serif;opacity:.9}
+.card.back .power{font:italic 9pt/1.3 Georgia,serif;margin-top:8px;max-width:2.6in}
+.card.back .game{position:absolute;bottom:10px;font:6.5pt Helvetica,Arial,sans-serif;letter-spacing:.12em;opacity:.7}
 """
 
+# One line per action: when it has a target (the "Has a target when" table of RULES.md, shortened).
+CARD_TARGET = {
+    "initiative": "it is not first on the Initiative track",
+    "adaptation": "the box has an element; its display has under 6",
+    "regression": "an added type is in the Adaptation or Regression box",
+    "abundance": "a box element it uses; empty corner on its tile (exceptions: aid 1)",
+    "wasteland": "the box holds an element it uses",
+    "depletion": "a disk on Earth of a box element it doesn't use",
+    "glaciation": "a legal tile with opposing species and none of its own",
+    "speciation": "gene pool not empty; a disk of that element on Earth",
+    "wanderlust": "a face-up tile; an empty spot next to its tiles",
+    "migration": "a rescue, or 1 of 2+ species (no rank lost) to a new matched tile",
+    "competition": "shares a tile of these terrains or tundra with an opponent",
+    "domination": "an unscored tile holds one of its species",
+}
+# The legend at the foot of every card front (also shown under the card in the app's cards-only mode).
+LEGEND = ("Under each action: when it has a target. Grey: a weak action, skipped. "
+          "Planning steps 1–3 come first; if nothing fits, step 5.")
+CHAIN = ["first in the food chain", "second in the food chain", "third in the food chain", "fourth in the food chain",
+         "fifth in the food chain", "last in the food chain"]
 
 
-def card_pages(d, ver):
+def weak_actions():
+    js = (SRC / "paper/paper.js").read_text()
+    i = js.index("const PAPER_WEAK")
+    return re.findall(r"'(\w+)'", js[i:js.index("]", i)])
+
+
+def card_front(a, i, c, g, weak):
+    el = g["elements"][g["animals"][a]["el"]]["name"]
+    rows = []
+    for n, r in enumerate(c["no"]["rows"]):
+        dead = n > 0 and r in weak
+        note = "Weak action after the first: step 4 skips it" if dead else (
+            "always (Reptiles)" if r == "regression" and a == "reptiles" else CARD_TARGET[r])
+        rows.append(f"<li class='{'weak' if dead else ''}'><b>{title(r)}</b><small>{note}</small></li>")
+    return (f"<div class='card front' style='--bg:{COLORS[a]};--ink:{INKS[a]}'><div class='head'><span class='who'>{a.upper()}</span>"
+            f"<span class='meta'>{el} · {CHAIN[ANIMALS.index(a)]}</span><span class='num'>{i + 1}</span></div>"
+            f"<div class='name'>{html.escape(c['title'])}</div><ol class='acts'>{''.join(rows)}</ol>"
+            f"<div class='foot'>{html.escape(LEGEND)}</div></div>")
+
+
+def card_back(a, g):
+    el = g["elements"][g["animals"][a]["el"]]["name"]
+    return (f"<div class='card back' style='--bg:{COLORS[a]};--ink:{INKS[a]}'><div class='inner'><div class='brand'>THE RED QUEEN</div>"
+            f"<div class='animal'>{title(a)}</div><div class='line'>{el} · {CHAIN[ANIMALS.index(a)]}</div>"
+            f"<div class='power'>{AID_POWER[a][0]}</div><div class='game'>DOMINANT SPECIES · SOLO RIVAL DECK</div></div></div>")
+
+
+def card_pages(d, g):
+    weak = weak_actions()
     pages = []
     for a in ANIMALS:
-        cards = "".join(
-            f"<div class='card' style='--bg:{COLORS[a]};--ink:{INKS[a]}'><div class='head'><b>{a.upper()}</b><span>{i + 1}</span></div>"
-            f"<div class='name'>{html.escape(c['title'])}</div><ol>" + "".join(f"<li>{title(r)}</li>" for r in c['no']['rows']) +
-            "</ol><div class='foot'>Paper Rivals · try the actions in order</div></div>" for i, c in enumerate(d[a]))
-        note = f"<p class='cardnote'>Generated from source/src/decks.js for app v{ver}.</p>" if a == ANIMALS[-1] else ""
-        pages.append(f"<section class='cardpage'><h4>{title(a)} cards · cut along the dashed lines</h4><div class='grid'>{cards}</div>{note}</section>")
+        fronts = [card_front(a, i, c, g, weak) for i, c in enumerate(d[a])]
+        # Backs mirror the fronts left to right, so they line up when printed double-sided (flip on the long edge).
+        backs = [card_back(a, g)] * len(fronts)
+        mirrored = [backs[r * 2 + 1 - col] for r in range(len(backs) // 2) for col in range(2)]
+        pages.append(f"<section class='cardpage'><h4>{title(a)} · card fronts</h4><div class='grid'>{''.join(fronts)}</div></section>")
+        pages.append(f"<section class='cardpage'><h4>{title(a)} · card backs (print on the reverse)</h4><div class='grid'>{''.join(mirrored)}</div></section>")
     return "".join(pages)
 
 
-def card_sheet(d, ver):
-    return ("<!doctype html><meta charset='utf-8'><title>Paper Rivals cards</title><style>"
+def card_sheet(d, g):
+    return ("<!doctype html><meta charset='utf-8'><title>The Red Queen — rival cards for Dominant Species</title><style>"
             "@page{size:letter;margin:0.4in}*{box-sizing:border-box}body{margin:0}"
             + CARD_CSS.replace(".cardpage{page:cards;page-break-before:always;break-before:page}",
                                ".cardpage{page-break-after:always}.cardpage:last-child{page-break-after:auto}") +
-            f"</style><body>{card_pages(d, ver)}</body>")
+            f"</style><body>{card_pages(d, g)}</body>")
 
 
 ELEMENT_ORDER = ["meat", "sun", "seed", "water", "grub", "grass"]
 AID_SCORE = ("<table><tr><td>Start</td><td>the tile's first-place value</td></tr><tr><td>+ value again</td><td>that opponent ranks above "
              "the rival and no longer does afterwards (ties go to the food chain)</td></tr><tr><td>+ half value</td><td>it is that "
-             "opponent's last species there</td></tr><tr><td>+ 6</td><td>removing that last species also ends the opponent's dominance</td></tr></table>")
+             "opponent's last species there</td></tr><tr><td>+ 6</td><td>removing that last species also ends the opponent's dominance</td></tr></table>"
+             "<p class='small'>Keep half-points exactly; do not round.</p>")
 AID_POWER = {
     "mammals": ("Saves one endangered species at Extinction.",
                 "<p><b>Which one:</b> the endangered species on the tile with the highest first-place value (tie: board order).</p>"),
@@ -230,7 +269,7 @@ def rival_aid(a, d, g, n, total, ver):
                    f"<td style='font-weight:normal'>{' → '.join(title(r) for r in c['no']['rows'])}</td></tr>" for i, c in enumerate(d[a]))
     power, detail = AID_POWER[a]
     return f"""<div class="page">
-<header><h1><b class="tag" style="background:{COLORS[a]};color:{INKS[a]}">{title(a)}</b> rival</h1><span>Player aid {n} of {total} · app v{ver}</span></header>
+<header><h1><b class="tag" style="background:{COLORS[a]};color:{INKS[a]}">{title(a)}</b> rival</h1><span>The Red Queen · player aid {n} of {total} · version {ver}</span></header>
 <div class="cols"><div style="flex:1.1">
 <h2>Its deck</h2>
 <p class="small">Draw one card each time it places a pawn (or roll a d8). Try the three actions in order (step 4).</p>
@@ -298,12 +337,12 @@ def aids(d, g, ladder, ver):
     body = (SRC / "paper/AIDS.html").read_text()
     body = body[body.index("-->") + 3:]
     for i in range(1, 5):
-        body = body.replace("{{AID %d}}" % i, f"Player aid {i} of {total} · app v{ver}")
+        body = body.replace("{{AID %d}}" % i, f"The Red Queen · player aid {i} of {total} · version {ver}")
     body = body.replace("{{PAWNS}}", rows).replace("{{VALUES}}", values).replace("{{VALUE_LIST}}", ", ".join(vals))
     assert "{{" not in body
     check_aids((SRC / "paper/RULES.md").read_text(), body)
     body += "".join(rival_aid(a, d, g, 5 + i, total, ver) for i, a in enumerate(ANIMALS))
-    return ("<!doctype html><meta charset='utf-8'><title>Dominant Species — Paper Rivals player aids</title><style>"
+    return ("<!doctype html><meta charset='utf-8'><title>The Red Queen — player aids</title><style>"
             + AIDS_STYLE + f"</style><body>{body}</body>")
 
 
@@ -334,6 +373,39 @@ p{margin:3px 0}
 """
 
 
+# Screen-only additions for the copies shown inside the app (cards-only mode): narrow screens, no fixed page heights.
+EMBED_RULES_CSS = ("@media screen{body{margin:12px auto;padding:0 12px}}@media (max-width:640px){body{font-size:14.5px}"
+                   "h1{font-size:21pt}table{font-size:12.5px}}")
+EMBED_AIDS_CSS = ("@media screen{body{max-width:7.6in;margin:10px auto;padding:0 10px}.page{height:auto;overflow:visible;"
+                  "margin-bottom:28px;border-bottom:1px dashed #9aa39a;padding-bottom:16px}}@media (max-width:720px){.cols{display:block}"
+                  "body{font-size:14px}header{display:block}}")
+
+
+def embed_module(rules_body, aids_page):
+    """source/paper/rq_embed.js: what the app's cards-only mode shows (built into the app by build.py)."""
+    def js(value):
+        return json.dumps(value, ensure_ascii=False).replace("</", "<\\/")
+    rules = ("<!doctype html><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'>"
+             f"<title>The Red Queen</title><style>{CSS}{EMBED_RULES_CSS}</style><body>{rules_body}</body>")
+    aids = aids_page.replace("</style>", EMBED_AIDS_CSS + "</style>", 1).replace(
+        "<style>", "<meta name='viewport' content='width=device-width,initial-scale=1'><style>", 1)
+    return ("// Generated by source/paper/printables.py from RULES.md, AIDS.html and the decks. Do not edit by hand.\n"
+            f"const RQ_TARGET = {js(CARD_TARGET)};\nconst RQ_LEGEND = {js(LEGEND)};\nconst RQ_CHAIN = {js(CHAIN)};\n"
+            f"const RQ_RULES = {js(rules)};\nconst RQ_AIDS = {js(aids)};\n")
+
+
+def duplex_cards(path):
+    """Card fronts must start on a right-hand (odd) page so each back prints on the reverse of its front."""
+    from pypdf import PdfReader, PdfWriter
+    reader = PdfReader(str(path))
+    first = next(i for i, page in enumerate(reader.pages) if "card fronts" in (page.extract_text() or "").lower())
+    if first % 2 == 0:
+        return
+    writer = PdfWriter(clone_from=reader)
+    writer.insert_blank_page(index=first)
+    writer.write(str(path))
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--pdf", action="store_true")
@@ -341,26 +413,35 @@ def main():
     d, ver, g = decks(), version(), game_data()
     ladder = json.loads((SRC / "paper/ladder.json").read_text())
     md = (SRC / "paper/RULES.md").read_text()
-    md = (md.replace("{{VERSION}}", ladder["rulebook"]).replace("{{APP}}", ver).replace("{{DIFFICULTY}}", difficulty(ladder))
-          .replace("{{DECKS}}", deck_tables(d)).replace("{{TESTING}}", testing(ladder)))
+    import datetime
+    date = datetime.date.fromisoformat(ladder["rulebook"])
+    md = (md.replace("{{DATE}}", f"{date.day} {date:%B %Y}").replace("{{APP}}", ver).replace("{{DIFFICULTY}}", difficulty(ladder))
+          .replace("{{DECKS}}", deck_tables(d)))
+    md = re.sub(r"<!--.*?-->\n\n", "", md, flags=re.S)  # the source note is for editors, not the printed book
     assert "{{" not in md.replace("{{APPENDIX}}", "")
     OUT.mkdir(exist_ok=True)
-    (OUT / "Paper_Rivals_Rulebook.md").write_text(md.replace("{{APPENDIX}}", appendix(d)), encoding="utf-8")
+    (OUT / "The_Red_Queen_Rulebook.md").write_text(md.replace("{{APPENDIX}}", appendix(d)), encoding="utf-8")
     body = markdown.markdown(md.replace("{{APPENDIX}}", appendix_html()), extensions=["tables"])
-    body = body.replace(f"<p>{CARDS_MARK}</p>", card_pages(d, ver))
+    body = body.replace(f"<p>{CARDS_MARK}</p>", card_pages(d, g))
     assert CARDS_MARK not in body
-    page = f"<!doctype html><meta charset='utf-8'><title>Dominant Species — Paper Rivals</title><style>{CSS}{CARD_CSS}</style><body>{body}</body>"
-    (OUT / "Paper_Rivals_Rulebook.html").write_text(page, encoding="utf-8")
-    (OUT / "Paper_Rivals_Cards.html").write_text(card_sheet(d, ver), encoding="utf-8")
-    (OUT / "Paper_Rivals_Player_Aids.html").write_text(aids(d, g, ladder, ver), encoding="utf-8")
+    page = f"<!doctype html><meta charset='utf-8'><title>The Red Queen — solo rivals for Dominant Species</title><style>{CSS}{CARD_CSS}</style><body>{body}</body>"
+    (OUT / "The_Red_Queen_Rulebook.html").write_text(page, encoding="utf-8")
+    (OUT / "The_Red_Queen_Cards.html").write_text(card_sheet(d, g), encoding="utf-8")
+    aid_page = aids(d, g, ladder, ver)
+    (OUT / "The_Red_Queen_Player_Aids.html").write_text(aid_page, encoding="utf-8")
+    # In the app the cards are drawn on screen, so its copy of the rules ends with the rival decks (no printable appendix).
+    rules_body = markdown.markdown(md.replace("{{APPENDIX}}", ""), extensions=["tables"])
+    (SRC / "paper/rq_embed.js").write_text(embed_module(rules_body, aid_page), encoding="utf-8")
     if args.pdf:
         from playwright.sync_api import sync_playwright
         with sync_playwright() as pw:
             b = pw.chromium.launch(args=["--no-sandbox"])
-            for name in ["Paper_Rivals_Rulebook", "Paper_Rivals_Cards", "Paper_Rivals_Player_Aids"]:
+            for name in ["The_Red_Queen_Rulebook", "The_Red_Queen_Cards", "The_Red_Queen_Player_Aids"]:
                 p = b.new_page()
                 p.goto((OUT / f"{name}.html").resolve().as_uri())
                 p.pdf(path=str(OUT / f"{name}.pdf"), print_background=True, format="Letter", prefer_css_page_size=True)
+                if name == "The_Red_Queen_Rulebook":
+                    duplex_cards(OUT / f"{name}.pdf")
             b.close()
     print("Wrote", ", ".join(sorted(f.name for f in OUT.iterdir())))
 

@@ -92,6 +92,54 @@ it plays pb5's top K spaces out M times on shared re-dealt futures and takes the
 everything else is pb5. The paired reference column runs through the same loop (`--search 1:1` replays pb5 game
 for game). Pilot on 530000, paired with pb5, Hard and Expert first: `pb_s*_search`.
 
+## Search-player pilot (16 Nov, 02:23–06:45): much stronger than pb5, at paper levels and at App
+
+`--search 4:8` (pb5's top 4 spaces, 8 shared re-dealt futures each, at every Planning placement), 60 paired
+tables per cell on seed 530000, v0.5.6 rules, 0 errors, 0 stalls. Syntax:
+
+    bench --evaluate --weights results/pb_d.ckpt.json --policies tuned,dominance,majority,expansion --search 4:8 --per-cell 60 --seed 530000 --modes 0 --bots 3
+
+| Cell | Job | pb5 | Search | Paired gain (95%) | Search only / pb5 only | Best fixed | Minutes |
+|---|---|---|---|---|---|---|---|
+| Hard, 3 rivals | `pb_s1_search` | 51.7% | 81.7% | **+30.0 (+13 to +47)** | 25 / 7 | Domination 10.0%* | 12.5 |
+| Hard, 4 rivals | `pb_s2_search` | 26.7% | 73.3% | **+46.7 (+32 to +62)** | 31 / 3 | expansion 10.0% | 10 |
+| App, 3 rivals | `pb_s3_search` | 31.7% | 78.3% | **+46.7 (+32 to +62)** | 31 / 3 | Domination 23.3% | 85 |
+| Expert, 3 rivals | sandbox† | 33.3% | 81.7% | **+48.3 (+33 to +63)** | 32 / 3 | Domination 10.0% | 56 (sandbox) |
+
+\* `pb_s1` ran pb5 only; the fixed columns for that cell were run in the cloud sandbox, whose pb5 column matches
+`pb_s1` win for win (31 of 60). † Same command and seeds as the PC cell, run in the cloud sandbox while the PC was busy.
+
+Pooled over the paper cells (Hard 3, Hard 4, Expert 3; 180 tables): pb5 37.2% → search 78.9%, **+41.7 points**.
+
+**Does it peek?** No. Each playout starts from a copy of the real position and re-deals everything the player can't
+see: the rival card decks, the engine's shuffles, the unseen Dominance cards (Ice Age stays at the bottom), the
+face-down terrain tiles and the element-bag and Symbiotic draws (`nnResample`). `--search 1:1` replays pb5 game for
+game, so the reference column is pb5. The strength comes from playing each placement out against an exact model of
+the rivals' rules, which no fixed weighting can do; the per-decision headroom (+0.014) adds up over the roughly
+25 placements of a game.
+
+**Balance reading (not X35: App has only 3 rivals so far).** Log-odds edges over the best fixed policy:
+
+| | Hard 3 | Expert 3 | Hard 4 | App 3 |
+|---|---|---|---|---|
+| pb5 | 2.26 | 1.50 | 1.19 | 0.42 |
+| Search | 3.69 | 3.69 | 3.21 | 2.47 |
+
+Paper minus App at 3 rivals on the same tables: Hard search +1.22 (pb5 +1.84), Expert search +1.22 (pb5 +1.08),
+each about ±1.3 (60-table cells, and the best fixed policy won only 6 of 60 at Hard 3 and Expert 3). The search
+player gains about as much at App as at the paper levels (+46.7 against +30 to +48), so it does not widen the
+paper-vs-App gap. No flag. The balance agent's `br01`–`br04` (App 3/4/5, Hard 5, same seeds) fill in the
+4- and 5-rival cells; `br01` duplicates `pb_s3`.
+
+**Cost.** About 12 minutes per 60 tables at paper levels on the PC, but about 85 minutes at App (the app rivals' own
+AI runs inside every playout). A full standing block (360 tables a cell) is not practical; a smaller block (60–120
+tables per cell, paper levels at 3–5 rivals plus App at 3–5 rivals over a day) is.
+
+**What this means for the net.** The headroom is real and large once it compounds over a whole game, but a residual
+on pb5's features could not find which decisions carry it from 7,000 labelled decisions. The search player is the
+stronger test player now; distilling it would need far more labels per decision (or a value net trained on its
+games), which is a bigger project than tonight.
+
 The original proposal follows.
 
 ## Proposal (14 Nov)

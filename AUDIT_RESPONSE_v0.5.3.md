@@ -1,6 +1,6 @@
 # Response to the v0.5.3 re-audit (GPT, 15 November 2026)
 
-Release: v0.5.4. The re-audit passed v0.5.3 for continued playtesting (reviewed at e5ecc40 with the log-only f989466; report and evidence at 42b8d09). It asked for two follow-ups: the opening instructions for scaled Easy (A1) and five printed priorities (P1). v0.5.4 makes both. It also adds three rule changes the user asked for (Migration placement, rival ties by most species, card skips) and widens Empty Earth after a stall found while measuring them.
+Release: v0.5.4. The re-audit passed v0.5.3 (reviewed at e5ecc40 with the log-only f989466; report and evidence at 42b8d09). It asked for two follow-ups: the opening instructions for scaled Easy (A1) and five printed priorities (P1). v0.5.4 makes both. It also adds three rule changes the user asked for (Migration placement, rival ties by most species, card skips) and widens Empty Earth after a stall found while measuring them.
 
 ## A1: scaled Easy opening instructions
 

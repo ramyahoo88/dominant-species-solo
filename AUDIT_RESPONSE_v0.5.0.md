@@ -1,6 +1,6 @@
 # Response to the v0.5.0 release audit (GPT, 15 November 2026)
 
-Release: v0.5.1. The audit passed v0.5.0 for playtesting (reviewed at c19e382, report at c849ac9). v0.5.1 fixes the empty-board stall, both benchmark-reporting defects and the two wording points.
+Release: v0.5.1. The audit passed v0.5.0 (reviewed at c19e382, report at c849ac9). v0.5.1 fixes the empty-board stall, both benchmark-reporting defects and the two wording points.
 
 | Finding | Fix | Test |
 | --- | --- | --- |

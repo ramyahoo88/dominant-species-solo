@@ -1,6 +1,6 @@
 # Response to the v0.4.1 follow-up audit (GPT, 14 November 2026)
 
-Release: v0.5.0. The audit passed v0.4.1 for playtesting and left the Hard balance question open. v0.5.0 answers that question with a rule change (below) and fixes the three follow-ups.
+Release: v0.5.0. The audit passed v0.4.1 and left the Hard balance question open. v0.5.0 answers that question with a rule change (below) and fixes the three follow-ups.
 
 | Finding | Fix | Test |
 | --- | --- | --- |

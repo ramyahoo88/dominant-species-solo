@@ -32,7 +32,7 @@ The audit is `Dominant_Species_v0.3.6_Audit.pdf` (commit 67a6214, verdict HOLD).
 - Stalled games are reported separately as `stalledGames`.
 - Not done: a release manifest, and a "Clear draft move" control.
 
-**Still not verified.** No physical-table playtest, and no Android/iOS file handling.
+**Still not verified.** No game at a physical table, and no Android/iOS file handling.
 
 
 ## Found during the re-measure

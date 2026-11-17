@@ -1,6 +1,6 @@
 # Response to the v0.5.1 re-audit (GPT, 15 November 2026)
 
-Release: v0.5.2. The re-audit passed v0.5.1 for continued playtesting (reviewed at dec3a3b, report at 9202cf6) and confirmed one defect, E1. v0.5.2 fixes it, and fixes it everywhere the same cause applied, not only in the two places named.
+Release: v0.5.2. The re-audit passed v0.5.1 (reviewed at dec3a3b, report at 9202cf6) and confirmed one defect, E1. v0.5.2 fixes it, and fixes it everywhere the same cause applied, not only in the two places named.
 
 ## E1: "top-left" was not the order the app used
 

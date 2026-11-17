@@ -72,5 +72,4 @@ All listed modules live under `source/src/`. The current save envelope uses the 
 - [GMT sixth-printing page and component references](https://www.gmtgames.com/p-909-dominant-species-6th-printing.aspx)
 - [BoardGameGeek listing for the original 2010 game](https://boardgamegeek.com/boardgame/62219/dominant-species)
 - [Allplay’s campaign preview](https://www.launchoracle.com/allplay/dominant-species/QNT6K)
-- [Dávid Turczi’s public solo announcement and GMT third-printing playtest comment](https://www.reddit.com/r/soloboardgaming/comments/1vc4wre/lotr_kings_gambit_solo_dominant_species_solo/)
 - [Portage Glacier photograph, USGS](https://commons.wikimedia.org/wiki/File:Portage_Glacier_USGS.jpg)

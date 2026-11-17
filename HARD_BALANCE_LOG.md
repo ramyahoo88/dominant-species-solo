@@ -61,7 +61,7 @@ Also: in Planning the extra difficulty pawn is placed last, after everyone else 
 - v3 climbs to first, grabs Domination space 1 (it resolves first) and claims cards.
 - At Hard the extra rival pawn is placed last, onto leftovers (Fallback starts with Domination). So rivals take more Domination 3–5, Migration and Competition, and games are shorter (5.7 turns vs 6.8 at App, 4 rivals).
 
-## GPT v0.4.1 follow-up audit (ba1c69e): pass for playtesting
+## GPT v0.4.1 follow-up audit (ba1c69e): pass
 
 - **R1 (low):** Help states the new cone tie-break in a resumed legacy save. Fix: say it applies to new Paper games, and show a one-line notice for legacy saves.
 - **R2 (low):** a v0.3.6 Easy save re-exported by v0.3.9 shows Unknown. Fix: recover the unique −1 endpoint for pre-tie saves.
@@ -536,7 +536,7 @@ Sources: `ba67`, `ba34`, `pb_c1`–`c3`, `pb_e1`, `pb_e2`.
 
 ### 17:55 — GPT's v0.5.4 re-audit (54a21a5): pass; printables update
 
-- **Verdict:** pass for continued playtesting. A1, P1, the four rule changes and older saves check out; build hash matches; 48 tests pass.
+- **Verdict:** pass. A1, P1, the four rule changes and older saves check out; build hash matches; 48 tests pass.
 - **Fresh Hard X35:** −0.43 (95% −0.73 to −0.10) on seed block 1140000, 14,400 games, no errors or stalls. By rivals: 2 −0.72 (control), 3 −0.53, 4 −0.52, 5 −0.25. Now in the Testing text with the earlier four.
 - **P2 (low, printed only):** Mass Exodus had no printed fallback when the rival is on every tile. GPT's wording adopted; its save is a test.
 - **Printables update (no app change):** player aids, rulebook in the aids' design with the cut-out cards, Competition +6 wording.

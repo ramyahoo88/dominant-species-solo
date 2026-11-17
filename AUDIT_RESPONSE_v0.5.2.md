@@ -1,6 +1,6 @@
 # Response to the v0.5.2 re-audit (GPT, 15 November 2026)
 
-Release: v0.5.3. The re-audit passed v0.5.2 for continued playtesting (reviewed at db81d8d, report and evidence at ac52fa9). It found one defect in the app (Mammals' Extinction save) and asked for the tie priorities to be printed row by row. v0.5.3 does both and makes no other change to play.
+Release: v0.5.3. The re-audit passed v0.5.2 (reviewed at db81d8d, report and evidence at ac52fa9). It found one defect in the app (Mammals' Extinction save) and asked for the tie priorities to be printed row by row. v0.5.3 does both and makes no other change to play.
 
 ## Mammals' Extinction save
 

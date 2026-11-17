@@ -19,7 +19,7 @@
 
 All are wording. None changes what a rival does.
 
-1. **Playtest wording.** The app footer read "Unofficial solo playtest"; HANDOFF.md called the project a playtest and a public beta. Fixed.
+1. **Pre-release wording.** The app footer and HANDOFF.md still described the project as unfinished. The footer now reads "Unofficial solo companion"; HANDOFF.md describes the finished project.
 2. **Stale page description.** It still said "Two card-driven rivals". Fixed (two to five).
 3. **How to play carried version history** ("from v0.5.3…", "started in v0.5.0 or later…"). It now states the current rules; a save from an older version still gets its own notice.
 4. **Leftover labels in guided games.** The drawn card was headed "Reverse face" and the button "Draw a bot card". Now "<Animal> · card N" and "Draw a rival card".

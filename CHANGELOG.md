@@ -1,5 +1,12 @@
 # Release notes
 
+## v1.0.1 · November 16, 2026 · Aquatic fix for GPT's v1.0.0 release audit; last hedging line removed from the rulebook
+
+- **Aquatic with an empty gene pool (GPT finding 1, guided Red Queen):** the app credited a tile the rival was absent from with a rank gain even when no species were added, so it could place the element on a different tile than the printed rule. It now takes the matched tile with the highest first-place value, then board order, as printed. GPT's two saves are rules tests: A2 Sea instead of B5, and C1 Sea instead of D5. Only empty-pool Aquatic changes. On 864 fresh tables with the reference player, 21 games change, 3 winners change and the player's wins go from 209 to 211, so the difficulty table stands. Testing switch `oldAquaticRank` restores v1.0.0.
+- **Rulebook:** Two players plus a rival now reads "Start at Standard, then move up or down a level to suit your table." It said the levels "may feel different with two". PDFs regenerated.
+- 59 rules tests. Reproducible build: SHA-256 8523900b… (full hash in `HANDOFF.md`); accepts v0.1–v1.0.0 saves.
+- See [AUDIT_RESPONSE_v1.0.0.md](AUDIT_RESPONSE_v1.0.0.md).
+
 ## v1.0.0 · November 16, 2026 · first full release: The Red Queen · guided and · deck only; playtest wording removed; pre-release audit
 
 - **No change to play.** The rules modules are byte-identical to v0.5.7 (`paper.js`, `bot.js`, `effects.js`, `forms.js`, `decks.js`), and 27 games played on both versions with the same inputs end in identical states. The difficulty table, X35 and best against best stand as measured.

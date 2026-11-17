@@ -570,3 +570,12 @@ Sources: `ba67`, `ba34`, `pb_c1`–`c3`, `pb_e1`, `pb_e2`.
   - **None adopted:** none closes the look-ahead player's gain without making the game easier or more exploitable. Reported to the user; the rules stay as they are.
 - **v1.0.0:** names and wording only; the rules modules are byte-identical to v0.5.7 and 27 paired games end identically, so nothing was re-measured. Pre-release audit in `AUDIT_v1.0.0.md`. One observation left as is: a rival's Domination pawn that can earn nothing still scores the best tile (1–5% of rival Domination pawns with the reference player).
 
+### 16 Nov — v1.0.1: Aquatic with an empty gene pool (GPT's v1.0.0 release audit)
+
+- **Defect:** Aquatic's tile score counted a tile the rival was absent from as a rank gain even when it added nothing (empty gene pool). The printed rule then chooses by first-place value and board order. Fixed; `oldAquaticRank` restores v1.0.0.
+- **Effect, reference player, same tables both ways:**
+  - seed 960000: 864 games, 21 differ, 3 winners change (2 to the player, 1 between rivals), player wins 209 → 211;
+  - seed 940000: 288 games, 5 differ, player wins 77 → 77.
+  - Rivals reached Aquatic with an empty pool 56 times in 814 Aquatic effects (seed 960000); the tile changed 28 times.
+- **Not re-measured on the PC:** the effect is below the noise of any standing block. The difficulty table, X35 and best against best stand.
+

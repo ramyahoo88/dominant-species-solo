@@ -17,9 +17,9 @@ verify('GMT p. 4: six APs and 50 cubes include one VP marker and four starting s
   }
 `);
 
-verify('v0.1 through v0.5.7 save migration preserves inventory, pending choices, and random state', `
-  assert.equal(VERSION, '1.0.0');
-  for (const version of ['0.1.0','0.2.0','0.3.0','0.3.1','0.3.2','0.3.3','0.3.4','0.3.5','0.3.6','0.3.7','0.3.8','0.3.9','0.4.0','0.4.1','0.5.0','0.5.1','0.5.2','0.5.3','0.5.4','0.5.5','0.5.6','0.5.7']) {
+verify('v0.1 through v1.0.0 save migration preserves inventory, pending choices, and random state', `
+  assert.equal(VERSION, '1.0.1');
+  for (const version of ['0.1.0','0.2.0','0.3.0','0.3.1','0.3.2','0.3.3','0.3.4','0.3.5','0.3.6','0.3.7','0.3.8','0.3.9','0.4.0','0.4.1','0.5.0','0.5.1','0.5.2','0.5.3','0.5.4','0.5.5','0.5.6','0.5.7','1.0.0']) {
     const s = newGame('insects',['mammals','birds'],true,51);
     s.version = version;
     s.phase = 'execution';
@@ -988,6 +988,54 @@ test('Aquatic adds only the species left in the gene pool, and takes a tile it d
     assert.deepEqual([choice.tile, choice.n, choice.type], ['D2', 1, 'seed']);
     runStep(s,step,choice);
     validateState(s);
+  })()`);
+});
+
+test('v1.0.1: Aquatic with an empty gene pool gains no rank anywhere, so it takes the matched tile by value, then board order (GPT v1.0.0 release audit)', () => {
+  const g = load('worktree', ['game']);
+  g.get('globalThis').assert = assert;
+  // GPT's saves, both Amphibians with no species left. v1.0.0 credited a tile Amphibians were absent from with a rank gain
+  // although nothing is added: 731260 put Water on B5 Sea (printed: A2 Sea, same value, earlier in board order); 731290
+  // put it on D5 Wetland (printed: C1 Sea, higher value), which also moved the cones on C5 and D5.
+  Object.assign(g.get('globalThis'), {a60:FIX('gpt-v100-aquatic-empty-pool-731260.json'), a90:FIX('gpt-v100-aquatic-empty-pool-731290.json')});
+  g.run(`(() => {
+    for (const [save, printed, old] of [[a60, 'A2', 'B5'], [a90, 'C1', 'D5']]) {
+      const s = copy(save);
+      s.version = VERSION;
+      validateState(s);
+      const step = nextStep(s);
+      assert.equal(step.name, 'Aquatic');
+      assert.equal(step.actor, 'amphibians');
+      assert.equal(s.animals.amphibians.pool, 0);
+      const choice = botAction(s, step);
+      assert.deepEqual([choice.tile, choice.n, choice.type], [printed, 0, 'water']);
+      assert.equal(choice.corner, pFreeCorner(s, printed));
+      const cones = Object.fromEntries(terrainIds(s).map(t => [t, cone(s, t)]));
+      const after = copy(s);
+      runStep(after, nextStep(after), copy(choice));
+      validateState(after);
+      assert.equal(after.corners[choice.corner], 'water');
+      assert.deepEqual(after.tiles, s.tiles, 'no species move');
+      assert.deepEqual(terrainIds(after).filter(t => cone(after, t) !== cones[t]), [], 'the printed tile moves no cone');
+      PAPER.oldAquaticRank = true;
+      try { assert.equal(botAction(s, step).tile, old, 'oldAquaticRank restores v1.0.0'); } finally { delete PAPER.oldAquaticRank; }
+    }
+  })()`);
+  // Constructed: Mammals have no species left. D2 (made a Sea) holds 1 Mammal; C4 (made a Wetland) holds none. Nothing is
+  // added, so neither tile gains a rank; both match, so the higher first-place value wins: D2 Sea. v1.0.0 credited the empty
+  // Wetland with a rank gain and took it.
+  g.run(`(() => {
+    Object.assign(PAPER, {place:true, all:true, extraAP:-1});
+    const s = newGame('birds',['mammals','insects'],true,7,{extra:-1});
+    s.animals.mammals.pool = 0;
+    s.tiles.C4.terrain = 'wetland'; s.tiles.C4.cubes.mammals = 0;
+    s.tiles.D2.terrain = 'sea'; s.tiles.D2.cubes.mammals = 1;
+    const aquatic = () => paperEffect(s, {kind:'effect', name:'Aquatic', actor:'mammals'});
+    const free = t => VERTICES_OF[t].some(k => !s.corners[k]);
+    assert.ok(free('C4') && free('D2'));
+    assert.deepEqual([aquatic().tile, aquatic().n], ['D2', 0], 'equal rank (none gained), so the higher value: D2 Sea');
+    PAPER.oldAquaticRank = true;
+    try { assert.equal(aquatic().tile, 'C4', 'v1.0.0 gave the empty Wetland a rank gain'); } finally { delete PAPER.oldAquaticRank; }
   })()`);
 });
 

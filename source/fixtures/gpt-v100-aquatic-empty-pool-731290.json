@@ -1,0 +1,3399 @@
+{
+  "format": "dominant-species-solo-v1",
+  "game": {
+    "version": "1.0.0",
+    "human": "insects",
+    "rivals": [
+      "amphibians",
+      "mammals",
+      "arachnids",
+      "reptiles"
+    ],
+    "ids": [
+      "mammals",
+      "reptiles",
+      "amphibians",
+      "arachnids",
+      "insects"
+    ],
+    "short": false,
+    "seed": 731290,
+    "rng": 3272639434,
+    "turn": 5,
+    "phase": "execution",
+    "cursor": 38,
+    "planning": 0,
+    "initiative": [
+      "reptiles",
+      "amphibians",
+      "insects",
+      "mammals",
+      "arachnids"
+    ],
+    "ending": false,
+    "tiles": {
+      "D3": {
+        "terrain": "tundra",
+        "cubes": {
+          "mammals": 0,
+          "reptiles": 0,
+          "amphibians": 0,
+          "arachnids": 0,
+          "insects": 0
+        }
+      },
+      "D2": {
+        "terrain": "tundra",
+        "cubes": {
+          "mammals": 0,
+          "reptiles": 0,
+          "amphibians": 0,
+          "arachnids": 1,
+          "insects": 0
+        }
+      },
+      "E3": {
+        "terrain": "savannah",
+        "cubes": {
+          "mammals": 0,
+          "reptiles": 0,
+          "amphibians": 0,
+          "arachnids": 0,
+          "insects": 2
+        }
+      },
+      "E4": {
+        "terrain": "tundra",
+        "cubes": {
+          "mammals": 0,
+          "reptiles": 0,
+          "amphibians": 0,
+          "arachnids": 0,
+          "insects": 3
+        }
+      },
+      "D4": {
+        "terrain": "tundra",
+        "cubes": {
+          "mammals": 0,
+          "reptiles": 1,
+          "amphibians": 1,
+          "arachnids": 1,
+          "insects": 2
+        }
+      },
+      "C4": {
+        "terrain": "tundra",
+        "cubes": {
+          "mammals": 0,
+          "reptiles": 0,
+          "amphibians": 0,
+          "arachnids": 0,
+          "insects": 1
+        }
+      },
+      "C3": {
+        "terrain": "tundra",
+        "cubes": {
+          "mammals": 0,
+          "reptiles": 0,
+          "amphibians": 1,
+          "arachnids": 2,
+          "insects": 3
+        }
+      },
+      "C2": {
+        "terrain": "jungle",
+        "cubes": {
+          "mammals": 0,
+          "reptiles": 1,
+          "amphibians": 1,
+          "arachnids": 3,
+          "insects": 0
+        }
+      },
+      "B2": {
+        "terrain": "forest",
+        "cubes": {
+          "mammals": 2,
+          "reptiles": 5,
+          "amphibians": 0,
+          "arachnids": 2,
+          "insects": 1
+        }
+      },
+      "B3": {
+        "terrain": "desert",
+        "cubes": {
+          "mammals": 0,
+          "reptiles": 2,
+          "amphibians": 0,
+          "arachnids": 0,
+          "insects": 3
+        }
+      },
+      "A2": {
+        "terrain": "savannah",
+        "cubes": {
+          "mammals": 6,
+          "reptiles": 1,
+          "amphibians": 0,
+          "arachnids": 0,
+          "insects": 2
+        }
+      },
+      "A1": {
+        "terrain": "jungle",
+        "cubes": {
+          "mammals": 2,
+          "reptiles": 4,
+          "amphibians": 1,
+          "arachnids": 0,
+          "insects": 0
+        }
+      },
+      "B4": {
+        "terrain": "desert",
+        "cubes": {
+          "mammals": 0,
+          "reptiles": 0,
+          "amphibians": 0,
+          "arachnids": 0,
+          "insects": 0
+        }
+      },
+      "B1": {
+        "terrain": "sea",
+        "cubes": {
+          "mammals": 4,
+          "reptiles": 3,
+          "amphibians": 5,
+          "arachnids": 0,
+          "insects": 0
+        }
+      },
+      "A3": {
+        "terrain": "forest",
+        "cubes": {
+          "mammals": 7,
+          "reptiles": 0,
+          "amphibians": 0,
+          "arachnids": 0,
+          "insects": 0
+        }
+      },
+      "C5": {
+        "terrain": "mountain",
+        "cubes": {
+          "mammals": 1,
+          "reptiles": 0,
+          "amphibians": 0,
+          "arachnids": 2,
+          "insects": 2
+        }
+      },
+      "C1": {
+        "terrain": "sea",
+        "cubes": {
+          "mammals": 0,
+          "reptiles": 0,
+          "amphibians": 3,
+          "arachnids": 1,
+          "insects": 0
+        }
+      },
+      "D5": {
+        "terrain": "wetland",
+        "cubes": {
+          "mammals": 0,
+          "reptiles": 0,
+          "amphibians": 0,
+          "arachnids": 3,
+          "insects": 1
+        }
+      },
+      "D1": {
+        "terrain": "jungle",
+        "cubes": {
+          "mammals": 0,
+          "reptiles": 0,
+          "amphibians": 1,
+          "arachnids": 1,
+          "insects": 0
+        }
+      },
+      "E5": {
+        "terrain": "wetland",
+        "cubes": {
+          "mammals": 0,
+          "reptiles": 0,
+          "amphibians": 0,
+          "arachnids": 0,
+          "insects": 2
+        }
+      },
+      "E2": {
+        "terrain": "savannah",
+        "cubes": {
+          "mammals": 0,
+          "reptiles": 0,
+          "amphibians": 1,
+          "arachnids": 0,
+          "insects": 0
+        }
+      },
+      "F2": {
+        "terrain": "savannah",
+        "cubes": {
+          "mammals": 0,
+          "reptiles": 0,
+          "amphibians": 0,
+          "arachnids": 0,
+          "insects": 1
+        }
+      }
+    },
+    "corners": {
+      "-5,-3": "grub",
+      "-4,0": "grub",
+      "-5,-1": "meat",
+      "-2,-2": "water",
+      "2,2": "meat",
+      "-1,3": "grass",
+      "-7,-1": "grub",
+      "-8,-2": "seed",
+      "-1,-3": "grub",
+      "-7,-3": "grub",
+      "-10,0": "sun",
+      "-2,2": "meat",
+      "-8,-4": "water",
+      "-4,-4": "water",
+      "-7,-5": "sun",
+      "-5,-5": "water",
+      "1,3": "seed",
+      "1,-3": "grub",
+      "5,-1": "sun"
+    },
+    "pawns": {
+      "domination-1": {
+        "actor": "reptiles",
+        "focus": "growth",
+        "card": 3
+      },
+      "domination-2": {
+        "actor": "amphibians",
+        "focus": "growth",
+        "card": 0
+      },
+      "domination-3": {
+        "actor": "arachnids",
+        "focus": "reach",
+        "card": 3
+      },
+      "domination-4": {
+        "actor": "mammals",
+        "focus": "reach",
+        "card": 2
+      }
+    },
+    "pending": [
+      {
+        "kind": "effect",
+        "actor": "amphibians",
+        "tile": "C1",
+        "name": "Aquatic",
+        "focus": "tempo"
+      }
+    ],
+    "scored": [
+      "C1"
+    ],
+    "market": [
+      "Metamorphosis",
+      "Hibernation",
+      null,
+      "Disease",
+      "Mass Exodus"
+    ],
+    "usedCards": [
+      "Intelligence",
+      "Catastrophe",
+      "Habitat",
+      "Blight",
+      "Omnivore",
+      "Parasitism",
+      "Ice Sheet",
+      "Predator",
+      "Cold Snap",
+      "Evolution",
+      "Nocturnal",
+      "Immigrants",
+      "Biomass",
+      "Biodiversity",
+      "Instinct",
+      "Fecundity",
+      "Ecodiversity",
+      "Fertile",
+      "Niche Biomes",
+      "Aquatic"
+    ],
+    "stacks": [
+      {
+        "left": 3,
+        "face": null
+      },
+      {
+        "left": 3,
+        "face": null
+      },
+      {
+        "left": 3,
+        "face": null
+      }
+    ],
+    "boxes": {
+      "adaptation": [
+        null,
+        null,
+        null,
+        "seed"
+      ],
+      "regression": [
+        "grass"
+      ],
+      "abundance": [
+        null,
+        null,
+        "grub",
+        "meat"
+      ],
+      "wasteland": [
+        "grass",
+        "grass"
+      ],
+      "depletion": [
+        "sun",
+        "seed"
+      ],
+      "wanderlust": [
+        null,
+        null,
+        "seed",
+        null
+      ]
+    },
+    "animals": {
+      "mammals": {
+        "added": [
+          "grub",
+          "seed"
+        ],
+        "pool": 0,
+        "dead": 17,
+        "vp": 58,
+        "ap": 6,
+        "remaining": 0,
+        "ward": {}
+      },
+      "reptiles": {
+        "added": [
+          "seed",
+          "sun",
+          "grub",
+          "grass"
+        ],
+        "pool": 0,
+        "dead": 22,
+        "vp": 66,
+        "ap": 6,
+        "remaining": 0,
+        "ward": {}
+      },
+      "amphibians": {
+        "added": [
+          "water",
+          "water"
+        ],
+        "pool": 0,
+        "dead": 25,
+        "vp": 79,
+        "ap": 7,
+        "remaining": 0,
+        "ward": {}
+      },
+      "arachnids": {
+        "added": [
+          "water"
+        ],
+        "pool": 4,
+        "dead": 19,
+        "vp": 77,
+        "ap": 6,
+        "remaining": 0,
+        "ward": {}
+      },
+      "insects": {
+        "added": [
+          "meat",
+          "sun"
+        ],
+        "pool": 0,
+        "dead": 16,
+        "vp": 45,
+        "ap": 5,
+        "remaining": 0,
+        "ward": {}
+      }
+    },
+    "decks": {
+      "mammals": {
+        "queue": [
+          2,
+          4,
+          3
+        ],
+        "discards": [
+          0,
+          1,
+          7,
+          6,
+          5
+        ]
+      },
+      "reptiles": {
+        "queue": [
+          1,
+          3,
+          6
+        ],
+        "discards": [
+          2,
+          4,
+          5,
+          7,
+          0
+        ]
+      },
+      "amphibians": {
+        "queue": [
+          1
+        ],
+        "discards": [
+          3,
+          0,
+          2,
+          4,
+          6,
+          7,
+          5
+        ]
+      },
+      "arachnids": {
+        "queue": [
+          2,
+          0,
+          1
+        ],
+        "discards": [
+          3,
+          5,
+          4,
+          6,
+          7
+        ]
+      }
+    },
+    "log": [
+      {
+        "turn": 1,
+        "title": "Planning begins",
+        "body": "Initiative order · Insects → Arachnids → Amphibians → Reptiles → Mammals",
+        "actor": null,
+        "card": null
+      },
+      {
+        "turn": 1,
+        "title": "Arachnids placed a pawn",
+        "body": "Domination · space 1. Red Queen, Block the leader: Domination.",
+        "actor": "arachnids",
+        "card": 1
+      },
+      {
+        "turn": 1,
+        "title": "Amphibians placed a pawn",
+        "body": "Domination · space 2. Red Queen, Domination first: Domination.",
+        "actor": "amphibians",
+        "card": 5
+      },
+      {
+        "turn": 1,
+        "title": "Reptiles placed a pawn",
+        "body": "Domination · space 3. Red Queen, Block the leader: Domination.",
+        "actor": "reptiles",
+        "card": 5
+      },
+      {
+        "turn": 1,
+        "title": "Mammals placed a pawn",
+        "body": "Domination · space 4. Red Queen, Domination first: Domination.",
+        "actor": "mammals",
+        "card": 0
+      },
+      {
+        "turn": 1,
+        "title": "Insects placed a pawn",
+        "body": "Speciation · Sun",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 1,
+        "title": "Arachnids placed a pawn",
+        "body": "Domination · space 5. Red Queen, Block the leader: Domination.",
+        "actor": "arachnids",
+        "card": 7
+      },
+      {
+        "turn": 1,
+        "title": "Amphibians placed a pawn",
+        "body": "Initiative. Red Queen, Card action 1: Initiative.",
+        "actor": "amphibians",
+        "card": 7
+      },
+      {
+        "turn": 1,
+        "title": "Reptiles placed a pawn",
+        "body": "Adaptation · space 1. Red Queen, Card action 1: Adaptation.",
+        "actor": "reptiles",
+        "card": 1
+      },
+      {
+        "turn": 1,
+        "title": "Mammals placed a pawn",
+        "body": "Speciation · Meat. Red Queen, Card action 1: Speciation.",
+        "actor": "mammals",
+        "card": 5
+      },
+      {
+        "turn": 1,
+        "title": "Insects placed a pawn",
+        "body": "Speciation · Water",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 1,
+        "title": "Arachnids placed a pawn",
+        "body": "Speciation · Seed. Red Queen, Card action 3: Speciation.",
+        "actor": "arachnids",
+        "card": 4
+      },
+      {
+        "turn": 1,
+        "title": "Amphibians placed a pawn",
+        "body": "Abundance · space 1. Red Queen, Card action 1: Abundance.",
+        "actor": "amphibians",
+        "card": 4
+      },
+      {
+        "turn": 1,
+        "title": "Reptiles placed a pawn",
+        "body": "Speciation · Grub. Red Queen, Card action 3: Speciation.",
+        "actor": "reptiles",
+        "card": 4
+      },
+      {
+        "turn": 1,
+        "title": "Mammals placed a pawn",
+        "body": "Migration · 7. Red Queen, Card action 2: Migration.",
+        "actor": "mammals",
+        "card": 4
+      },
+      {
+        "turn": 1,
+        "title": "Insects placed a pawn",
+        "body": "Adaptation · space 2",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 1,
+        "title": "Arachnids placed a pawn",
+        "body": "Competition · Jungle / Wetland / Tundra. Red Queen, Card action 2: Competition.",
+        "actor": "arachnids",
+        "card": 6
+      },
+      {
+        "turn": 1,
+        "title": "Amphibians placed a pawn",
+        "body": "Speciation · Grass. Red Queen, Card action 1: Speciation.",
+        "actor": "amphibians",
+        "card": 6
+      },
+      {
+        "turn": 1,
+        "title": "Reptiles placed a pawn",
+        "body": "Wanderlust · space 1. Red Queen, Card action 1: Wanderlust.",
+        "actor": "reptiles",
+        "card": 0
+      },
+      {
+        "turn": 1,
+        "title": "Mammals placed a pawn",
+        "body": "Adaptation · space 3. Red Queen, Card action 3: Adaptation.",
+        "actor": "mammals",
+        "card": 7
+      },
+      {
+        "turn": 1,
+        "title": "Insects placed a pawn",
+        "body": "Abundance · space 2",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 1,
+        "title": "Arachnids placed a pawn",
+        "body": "Wanderlust · space 2. Red Queen, Fallback: Wanderlust.",
+        "actor": "arachnids",
+        "card": 2
+      },
+      {
+        "turn": 1,
+        "title": "Amphibians placed a pawn",
+        "body": "Migration · 6. Red Queen, Card action 1: Migration.",
+        "actor": "amphibians",
+        "card": 2
+      },
+      {
+        "turn": 1,
+        "title": "Reptiles placed a pawn",
+        "body": "Competition · Savannah / Mountain / Tundra. Red Queen, Fallback: Competition.",
+        "actor": "reptiles",
+        "card": 3
+      },
+      {
+        "turn": 1,
+        "title": "Mammals placed a pawn",
+        "body": "Wanderlust · space 3. Red Queen, Fallback: Wanderlust.",
+        "actor": "mammals",
+        "card": 6
+      },
+      {
+        "turn": 1,
+        "title": "Execution begins",
+        "body": "Resolve the action display from top to bottom.",
+        "actor": null,
+        "card": null
+      },
+      {
+        "turn": 1,
+        "title": "Amphibians · Initiative",
+        "body": "Red Queen: advance and move this pawn to Competition · Wetland / Desert / Tundra.",
+        "actor": "amphibians",
+        "card": 7
+      },
+      {
+        "turn": 1,
+        "title": "Reptiles · Adaptation",
+        "body": "Red Queen: take Seed from Adaptation position 1 and add it to its display.",
+        "actor": "reptiles",
+        "card": 1
+      },
+      {
+        "turn": 1,
+        "title": "Insects · Adaptation",
+        "body": "Add Meat from Adaptation position 3 to the animal display.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 1,
+        "title": "Mammals · Adaptation",
+        "body": "Red Queen: take Meat from Adaptation position 4 and add it to its display.",
+        "actor": "mammals",
+        "card": 7
+      },
+      {
+        "turn": 1,
+        "title": "Amphibians · Abundance",
+        "body": "Red Queen: take Water from Abundance position 3 and place it at the corner shared by D2 Wetland (corner 5 on D2).",
+        "actor": "amphibians",
+        "card": 4
+      },
+      {
+        "turn": 1,
+        "title": "Insects · Abundance",
+        "body": "Place Grass from Abundance position 2 at the corner shared by D2 Wetland (corner 6 on D2).",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 1,
+        "title": "Mammals · Speciation",
+        "body": "Red Queen: use the Meat disk at the corner shared by C4 Forest / D3 Tundra / D4 Mountain (corner 1 on C4). Add 3 cubes to C4 Forest, 2 cubes to D4 Mountain, 1 cube to D3 Tundra.",
+        "actor": "mammals",
+        "card": 5
+      },
+      {
+        "turn": 1,
+        "title": "Insects · Speciation",
+        "body": "Add 1 cube to D3 Tundra, 2 cubes to E4 Desert, 2 cubes to D4 Mountain.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 1,
+        "title": "Arachnids · Speciation",
+        "body": "Red Queen: use the Seed disk at the corner shared by C3 Jungle / C4 Forest / D3 Tundra (corner 2 on C3). Add 3 cubes to C3 Jungle, 3 cubes to C4 Forest, 1 cube to D3 Tundra.",
+        "actor": "arachnids",
+        "card": 4
+      },
+      {
+        "turn": 1,
+        "title": "Insects · Speciation",
+        "body": "Add 4 cubes to D2 Wetland, 1 cube to D3 Tundra, 3 cubes to E3 Savannah.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 1,
+        "title": "Reptiles · Speciation",
+        "body": "Red Queen: use the Grub disk at the corner shared by C3 Jungle / D2 Wetland / D3 Tundra (corner 1 on C3). Add 4 cubes to D2 Wetland, 3 cubes to C3 Jungle, 1 cube to D3 Tundra.",
+        "actor": "reptiles",
+        "card": 4
+      },
+      {
+        "turn": 1,
+        "title": "Amphibians · Speciation",
+        "body": "Red Queen: use the Grass disk at the corner shared by D3 Tundra / E3 Savannah / E4 Desert (corner 1 on D3). Add 3 cubes to E3 Savannah, 2 cubes to E4 Desert, 1 cube to D3 Tundra.",
+        "actor": "amphibians",
+        "card": 6
+      },
+      {
+        "turn": 1,
+        "title": "Insects · Free Speciation",
+        "body": "Add 1 cube to C4 Forest.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 1,
+        "title": "Reptiles · Wanderlust",
+        "body": "Red Queen: place the face-up Jungle from stack 1 at C2, and add Seed from Wanderlust position 3 at corner 3 of C2. +3 VP.",
+        "actor": "reptiles",
+        "card": 0
+      },
+      {
+        "turn": 1,
+        "title": "Reptiles · Wanderlust arrival",
+        "body": "Red Queen: arrival: Move 1 from D2 Wetland to C2 Jungle; Move 1 from C3 Jungle to C2 Jungle.",
+        "actor": "reptiles",
+        "card": null
+      },
+      {
+        "turn": 1,
+        "title": "Amphibians · Wanderlust arrival",
+        "body": "Red Queen: arrival: Move 1 from D2 Wetland to C2 Jungle.",
+        "actor": "amphibians",
+        "card": null
+      },
+      {
+        "turn": 1,
+        "title": "Arachnids · Wanderlust arrival",
+        "body": "Red Queen: arrival: Move 1 from C3 Jungle to C2 Jungle.",
+        "actor": "arachnids",
+        "card": null
+      },
+      {
+        "turn": 1,
+        "title": "Insects · Wanderlust arrival",
+        "body": "Keep the cubes where they are.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 1,
+        "title": "Arachnids · Wanderlust",
+        "body": "Red Queen: place the face-up Forest from stack 2 at B2, and add Grub from Wanderlust position 1 at corner 6 of B2. +3 VP.",
+        "actor": "arachnids",
+        "card": 2
+      },
+      {
+        "turn": 1,
+        "title": "Reptiles · Wanderlust arrival",
+        "body": "Red Queen: arrival: Move 1 from C3 Jungle to B2 Forest; Move 1 from C2 Jungle to B2 Forest.",
+        "actor": "reptiles",
+        "card": null
+      },
+      {
+        "turn": 1,
+        "title": "Amphibians · Wanderlust arrival",
+        "body": "Red Queen: arrival: keep the cubes where they are.",
+        "actor": "amphibians",
+        "card": null
+      },
+      {
+        "turn": 1,
+        "title": "Arachnids · Wanderlust arrival",
+        "body": "Red Queen: arrival: Move 1 from C3 Jungle to B2 Forest.",
+        "actor": "arachnids",
+        "card": null
+      },
+      {
+        "turn": 1,
+        "title": "Mammals · Wanderlust",
+        "body": "Red Queen: place the face-up Desert from stack 3 at B3. +6 VP.",
+        "actor": "mammals",
+        "card": 6
+      },
+      {
+        "turn": 1,
+        "title": "Mammals · Wanderlust arrival",
+        "body": "Red Queen: arrival: keep the cubes where they are.",
+        "actor": "mammals",
+        "card": null
+      },
+      {
+        "turn": 1,
+        "title": "Reptiles · Wanderlust arrival",
+        "body": "Red Queen: arrival: Move 1 from B2 Forest to B3 Desert.",
+        "actor": "reptiles",
+        "card": null
+      },
+      {
+        "turn": 1,
+        "title": "Amphibians · Wanderlust arrival",
+        "body": "Red Queen: arrival: keep the cubes where they are.",
+        "actor": "amphibians",
+        "card": null
+      },
+      {
+        "turn": 1,
+        "title": "Arachnids · Wanderlust arrival",
+        "body": "Red Queen: arrival: Move 1 from C4 Forest to B3 Desert; Move 1 from C3 Jungle to B3 Desert.",
+        "actor": "arachnids",
+        "card": null
+      },
+      {
+        "turn": 1,
+        "title": "Insects · Wanderlust arrival",
+        "body": "Keep the cubes where they are.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 1,
+        "title": "Mammals · Migration",
+        "body": "Red Queen: Move 1 from C4 Forest to C3 Jungle.",
+        "actor": "mammals",
+        "card": 4
+      },
+      {
+        "turn": 1,
+        "title": "Amphibians · Migration",
+        "body": "Red Queen: no move.",
+        "actor": "amphibians",
+        "card": 2
+      },
+      {
+        "turn": 1,
+        "title": "Arachnids · Free Competition",
+        "body": "Red Queen: Remove one Reptiles cube at C2 Jungle.",
+        "actor": "arachnids",
+        "card": null
+      },
+      {
+        "turn": 1,
+        "title": "Arachnids · Competition",
+        "body": "Red Queen: Remove one Mammals cube at D3 Tundra; Remove one Amphibians cube at C2 Jungle; Remove one Amphibians cube at D2 Wetland.",
+        "actor": "arachnids",
+        "card": 6
+      },
+      {
+        "turn": 1,
+        "title": "Amphibians · Competition",
+        "body": "Red Queen: Remove one Reptiles cube at D3 Tundra; Remove one Reptiles cube at E4 Desert.",
+        "actor": "amphibians",
+        "card": 7
+      },
+      {
+        "turn": 1,
+        "title": "Reptiles · Competition",
+        "body": "Red Queen: Remove one Amphibians cube at E3 Savannah; Remove one Insects cube at D4 Mountain.",
+        "actor": "reptiles",
+        "card": 3
+      },
+      {
+        "turn": 1,
+        "title": "Arachnids · Domination",
+        "body": "Score C2 Jungle. Arachnids +6 VP. Arachnids choose a Dominance Card.",
+        "actor": "arachnids",
+        "card": 1
+      },
+      {
+        "turn": 1,
+        "title": "Arachnids took Intelligence",
+        "body": "Dominant on C2 Jungle. Use the physical card.",
+        "actor": "arachnids",
+        "card": null
+      },
+      {
+        "turn": 1,
+        "title": "Intelligence",
+        "body": "Mammals, Reptiles, Amphibians, Arachnids each gain one action pawn.",
+        "actor": "arachnids",
+        "card": null
+      },
+      {
+        "turn": 1,
+        "title": "Amphibians · Domination",
+        "body": "Score E4 Desert. Insects +4 VP, Amphibians +2 VP. No Dominance Card is taken.",
+        "actor": "amphibians",
+        "card": 5
+      },
+      {
+        "turn": 1,
+        "title": "Reptiles · Domination",
+        "body": "Score B2 Forest. Reptiles +5 VP, Arachnids +3 VP. Reptiles choose a Dominance Card.",
+        "actor": "reptiles",
+        "card": 5
+      },
+      {
+        "turn": 1,
+        "title": "Reptiles took Catastrophe",
+        "body": "Dominant on B2 Forest. Use the physical card.",
+        "actor": "reptiles",
+        "card": null
+      },
+      {
+        "turn": 1,
+        "title": "Catastrophe",
+        "body": "Red Queen: Catastrophe: leave one Reptiles cube at E3 Savannah and eliminate all other cubes there. Remove one Arachnids cube at D2 Wetland; Remove one Arachnids cube at D3 Tundra; Remove one Mammals cube at E4 Desert.",
+        "actor": "reptiles",
+        "card": null
+      },
+      {
+        "turn": 1,
+        "title": "Mammals · Domination",
+        "body": "Score C4 Forest. Mammals +5 VP, Arachnids +3 VP, Insects +2 VP. Mammals choose a Dominance Card.",
+        "actor": "mammals",
+        "card": 0
+      },
+      {
+        "turn": 1,
+        "title": "Mammals took Habitat",
+        "body": "Dominant on C4 Forest. Use the physical card.",
+        "actor": "mammals",
+        "card": null
+      },
+      {
+        "turn": 1,
+        "title": "Habitat",
+        "body": "Red Queen: Habitat: take Meat from the bag and place it at the corner shared by B2 Forest / B3 Desert / C3 Jungle (corner 2 on B2).",
+        "actor": "mammals",
+        "card": null
+      },
+      {
+        "turn": 1,
+        "title": "Arachnids · Domination",
+        "body": "Score B3 Desert. Arachnids +4 VP, Reptiles +2 VP. Arachnids choose a Dominance Card.",
+        "actor": "arachnids",
+        "card": 7
+      },
+      {
+        "turn": 1,
+        "title": "Arachnids took Blight",
+        "body": "Dominant on B3 Desert. Use the physical card.",
+        "actor": "arachnids",
+        "card": null
+      },
+      {
+        "turn": 1,
+        "title": "Blight",
+        "body": "Red Queen: Blight: on D2 Wetland, keep Water at corner 4 and remove the other disks.",
+        "actor": "arachnids",
+        "card": null
+      },
+      {
+        "turn": 1,
+        "title": "Extinction and Survival",
+        "body": "Insects −5 at D2 Wetland. Insects gain 1 Survival VP.",
+        "actor": null,
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Planning begins",
+        "body": "Initiative order · Insects → Amphibians → Arachnids → Reptiles → Mammals",
+        "actor": null,
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Amphibians placed a pawn",
+        "body": "Domination · space 1. Red Queen, Block the leader: Domination.",
+        "actor": "amphibians",
+        "card": 3
+      },
+      {
+        "turn": 2,
+        "title": "Arachnids placed a pawn",
+        "body": "Domination · space 2. Red Queen, Domination first: Domination.",
+        "actor": "arachnids",
+        "card": 5
+      },
+      {
+        "turn": 2,
+        "title": "Reptiles placed a pawn",
+        "body": "Domination · space 3. Red Queen, Domination first: Domination.",
+        "actor": "reptiles",
+        "card": 7
+      },
+      {
+        "turn": 2,
+        "title": "Mammals placed a pawn",
+        "body": "Domination · space 4. Red Queen, Domination first: Domination.",
+        "actor": "mammals",
+        "card": 2
+      },
+      {
+        "turn": 2,
+        "title": "Insects placed a pawn",
+        "body": "Speciation · Meat",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Amphibians placed a pawn",
+        "body": "Domination · space 5. Red Queen, Block the leader: Domination.",
+        "actor": "amphibians",
+        "card": 1
+      },
+      {
+        "turn": 2,
+        "title": "Arachnids placed a pawn",
+        "body": "Wanderlust · space 1. Red Queen, Card action 1: Wanderlust.",
+        "actor": "arachnids",
+        "card": 3
+      },
+      {
+        "turn": 2,
+        "title": "Reptiles placed a pawn",
+        "body": "Speciation · Seed. Red Queen, Card action 3: Speciation.",
+        "actor": "reptiles",
+        "card": 6
+      },
+      {
+        "turn": 2,
+        "title": "Mammals placed a pawn",
+        "body": "Speciation · Grub. Red Queen, Card action 1: Speciation.",
+        "actor": "mammals",
+        "card": 1
+      },
+      {
+        "turn": 2,
+        "title": "Insects placed a pawn",
+        "body": "Adaptation · space 1",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Amphibians placed a pawn",
+        "body": "Speciation · Sun. Red Queen, Card action 1: Speciation.",
+        "actor": "amphibians",
+        "card": 0
+      },
+      {
+        "turn": 2,
+        "title": "Arachnids placed a pawn",
+        "body": "Speciation · Water. Red Queen, Card action 1: Speciation.",
+        "actor": "arachnids",
+        "card": 0
+      },
+      {
+        "turn": 2,
+        "title": "Reptiles placed a pawn",
+        "body": "Wanderlust · space 2. Red Queen, Card action 1: Wanderlust.",
+        "actor": "reptiles",
+        "card": 2
+      },
+      {
+        "turn": 2,
+        "title": "Mammals placed a pawn",
+        "body": "Wanderlust · space 3. Red Queen, Card action 1: Wanderlust.",
+        "actor": "mammals",
+        "card": 3
+      },
+      {
+        "turn": 2,
+        "title": "Insects placed a pawn",
+        "body": "Adaptation · space 2",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Amphibians placed a pawn",
+        "body": "Abundance · space 1. Red Queen, Card action 1: Abundance.",
+        "actor": "amphibians",
+        "card": 4
+      },
+      {
+        "turn": 2,
+        "title": "Arachnids placed a pawn",
+        "body": "Migration · 7. Red Queen, Card action 2: Migration.",
+        "actor": "arachnids",
+        "card": 4
+      },
+      {
+        "turn": 2,
+        "title": "Reptiles placed a pawn",
+        "body": "Adaptation · space 3. Red Queen, Card action 2: Adaptation.",
+        "actor": "reptiles",
+        "card": 5
+      },
+      {
+        "turn": 2,
+        "title": "Mammals placed a pawn",
+        "body": "Migration · 6. Red Queen, Card action 1: Migration.",
+        "actor": "mammals",
+        "card": 6
+      },
+      {
+        "turn": 2,
+        "title": "Insects placed a pawn",
+        "body": "Abundance · space 2",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Amphibians placed a pawn",
+        "body": "Competition · Jungle / Wetland / Tundra. Red Queen, Fallback: Competition.",
+        "actor": "amphibians",
+        "card": 3
+      },
+      {
+        "turn": 2,
+        "title": "Arachnids placed a pawn",
+        "body": "Competition · Desert / Forest / Tundra. Red Queen, Fallback: Competition.",
+        "actor": "arachnids",
+        "card": 3
+      },
+      {
+        "turn": 2,
+        "title": "Reptiles placed a pawn",
+        "body": "Competition · Wetland / Desert / Tundra. Red Queen, Fallback: Competition.",
+        "actor": "reptiles",
+        "card": 2
+      },
+      {
+        "turn": 2,
+        "title": "Mammals placed a pawn",
+        "body": "Competition · Forest / Savannah / Tundra. Red Queen, Fallback: Competition.",
+        "actor": "mammals",
+        "card": 0
+      },
+      {
+        "turn": 2,
+        "title": "Amphibians placed a pawn",
+        "body": "Initiative. Red Queen, Fallback: Initiative.",
+        "actor": "amphibians",
+        "card": 2
+      },
+      {
+        "turn": 2,
+        "title": "Arachnids placed a pawn",
+        "body": "Wasteland. Red Queen, Fallback: Wasteland.",
+        "actor": "arachnids",
+        "card": 7
+      },
+      {
+        "turn": 2,
+        "title": "Reptiles placed a pawn",
+        "body": "Migration · 5. Red Queen, Fallback: Migration.",
+        "actor": "reptiles",
+        "card": 3
+      },
+      {
+        "turn": 2,
+        "title": "Mammals placed a pawn",
+        "body": "Glaciation · space 1. Red Queen, Fallback: Glaciation.",
+        "actor": "mammals",
+        "card": 4
+      },
+      {
+        "turn": 2,
+        "title": "Execution begins",
+        "body": "Resolve the action display from top to bottom.",
+        "actor": null,
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Amphibians · Initiative",
+        "body": "Red Queen: advance and move this pawn to Speciation · Grass.",
+        "actor": "amphibians",
+        "card": 2
+      },
+      {
+        "turn": 2,
+        "title": "Insects · Adaptation",
+        "body": "Add Sun from Adaptation position 1 to the animal display.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Insects · Adaptation",
+        "body": "Add Sun from Adaptation position 2 to the animal display.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Reptiles · Adaptation",
+        "body": "Red Queen: take Sun from Adaptation position 3 and add it to its display.",
+        "actor": "reptiles",
+        "card": 5
+      },
+      {
+        "turn": 2,
+        "title": "Amphibians · Abundance",
+        "body": "Red Queen: take Water from Abundance position 3 and place it at the corner shared by C3 Jungle / D2 Wetland / D3 Tundra (corner 1 on C3).",
+        "actor": "amphibians",
+        "card": 4
+      },
+      {
+        "turn": 2,
+        "title": "Insects · Abundance",
+        "body": "Place Grass from Abundance position 2 at the corner shared by D4 Mountain (corner 3 on D4).",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Arachnids · Wasteland",
+        "body": "Red Queen: remove Grub from Wasteland position 2.",
+        "actor": "arachnids",
+        "card": 7
+      },
+      {
+        "turn": 2,
+        "title": "Wasteland loss",
+        "body": "Remove Seed at C3 Jungle / C4 Forest / D3 Tundra.",
+        "actor": null,
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Mammals · Glaciation",
+        "body": "Cover E4 with tundra. Return all but one cube per animal to their gene pools. +1 VP.",
+        "actor": "mammals",
+        "card": 4
+      },
+      {
+        "turn": 2,
+        "title": "Insects · Speciation",
+        "body": "Add 3 cubes to C3 Jungle, 3 cubes to B2 Forest, 2 cubes to B3 Desert.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Amphibians · Speciation",
+        "body": "Red Queen: use the Sun disk at the corner shared by D3 Tundra / D4 Mountain / E4 Tundra (corner 2 on D3). Add 2 cubes to D4 Mountain, 1 cube to D3 Tundra, 1 cube to E4 Tundra.",
+        "actor": "amphibians",
+        "card": 0
+      },
+      {
+        "turn": 2,
+        "title": "Reptiles · Speciation",
+        "body": "Red Queen: use the Seed disk at the corner shared by B2 Forest / C2 Jungle / C3 Jungle (corner 1 on B2). Add 3 cubes to C2 Jungle, 3 cubes to C3 Jungle, 3 cubes to B2 Forest.",
+        "actor": "reptiles",
+        "card": 6
+      },
+      {
+        "turn": 2,
+        "title": "Arachnids · Speciation",
+        "body": "Red Queen: use the Water disk at the corner shared by C2 Jungle / C3 Jungle / D2 Wetland (corner 2 on C2). Add 4 cubes to D2 Wetland, 3 cubes to C2 Jungle, 3 cubes to C3 Jungle.",
+        "actor": "arachnids",
+        "card": 0
+      },
+      {
+        "turn": 2,
+        "title": "Mammals · Speciation",
+        "body": "Red Queen: use the Grub disk at the corner shared by B3 Desert / C3 Jungle / C4 Forest (corner 1 on B3). Add 3 cubes to C3 Jungle, 3 cubes to C4 Forest, 2 cubes to B3 Desert.",
+        "actor": "mammals",
+        "card": 1
+      },
+      {
+        "turn": 2,
+        "title": "Amphibians · Speciation",
+        "body": "Red Queen: use the Grass disk at the corner shared by D3 Tundra / E3 Savannah / E4 Tundra (corner 1 on D3). Add 3 cubes to E3 Savannah, 1 cube to D3 Tundra, 1 cube to E4 Tundra.",
+        "actor": "amphibians",
+        "card": 2
+      },
+      {
+        "turn": 2,
+        "title": "Insects · Free Speciation",
+        "body": "Add 1 cube to E3 Savannah.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Arachnids · Wanderlust",
+        "body": "Red Queen: place the face-up Savannah from stack 2 at A2, and add Grub from Wanderlust position 2 at corner 1 of A2. +3 VP.",
+        "actor": "arachnids",
+        "card": 3
+      },
+      {
+        "turn": 2,
+        "title": "Mammals · Wanderlust arrival",
+        "body": "Red Queen: arrival: keep the cubes where they are.",
+        "actor": "mammals",
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Reptiles · Wanderlust arrival",
+        "body": "Red Queen: arrival: Move 1 from B2 Forest to A2 Savannah.",
+        "actor": "reptiles",
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Arachnids · Wanderlust arrival",
+        "body": "Red Queen: arrival: keep the cubes where they are.",
+        "actor": "arachnids",
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Insects · Wanderlust arrival",
+        "body": "Keep the cubes where they are.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Reptiles · Wanderlust",
+        "body": "Red Queen: place the face-up Jungle from stack 1 at A1, and add Seed from Wanderlust position 4 at corner 2 of A1. +3 VP.",
+        "actor": "reptiles",
+        "card": 2
+      },
+      {
+        "turn": 2,
+        "title": "Reptiles · Wanderlust arrival",
+        "body": "Red Queen: arrival: keep the cubes where they are.",
+        "actor": "reptiles",
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Arachnids · Wanderlust arrival",
+        "body": "Red Queen: arrival: keep the cubes where they are.",
+        "actor": "arachnids",
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Insects · Wanderlust arrival",
+        "body": "Keep the cubes where they are.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Mammals · Wanderlust",
+        "body": "Red Queen: place the face-up Desert from stack 3 at B4. +3 VP.",
+        "actor": "mammals",
+        "card": 3
+      },
+      {
+        "turn": 2,
+        "title": "Mammals · Wanderlust arrival",
+        "body": "Red Queen: arrival: keep the cubes where they are.",
+        "actor": "mammals",
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Reptiles · Wanderlust arrival",
+        "body": "Red Queen: arrival: keep the cubes where they are.",
+        "actor": "reptiles",
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Arachnids · Wanderlust arrival",
+        "body": "Red Queen: arrival: keep the cubes where they are.",
+        "actor": "arachnids",
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Insects · Wanderlust arrival",
+        "body": "Keep the cubes where they are.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Arachnids · Migration",
+        "body": "Red Queen: Move 1 from C4 Forest to D4 Mountain; Move 1 from C4 Forest to D3 Tundra.",
+        "actor": "arachnids",
+        "card": 4
+      },
+      {
+        "turn": 2,
+        "title": "Mammals · Migration",
+        "body": "Red Queen: Move 1 from C4 Forest to D3 Tundra; Move 1 from D4 Mountain to E4 Tundra.",
+        "actor": "mammals",
+        "card": 6
+      },
+      {
+        "turn": 2,
+        "title": "Reptiles · Migration",
+        "body": "Red Queen: Move 1 from C3 Jungle to C4 Forest; Move 1 from D2 Wetland to D3 Tundra.",
+        "actor": "reptiles",
+        "card": 3
+      },
+      {
+        "turn": 2,
+        "title": "Arachnids · Free Competition",
+        "body": "Red Queen: Remove one Reptiles cube at C4 Forest.",
+        "actor": "arachnids",
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Amphibians · Competition",
+        "body": "Red Queen: Remove one Insects cube at E4 Tundra; Remove one Arachnids cube at C3 Jungle.",
+        "actor": "amphibians",
+        "card": 3
+      },
+      {
+        "turn": 2,
+        "title": "Reptiles · Competition",
+        "body": "Red Queen: Remove one Mammals cube at D3 Tundra; Remove one Arachnids cube at D2 Wetland; Remove one Arachnids cube at B3 Desert.",
+        "actor": "reptiles",
+        "card": 2
+      },
+      {
+        "turn": 2,
+        "title": "Arachnids · Competition",
+        "body": "Red Queen: Remove one Reptiles cube at D3 Tundra; Remove one Reptiles cube at B3 Desert; Remove one Insects cube at C4 Forest.",
+        "actor": "arachnids",
+        "card": 3
+      },
+      {
+        "turn": 2,
+        "title": "Mammals · Competition",
+        "body": "Red Queen: Remove one Reptiles cube at E4 Tundra; Remove one Arachnids cube at C4 Forest.",
+        "actor": "mammals",
+        "card": 0
+      },
+      {
+        "turn": 2,
+        "title": "Amphibians · Domination",
+        "body": "Score E4 Tundra. Amphibians +1 VP. Amphibians choose a Dominance Card.",
+        "actor": "amphibians",
+        "card": 3
+      },
+      {
+        "turn": 2,
+        "title": "Amphibians took Omnivore",
+        "body": "Dominant on E4 Tundra. Use the physical card.",
+        "actor": "amphibians",
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Omnivore",
+        "body": "Amphibians each gain one action pawn.",
+        "actor": "amphibians",
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Arachnids · Domination",
+        "body": "Score D2 Wetland. Arachnids +8 VP, Reptiles +4 VP. Arachnids choose a Dominance Card.",
+        "actor": "arachnids",
+        "card": 5
+      },
+      {
+        "turn": 2,
+        "title": "Arachnids took Parasitism",
+        "body": "Dominant on D2 Wetland. Use the physical card.",
+        "actor": "arachnids",
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Parasitism",
+        "body": "Arachnids, Insects each gain one action pawn.",
+        "actor": "arachnids",
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Reptiles · Domination",
+        "body": "Score A2 Savannah. Reptiles +7 VP. Reptiles choose a Dominance Card.",
+        "actor": "reptiles",
+        "card": 7
+      },
+      {
+        "turn": 2,
+        "title": "Reptiles took Ice Sheet",
+        "body": "Dominant on A2 Savannah. Use the physical card.",
+        "actor": "reptiles",
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Ice Sheet",
+        "body": "Cover C4 with tundra. Return all but one cube per animal to their gene pools. +1 VP.",
+        "actor": "reptiles",
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Mammals · Domination",
+        "body": "Score B3 Desert. Mammals +4 VP, Insects +2 VP. Mammals choose a Dominance Card.",
+        "actor": "mammals",
+        "card": 2
+      },
+      {
+        "turn": 2,
+        "title": "Mammals took Predator",
+        "body": "Dominant on B3 Desert. Use the physical card.",
+        "actor": "mammals",
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Predator",
+        "body": "Red Queen: Remove one Amphibians cube at E4 Tundra; Remove one Arachnids cube at D4 Mountain; Remove one Arachnids cube at C3 Jungle; Remove one Arachnids cube at B3 Desert.",
+        "actor": "mammals",
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Amphibians · Domination",
+        "body": "Score E3 Savannah. Amphibians +7 VP, Reptiles +4 VP, Insects +2 VP. Insects choose a Dominance Card.",
+        "actor": "amphibians",
+        "card": 1
+      },
+      {
+        "turn": 2,
+        "title": "Insects took Cold Snap",
+        "body": "Dominant on E3 Savannah. Use the physical card.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Cold Snap",
+        "body": "Remove one Mammals cube at C4 Tundra; Remove one Amphibians cube at D3 Tundra; Remove one Arachnids cube at D3 Tundra; Remove one Mammals cube at E4 Tundra; Remove one Amphibians cube at E4 Tundra.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 2,
+        "title": "Extinction and Survival",
+        "body": "No cubes lost. Amphibians gain 3 Survival VP.",
+        "actor": null,
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Planning begins",
+        "body": "Initiative order · Amphibians → Insects → Arachnids → Reptiles → Mammals",
+        "actor": null,
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Amphibians placed a pawn",
+        "body": "Domination · space 1. Red Queen, Domination first: Domination.",
+        "actor": "amphibians",
+        "card": 7
+      },
+      {
+        "turn": 3,
+        "title": "Arachnids placed a pawn",
+        "body": "Domination · space 2. Red Queen, Domination first: Domination.",
+        "actor": "arachnids",
+        "card": 0
+      },
+      {
+        "turn": 3,
+        "title": "Reptiles placed a pawn",
+        "body": "Domination · space 3. Red Queen, Domination first: Domination.",
+        "actor": "reptiles",
+        "card": 0
+      },
+      {
+        "turn": 3,
+        "title": "Mammals placed a pawn",
+        "body": "Domination · space 4. Red Queen, Domination first: Domination.",
+        "actor": "mammals",
+        "card": 3
+      },
+      {
+        "turn": 3,
+        "title": "Amphibians placed a pawn",
+        "body": "Domination · space 5. Red Queen, Block the leader: Domination.",
+        "actor": "amphibians",
+        "card": 1
+      },
+      {
+        "turn": 3,
+        "title": "Insects placed a pawn",
+        "body": "Speciation · Meat",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Arachnids placed a pawn",
+        "body": "Wanderlust · space 1. Red Queen, Card action 1: Wanderlust.",
+        "actor": "arachnids",
+        "card": 1
+      },
+      {
+        "turn": 3,
+        "title": "Reptiles placed a pawn",
+        "body": "Adaptation · space 1. Red Queen, Card action 1: Adaptation.",
+        "actor": "reptiles",
+        "card": 1
+      },
+      {
+        "turn": 3,
+        "title": "Mammals placed a pawn",
+        "body": "Speciation · Seed. Red Queen, Card action 1: Speciation.",
+        "actor": "mammals",
+        "card": 5
+      },
+      {
+        "turn": 3,
+        "title": "Amphibians placed a pawn",
+        "body": "Speciation · Grub. Red Queen, Card action 1: Speciation.",
+        "actor": "amphibians",
+        "card": 0
+      },
+      {
+        "turn": 3,
+        "title": "Insects placed a pawn",
+        "body": "Speciation · Sun",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Arachnids placed a pawn",
+        "body": "Speciation · Water. Red Queen, Card action 2: Speciation.",
+        "actor": "arachnids",
+        "card": 5
+      },
+      {
+        "turn": 3,
+        "title": "Reptiles placed a pawn",
+        "body": "Initiative. Red Queen, Card action 1: Initiative.",
+        "actor": "reptiles",
+        "card": 7
+      },
+      {
+        "turn": 3,
+        "title": "Mammals placed a pawn",
+        "body": "Adaptation · space 2. Red Queen, Card action 3: Adaptation.",
+        "actor": "mammals",
+        "card": 7
+      },
+      {
+        "turn": 3,
+        "title": "Amphibians placed a pawn",
+        "body": "Migration · 7. Red Queen, Card action 2: Migration.",
+        "actor": "amphibians",
+        "card": 6
+      },
+      {
+        "turn": 3,
+        "title": "Insects placed a pawn",
+        "body": "Speciation · Grass",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Arachnids placed a pawn",
+        "body": "Competition · Jungle / Wetland / Tundra. Red Queen, Card action 2: Competition.",
+        "actor": "arachnids",
+        "card": 6
+      },
+      {
+        "turn": 3,
+        "title": "Reptiles placed a pawn",
+        "body": "Wanderlust · space 2. Red Queen, Fallback: Wanderlust.",
+        "actor": "reptiles",
+        "card": 6
+      },
+      {
+        "turn": 3,
+        "title": "Mammals placed a pawn",
+        "body": "Wanderlust · space 3. Red Queen, Card action 1: Wanderlust.",
+        "actor": "mammals",
+        "card": 2
+      },
+      {
+        "turn": 3,
+        "title": "Amphibians placed a pawn",
+        "body": "Adaptation · space 3. Red Queen, Fallback: Adaptation.",
+        "actor": "amphibians",
+        "card": 5
+      },
+      {
+        "turn": 3,
+        "title": "Insects placed a pawn",
+        "body": "Competition · Forest / Savannah / Tundra",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Arachnids placed a pawn",
+        "body": "Abundance · space 1. Red Queen, Fallback: Abundance.",
+        "actor": "arachnids",
+        "card": 2
+      },
+      {
+        "turn": 3,
+        "title": "Reptiles placed a pawn",
+        "body": "Abundance · space 2. Red Queen, Card action 1: Abundance.",
+        "actor": "reptiles",
+        "card": 4
+      },
+      {
+        "turn": 3,
+        "title": "Mammals placed a pawn",
+        "body": "Competition · Wetland / Desert / Tundra. Red Queen, Fallback: Competition.",
+        "actor": "mammals",
+        "card": 1
+      },
+      {
+        "turn": 3,
+        "title": "Amphibians placed a pawn",
+        "body": "Competition · Savannah / Mountain / Tundra. Red Queen, Fallback: Competition.",
+        "actor": "amphibians",
+        "card": 0
+      },
+      {
+        "turn": 3,
+        "title": "Insects placed a pawn",
+        "body": "Migration · 6",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Arachnids placed a pawn",
+        "body": "Depletion. Red Queen, Fallback: Depletion.",
+        "actor": "arachnids",
+        "card": 0
+      },
+      {
+        "turn": 3,
+        "title": "Reptiles placed a pawn",
+        "body": "Competition · Sea / Jungle / Tundra. Red Queen, Fallback: Competition.",
+        "actor": "reptiles",
+        "card": 2
+      },
+      {
+        "turn": 3,
+        "title": "Mammals placed a pawn",
+        "body": "Migration · 5. Red Queen, Fallback: Migration.",
+        "actor": "mammals",
+        "card": 1
+      },
+      {
+        "turn": 3,
+        "title": "Amphibians placed a pawn",
+        "body": "Glaciation · space 1. Red Queen, Fallback: Glaciation.",
+        "actor": "amphibians",
+        "card": 1
+      },
+      {
+        "turn": 3,
+        "title": "Arachnids placed a pawn",
+        "body": "Wasteland. Red Queen, Fallback: Wasteland.",
+        "actor": "arachnids",
+        "card": 5
+      },
+      {
+        "turn": 3,
+        "title": "Execution begins",
+        "body": "Resolve the action display from top to bottom.",
+        "actor": null,
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Reptiles · Initiative",
+        "body": "Red Queen: advance and move this pawn to Migration · 4.",
+        "actor": "reptiles",
+        "card": 7
+      },
+      {
+        "turn": 3,
+        "title": "Reptiles · Adaptation",
+        "body": "Red Queen: take Sun from Adaptation position 1 and add it to its display.",
+        "actor": "reptiles",
+        "card": 1
+      },
+      {
+        "turn": 3,
+        "title": "Mammals · Adaptation",
+        "body": "Red Queen: take Grub from Adaptation position 2 and add it to its display.",
+        "actor": "mammals",
+        "card": 7
+      },
+      {
+        "turn": 3,
+        "title": "Amphibians · Adaptation",
+        "body": "Red Queen: take Grass from Adaptation position 3 and add it to its display.",
+        "actor": "amphibians",
+        "card": 5
+      },
+      {
+        "turn": 3,
+        "title": "Amphibians · Regression",
+        "body": "Red Queen: remove Grass.",
+        "actor": "amphibians",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Arachnids · Abundance",
+        "body": "Red Queen: take Grub from Abundance position 3 and place it at the corner shared by C2 Jungle / D2 Wetland (corner 1 on C2).",
+        "actor": "arachnids",
+        "card": 2
+      },
+      {
+        "turn": 3,
+        "title": "Reptiles · Abundance",
+        "body": "Red Queen: take Seed from Abundance position 1 and place it at the corner shared by D2 Wetland / D3 Tundra / E3 Savannah (corner 2 on D2).",
+        "actor": "reptiles",
+        "card": 4
+      },
+      {
+        "turn": 3,
+        "title": "Arachnids · Wasteland",
+        "body": "Red Queen: remove Grub from Wasteland position 1.",
+        "actor": "arachnids",
+        "card": 5
+      },
+      {
+        "turn": 3,
+        "title": "Wasteland loss",
+        "body": "Remove Seed at C4 Tundra / D4 Mountain; Seed at D2 Wetland / D3 Tundra / E3 Savannah.",
+        "actor": null,
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Arachnids · Depletion",
+        "body": "Red Queen: remove Seed from the corner shared by B2 Forest / C2 Jungle / C3 Jungle (corner 1 on B2).",
+        "actor": "arachnids",
+        "card": 0
+      },
+      {
+        "turn": 3,
+        "title": "Amphibians · Glaciation",
+        "body": "Cover D2 with tundra. Return all but one cube per animal to their gene pools. +1 VP.",
+        "actor": "amphibians",
+        "card": 1
+      },
+      {
+        "turn": 3,
+        "title": "Insects · Speciation",
+        "body": "Add 1 cube to C4 Tundra, 2 cubes to D4 Mountain, 1 cube to D3 Tundra.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Insects · Speciation",
+        "body": "Add 1 cube to E4 Tundra, 3 cubes to E3 Savannah.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Mammals · Speciation",
+        "body": "Red Queen: use the Seed disk at the corner shared by A1 Jungle / A2 Savannah / B2 Forest (corner 2 on A1). Add 3 cubes to A2 Savannah, 3 cubes to A1 Jungle, 3 cubes to B2 Forest.",
+        "actor": "mammals",
+        "card": 5
+      },
+      {
+        "turn": 3,
+        "title": "Arachnids · Speciation",
+        "body": "Red Queen: use the Water disk at the corner shared by C2 Jungle / C3 Jungle / D2 Tundra (corner 2 on C2). Add 3 cubes to C2 Jungle, 3 cubes to C3 Jungle, 1 cube to D2 Tundra.",
+        "actor": "arachnids",
+        "card": 5
+      },
+      {
+        "turn": 3,
+        "title": "Amphibians · Speciation",
+        "body": "Red Queen: use the Grub disk at the corner shared by A2 Savannah / B2 Forest / B3 Desert (corner 1 on A2). Add 3 cubes to A2 Savannah, 3 cubes to B2 Forest, 2 cubes to B3 Desert.",
+        "actor": "amphibians",
+        "card": 0
+      },
+      {
+        "turn": 3,
+        "title": "Insects · Speciation",
+        "body": "Add 1 cube to E4 Tundra, 1 cube to E3 Savannah, 1 cube to D3 Tundra.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Insects · Free Speciation",
+        "body": "Add 1 cube to B2 Forest.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Arachnids · Wanderlust",
+        "body": "Red Queen: place the face-up Sea from stack 1 at B1, and add Grub from Wanderlust position 3 at corner 3 of B1. +6 VP.",
+        "actor": "arachnids",
+        "card": 1
+      },
+      {
+        "turn": 3,
+        "title": "Mammals · Wanderlust arrival",
+        "body": "Red Queen: arrival: Move 1 from A1 Jungle to B1 Sea.",
+        "actor": "mammals",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Reptiles · Wanderlust arrival",
+        "body": "Red Queen: arrival: Move 1 from C2 Jungle to B1 Sea.",
+        "actor": "reptiles",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Amphibians · Wanderlust arrival",
+        "body": "Red Queen: arrival: Move 1 from B2 Forest to B1 Sea.",
+        "actor": "amphibians",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Arachnids · Wanderlust arrival",
+        "body": "Red Queen: arrival: Move 1 from C2 Jungle to B1 Sea.",
+        "actor": "arachnids",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Insects · Wanderlust arrival",
+        "body": "Keep the cubes where they are.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Reptiles · Wanderlust",
+        "body": "Red Queen: place the face-up Forest from stack 3 at A3, and add Sun from Wanderlust position 4 at corner 5 of A3. +6 VP.",
+        "actor": "reptiles",
+        "card": 6
+      },
+      {
+        "turn": 3,
+        "title": "Mammals · Wanderlust arrival",
+        "body": "Red Queen: arrival: keep the cubes where they are.",
+        "actor": "mammals",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Reptiles · Wanderlust arrival",
+        "body": "Red Queen: arrival: keep the cubes where they are.",
+        "actor": "reptiles",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Amphibians · Wanderlust arrival",
+        "body": "Red Queen: arrival: Move 1 from A2 Savannah to A3 Forest.",
+        "actor": "amphibians",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Insects · Wanderlust arrival",
+        "body": "Move 2 from B3 Desert to A3 Forest.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Mammals · Wanderlust",
+        "body": "Red Queen: place the face-up Mountain from stack 2 at C5, and add Meat from Wanderlust position 1 at corner 6 of C5. +6 VP.",
+        "actor": "mammals",
+        "card": 2
+      },
+      {
+        "turn": 3,
+        "title": "Mammals · Wanderlust arrival",
+        "body": "Red Queen: arrival: keep the cubes where they are.",
+        "actor": "mammals",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Reptiles · Wanderlust arrival",
+        "body": "Red Queen: arrival: keep the cubes where they are.",
+        "actor": "reptiles",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Amphibians · Wanderlust arrival",
+        "body": "Red Queen: arrival: keep the cubes where they are.",
+        "actor": "amphibians",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Insects · Wanderlust arrival",
+        "body": "Move 1 from D4 Mountain to C5 Mountain.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Amphibians · Migration",
+        "body": "Red Queen: Move 1 from B2 Forest to A1 Jungle; Move 1 from E3 Savannah to D2 Tundra; Move 1 from B3 Desert to C4 Tundra.",
+        "actor": "amphibians",
+        "card": 6
+      },
+      {
+        "turn": 3,
+        "title": "Insects · Migration",
+        "body": "Move 3 from C3 Jungle to B3 Desert; Move 1 from D3 Tundra to C4 Tundra; Move 1 from E3 Savannah to E4 Tundra; Move 1 from D4 Mountain to C4 Tundra.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Mammals · Migration",
+        "body": "Red Queen: Move 1 from C3 Jungle to C2 Jungle; Move 1 from A2 Savannah to A3 Forest; Move 1 from D4 Mountain to C5 Mountain; Move 1 from B3 Desert to C4 Tundra.",
+        "actor": "mammals",
+        "card": 1
+      },
+      {
+        "turn": 3,
+        "title": "Reptiles · Migration",
+        "body": "Red Queen: Move 1 from B2 Forest to A1 Jungle; Move 1 from C3 Jungle to B3 Desert; Move 1 from C3 Jungle to C4 Tundra.",
+        "actor": "reptiles",
+        "card": 7
+      },
+      {
+        "turn": 3,
+        "title": "Arachnids · Free Competition",
+        "body": "Red Queen: Remove one Mammals cube at B1 Sea.",
+        "actor": "arachnids",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Arachnids · Competition",
+        "body": "Red Queen: Remove one Reptiles cube at D2 Tundra; Remove one Reptiles cube at C3 Jungle.",
+        "actor": "arachnids",
+        "card": 6
+      },
+      {
+        "turn": 3,
+        "title": "Mammals · Competition",
+        "body": "Red Queen: Remove one Reptiles cube at C4 Tundra; Remove one Reptiles cube at B3 Desert.",
+        "actor": "mammals",
+        "card": 1
+      },
+      {
+        "turn": 3,
+        "title": "Insects · Competition",
+        "body": "Remove one Mammals cube at C4 Tundra; Remove one Arachnids cube at B2 Forest; Remove one Reptiles cube at E3 Savannah.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Amphibians · Competition",
+        "body": "Red Queen: Remove one Arachnids cube at D2 Tundra; Remove one Mammals cube at A2 Savannah; Remove one Insects cube at D4 Mountain.",
+        "actor": "amphibians",
+        "card": 0
+      },
+      {
+        "turn": 3,
+        "title": "Reptiles · Competition",
+        "body": "Red Queen: Remove one Arachnids cube at B1 Sea; Remove one Mammals cube at C2 Jungle.",
+        "actor": "reptiles",
+        "card": 2
+      },
+      {
+        "turn": 3,
+        "title": "Amphibians · Domination",
+        "body": "Score A2 Savannah. Amphibians +7 VP, Mammals +4 VP, Reptiles +2 VP. Amphibians choose a Dominance Card.",
+        "actor": "amphibians",
+        "card": 7
+      },
+      {
+        "turn": 3,
+        "title": "Amphibians took Evolution",
+        "body": "Dominant on A2 Savannah. Use the physical card.",
+        "actor": "amphibians",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Evolution",
+        "body": "Red Queen: replace one Reptiles cube with its own cube at B1 Sea; replace one Arachnids cube with its own cube at C2 Jungle.",
+        "actor": "amphibians",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Arachnids · Domination",
+        "body": "Score C2 Jungle. Arachnids +6 VP, Reptiles +3 VP, Amphibians +2 VP. Reptiles choose a Dominance Card.",
+        "actor": "arachnids",
+        "card": 0
+      },
+      {
+        "turn": 3,
+        "title": "Reptiles took Nocturnal",
+        "body": "Dominant on C2 Jungle. Use the physical card.",
+        "actor": "reptiles",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Nocturnal",
+        "body": "Advance one space on the Initiative track if possible.",
+        "actor": "reptiles",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Reptiles · Domination",
+        "body": "Score B2 Forest. Insects +5 VP, Mammals +3 VP, Reptiles +2 VP. Reptiles choose a Dominance Card.",
+        "actor": "reptiles",
+        "card": 0
+      },
+      {
+        "turn": 3,
+        "title": "Reptiles took Immigrants",
+        "body": "Dominant on B2 Forest. Use the physical card.",
+        "actor": "reptiles",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Immigrants",
+        "body": "Each animal chooses its loss in food-chain order.",
+        "actor": "reptiles",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Mammals · Immigrants",
+        "body": "Red Queen: discard Meat.",
+        "actor": "mammals",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Reptiles · Immigrants",
+        "body": "Red Queen: discard Sun.",
+        "actor": "reptiles",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Amphibians · Immigrants",
+        "body": "Red Queen: keep one species per tile.",
+        "actor": "amphibians",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Arachnids · Immigrants",
+        "body": "Red Queen: lose one action pawn from the available supply.",
+        "actor": "arachnids",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Insects · Immigrants",
+        "body": "Discard one added Sun from the animal display.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Mammals · Domination",
+        "body": "Score A1 Jungle. Mammals +6 VP, Reptiles +3 VP, Amphibians +2 VP. Mammals choose a Dominance Card.",
+        "actor": "mammals",
+        "card": 3
+      },
+      {
+        "turn": 3,
+        "title": "Mammals took Biomass",
+        "body": "Dominant on A1 Jungle. Use the physical card.",
+        "actor": "mammals",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Biomass",
+        "body": "Red Queen: Remove one Reptiles cube at A1 Jungle; Remove one Amphibians cube at A3 Forest; Remove one Reptiles cube at B2 Forest; Remove one Amphibians cube at B3 Desert; Remove one Reptiles cube at C2 Jungle; Remove one Arachnids cube at C3 Jungle; Remove one Amphibians cube at C4 Tundra; Remove one Amphibians cube at E3 Savannah.",
+        "actor": "mammals",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Amphibians · Domination",
+        "body": "Score B1 Sea. Amphibians +9 VP. Amphibians choose a Dominance Card.",
+        "actor": "amphibians",
+        "card": 1
+      },
+      {
+        "turn": 3,
+        "title": "Amphibians took Biodiversity",
+        "body": "Dominant on B1 Sea. Use the physical card.",
+        "actor": "amphibians",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Biodiversity",
+        "body": "Gain 9 VP.",
+        "actor": "amphibians",
+        "card": null
+      },
+      {
+        "turn": 3,
+        "title": "Extinction and Survival",
+        "body": "No cubes lost. Insects gain 6 Survival VP.",
+        "actor": null,
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Planning begins",
+        "body": "Initiative order · Amphibians → Reptiles → Insects → Arachnids → Mammals",
+        "actor": null,
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Amphibians placed a pawn",
+        "body": "Domination · space 1. Red Queen, Domination first: Domination.",
+        "actor": "amphibians",
+        "card": 7
+      },
+      {
+        "turn": 4,
+        "title": "Reptiles placed a pawn",
+        "body": "Domination · space 2. Red Queen, Domination first: Domination.",
+        "actor": "reptiles",
+        "card": 1
+      },
+      {
+        "turn": 4,
+        "title": "Arachnids placed a pawn",
+        "body": "Domination · space 3. Red Queen, Block the leader: Domination.",
+        "actor": "arachnids",
+        "card": 7
+      },
+      {
+        "turn": 4,
+        "title": "Mammals placed a pawn",
+        "body": "Domination · space 4. Red Queen, Domination first: Domination.",
+        "actor": "mammals",
+        "card": 7
+      },
+      {
+        "turn": 4,
+        "title": "Amphibians placed a pawn",
+        "body": "Domination · space 5. Red Queen, Domination first: Domination.",
+        "actor": "amphibians",
+        "card": 6
+      },
+      {
+        "turn": 4,
+        "title": "Reptiles placed a pawn",
+        "body": "Speciation · Grub. Red Queen, Card action 1: Speciation.",
+        "actor": "reptiles",
+        "card": 5
+      },
+      {
+        "turn": 4,
+        "title": "Insects placed a pawn",
+        "body": "Competition · Desert / Forest / Tundra",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Arachnids placed a pawn",
+        "body": "Speciation · Meat. Red Queen, Card action 1: Speciation.",
+        "actor": "arachnids",
+        "card": 2
+      },
+      {
+        "turn": 4,
+        "title": "Mammals placed a pawn",
+        "body": "Migration · 7. Red Queen, Card action 1: Migration.",
+        "actor": "mammals",
+        "card": 6
+      },
+      {
+        "turn": 4,
+        "title": "Amphibians placed a pawn",
+        "body": "Wanderlust · space 1. Red Queen, Card action 1: Wanderlust.",
+        "actor": "amphibians",
+        "card": 5
+      },
+      {
+        "turn": 4,
+        "title": "Reptiles placed a pawn",
+        "body": "Abundance · space 1. Red Queen, Card action 1: Abundance.",
+        "actor": "reptiles",
+        "card": 4
+      },
+      {
+        "turn": 4,
+        "title": "Insects placed a pawn",
+        "body": "Glaciation · space 1",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Arachnids placed a pawn",
+        "body": "Competition · Jungle / Wetland / Tundra. Red Queen, Card action 2: Competition.",
+        "actor": "arachnids",
+        "card": 6
+      },
+      {
+        "turn": 4,
+        "title": "Mammals placed a pawn",
+        "body": "Wanderlust · space 2. Red Queen, Card action 1: Wanderlust.",
+        "actor": "mammals",
+        "card": 3
+      },
+      {
+        "turn": 4,
+        "title": "Amphibians placed a pawn",
+        "body": "Adaptation · space 1. Red Queen, Card action 1: Adaptation.",
+        "actor": "amphibians",
+        "card": 3
+      },
+      {
+        "turn": 4,
+        "title": "Reptiles placed a pawn",
+        "body": "Initiative. Red Queen, Card action 1: Initiative.",
+        "actor": "reptiles",
+        "card": 7
+      },
+      {
+        "turn": 4,
+        "title": "Insects placed a pawn",
+        "body": "Speciation · Grass",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Arachnids placed a pawn",
+        "body": "Depletion. Red Queen, Card action 1: Depletion.",
+        "actor": "arachnids",
+        "card": 4
+      },
+      {
+        "turn": 4,
+        "title": "Mammals placed a pawn",
+        "body": "Speciation · Sun. Red Queen, Card action 2: Speciation.",
+        "actor": "mammals",
+        "card": 0
+      },
+      {
+        "turn": 4,
+        "title": "Amphibians placed a pawn",
+        "body": "Abundance · space 2. Red Queen, Card action 1: Abundance.",
+        "actor": "amphibians",
+        "card": 4
+      },
+      {
+        "turn": 4,
+        "title": "Reptiles placed a pawn",
+        "body": "Wanderlust · space 3. Red Queen, Fallback: Wanderlust.",
+        "actor": "reptiles",
+        "card": 6
+      },
+      {
+        "turn": 4,
+        "title": "Insects placed a pawn",
+        "body": "Competition · Wetland / Desert / Tundra",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Arachnids placed a pawn",
+        "body": "Migration · 6. Red Queen, Card action 3: Migration.",
+        "actor": "arachnids",
+        "card": 1
+      },
+      {
+        "turn": 4,
+        "title": "Mammals placed a pawn",
+        "body": "Adaptation · space 2. Red Queen, Fallback: Adaptation.",
+        "actor": "mammals",
+        "card": 4
+      },
+      {
+        "turn": 4,
+        "title": "Amphibians placed a pawn",
+        "body": "Speciation · Water. Red Queen, Fallback: Speciation.",
+        "actor": "amphibians",
+        "card": 2
+      },
+      {
+        "turn": 4,
+        "title": "Reptiles placed a pawn",
+        "body": "Adaptation · space 3. Red Queen, Fallback: Adaptation.",
+        "actor": "reptiles",
+        "card": 0
+      },
+      {
+        "turn": 4,
+        "title": "Insects placed a pawn",
+        "body": "Migration · 5",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Arachnids placed a pawn",
+        "body": "Glaciation · space 2. Red Queen, Fallback: Glaciation.",
+        "actor": "arachnids",
+        "card": 3
+      },
+      {
+        "turn": 4,
+        "title": "Mammals placed a pawn",
+        "body": "Competition · Forest / Savannah / Tundra. Red Queen, Card action 3: Competition.",
+        "actor": "mammals",
+        "card": 5
+      },
+      {
+        "turn": 4,
+        "title": "Amphibians placed a pawn",
+        "body": "Competition · Sea / Jungle / Tundra. Red Queen, Fallback: Competition.",
+        "actor": "amphibians",
+        "card": 3
+      },
+      {
+        "turn": 4,
+        "title": "Execution begins",
+        "body": "Resolve the action display from top to bottom.",
+        "actor": null,
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Reptiles · Initiative",
+        "body": "Red Queen: advance and move this pawn to Competition · Savannah / Mountain / Tundra.",
+        "actor": "reptiles",
+        "card": 7
+      },
+      {
+        "turn": 4,
+        "title": "Amphibians · Adaptation",
+        "body": "Red Queen: take Water from Adaptation position 1 and add it to its display.",
+        "actor": "amphibians",
+        "card": 3
+      },
+      {
+        "turn": 4,
+        "title": "Mammals · Adaptation",
+        "body": "Red Queen: take Seed from Adaptation position 2 and add it to its display.",
+        "actor": "mammals",
+        "card": 4
+      },
+      {
+        "turn": 4,
+        "title": "Reptiles · Adaptation",
+        "body": "Red Queen: take Grub from Adaptation position 3 and add it to its display.",
+        "actor": "reptiles",
+        "card": 0
+      },
+      {
+        "turn": 4,
+        "title": "Reptiles · Abundance",
+        "body": "Red Queen: take Seed from Abundance position 3 and place it at the corner shared by B2 Forest / C2 Jungle / C3 Jungle (corner 1 on B2).",
+        "actor": "reptiles",
+        "card": 4
+      },
+      {
+        "turn": 4,
+        "title": "Amphibians · Abundance",
+        "body": "Red Queen: take Water from Abundance position 1 and place it at the corner shared by A1 Jungle / B1 Sea (corner 6 on A1).",
+        "actor": "amphibians",
+        "card": 4
+      },
+      {
+        "turn": 4,
+        "title": "Wasteland loss",
+        "body": "Remove Sun at E3 Savannah / E4 Tundra; Sun at D3 Tundra / D4 Mountain / E4 Tundra.",
+        "actor": null,
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Arachnids · Depletion",
+        "body": "Red Queen: remove Seed from the corner shared by B2 Forest / C2 Jungle / C3 Jungle (corner 1 on B2).",
+        "actor": "arachnids",
+        "card": 4
+      },
+      {
+        "turn": 4,
+        "title": "Insects · Glaciation",
+        "body": "Cover C3 with tundra. Return all but one cube per animal to their gene pools. Remove Water at corner 1 of C3. +6 VP.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Arachnids · Speciation",
+        "body": "Red Queen: use the Meat disk at the corner shared by B2 Forest / B3 Desert / C3 Tundra (corner 2 on B2). Add 3 cubes to B2 Forest, 2 cubes to B3 Desert, 1 cube to C3 Tundra.",
+        "actor": "arachnids",
+        "card": 2
+      },
+      {
+        "turn": 4,
+        "title": "Mammals · Speciation",
+        "body": "Red Queen: use the Sun disk at the corner shared by A2 Savannah / A3 Forest (corner 3 on A2). Add 3 cubes to A2 Savannah, 3 cubes to A3 Forest.",
+        "actor": "mammals",
+        "card": 0
+      },
+      {
+        "turn": 4,
+        "title": "Amphibians · Speciation",
+        "body": "Red Queen: use the Water disk at the corner shared by C2 Jungle / C3 Tundra / D2 Tundra (corner 2 on C2). Add 3 cubes to C2 Jungle, 1 cube to C3 Tundra, 1 cube to D2 Tundra.",
+        "actor": "amphibians",
+        "card": 2
+      },
+      {
+        "turn": 4,
+        "title": "Reptiles · Speciation",
+        "body": "Red Queen: use the Grub disk at the corner shared by A1 Jungle / B1 Sea / B2 Forest (corner 1 on A1). Add 4 cubes to B1 Sea, 3 cubes to A1 Jungle, 3 cubes to B2 Forest.",
+        "actor": "reptiles",
+        "card": 5
+      },
+      {
+        "turn": 4,
+        "title": "Insects · Speciation",
+        "body": "Add 2 cubes to D4 Mountain.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Amphibians · Wanderlust",
+        "body": "Red Queen: place the face-up Sea from stack 1 at C1, and add Water from Wanderlust position 3 at corner 3 of C1. +3 VP.",
+        "actor": "amphibians",
+        "card": 5
+      },
+      {
+        "turn": 4,
+        "title": "Reptiles · Wanderlust arrival",
+        "body": "Red Queen: arrival: Move 1 from B1 Sea to C1 Sea.",
+        "actor": "reptiles",
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Amphibians · Wanderlust arrival",
+        "body": "Red Queen: arrival: Move 1 from C2 Jungle to C1 Sea.",
+        "actor": "amphibians",
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Arachnids · Wanderlust arrival",
+        "body": "Red Queen: arrival: Move 1 from C2 Jungle to C1 Sea.",
+        "actor": "arachnids",
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Mammals · Wanderlust",
+        "body": "Red Queen: place the face-up Wetland from stack 2 at D5. +3 VP.",
+        "actor": "mammals",
+        "card": 3
+      },
+      {
+        "turn": 4,
+        "title": "Mammals · Wanderlust arrival",
+        "body": "Red Queen: arrival: keep the cubes where they are.",
+        "actor": "mammals",
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Reptiles · Wanderlust arrival",
+        "body": "Red Queen: arrival: keep the cubes where they are.",
+        "actor": "reptiles",
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Amphibians · Wanderlust arrival",
+        "body": "Red Queen: arrival: keep the cubes where they are.",
+        "actor": "amphibians",
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Insects · Wanderlust arrival",
+        "body": "Move 1 from D4 Mountain to D5 Wetland.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Reptiles · Wanderlust",
+        "body": "Red Queen: place the face-up Jungle from stack 3 at D1, and add Sun from Wanderlust position 1 at corner 4 of D1. +6 VP.",
+        "actor": "reptiles",
+        "card": 6
+      },
+      {
+        "turn": 4,
+        "title": "Reptiles · Wanderlust arrival",
+        "body": "Red Queen: arrival: keep the cubes where they are.",
+        "actor": "reptiles",
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Amphibians · Wanderlust arrival",
+        "body": "Red Queen: arrival: Move 1 from C2 Jungle to D1 Jungle; Move 1 from D2 Tundra to D1 Jungle.",
+        "actor": "amphibians",
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Arachnids · Wanderlust arrival",
+        "body": "Red Queen: arrival: Move 1 from C2 Jungle to D1 Jungle.",
+        "actor": "arachnids",
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Mammals · Migration",
+        "body": "Red Queen: Move 1 from A1 Jungle to B1 Sea; Move 1 from D4 Mountain to D5 Wetland.",
+        "actor": "mammals",
+        "card": 6
+      },
+      {
+        "turn": 4,
+        "title": "Arachnids · Migration",
+        "body": "Red Queen: Move 1 from B2 Forest to B1 Sea.",
+        "actor": "arachnids",
+        "card": 1
+      },
+      {
+        "turn": 4,
+        "title": "Insects · Migration",
+        "body": "Move 3 from B2 Forest to C3 Tundra; Move 1 from D3 Tundra to D4 Mountain; Move 1 from E3 Savannah to D3 Tundra.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Arachnids · Free Competition",
+        "body": "Red Queen: Remove one Reptiles cube at C1 Sea.",
+        "actor": "arachnids",
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Arachnids · Competition",
+        "body": "Red Queen: Remove one Amphibians cube at D2 Tundra; Remove one Reptiles cube at C2 Jungle.",
+        "actor": "arachnids",
+        "card": 6
+      },
+      {
+        "turn": 4,
+        "title": "Insects · Competition",
+        "body": "Remove one Mammals cube at C3 Tundra; Remove one Mammals cube at D5 Wetland; Remove one Mammals cube at B3 Desert.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Insects · Competition",
+        "body": "Remove one Amphibians cube at D3 Tundra; Remove one Arachnids cube at B3 Desert; Remove one Reptiles cube at B2 Forest.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Mammals · Competition",
+        "body": "Red Queen: Remove one Amphibians cube at B2 Forest; Remove one Reptiles cube at A2 Savannah.",
+        "actor": "mammals",
+        "card": 5
+      },
+      {
+        "turn": 4,
+        "title": "Reptiles · Competition",
+        "body": "Red Queen: Remove one Mammals cube at D4 Mountain.",
+        "actor": "reptiles",
+        "card": 7
+      },
+      {
+        "turn": 4,
+        "title": "Amphibians · Competition",
+        "body": "Red Queen: Remove one Insects cube at C3 Tundra; Remove one Mammals cube at B1 Sea; Remove one Mammals cube at A1 Jungle.",
+        "actor": "amphibians",
+        "card": 3
+      },
+      {
+        "turn": 4,
+        "title": "Amphibians · Domination",
+        "body": "Score C1 Sea. Amphibians +9 VP, Arachnids +5 VP. Amphibians choose a Dominance Card.",
+        "actor": "amphibians",
+        "card": 7
+      },
+      {
+        "turn": 4,
+        "title": "Amphibians took Instinct",
+        "body": "Dominant on C1 Sea. Use the physical card.",
+        "actor": "amphibians",
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Instinct",
+        "body": "Red Queen: Instinct: place an available pawn at Domination · space 1. It waits for next turn.",
+        "actor": "amphibians",
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Reptiles · Domination",
+        "body": "Score B1 Sea. Reptiles +9 VP, Amphibians +5 VP, Arachnids +3 VP. Reptiles choose a Dominance Card.",
+        "actor": "reptiles",
+        "card": 1
+      },
+      {
+        "turn": 4,
+        "title": "Reptiles took Fecundity",
+        "body": "Dominant on B1 Sea. Use the physical card.",
+        "actor": "reptiles",
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Fecundity",
+        "body": "Red Queen: Add 1 cube to B1 Sea, 1 cube to A1 Jungle, 1 cube to B2 Forest, 1 cube to D4 Mountain.",
+        "actor": "reptiles",
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Arachnids · Domination",
+        "body": "Score B3 Desert. Insects +4 VP, Arachnids +2 VP. Arachnids choose a Dominance Card.",
+        "actor": "arachnids",
+        "card": 7
+      },
+      {
+        "turn": 4,
+        "title": "Arachnids took Ecodiversity",
+        "body": "Dominant on B3 Desert. Use the physical card.",
+        "actor": "arachnids",
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Ecodiversity",
+        "body": "Gain 5 VP.",
+        "actor": "arachnids",
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Mammals · Domination",
+        "body": "Score A2 Savannah. Mammals +7 VP, Amphibians +4 VP. Mammals choose a Dominance Card.",
+        "actor": "mammals",
+        "card": 7
+      },
+      {
+        "turn": 4,
+        "title": "Mammals took Fertile",
+        "body": "Dominant on A2 Savannah. Use the physical card.",
+        "actor": "mammals",
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Fertile",
+        "body": "Red Queen: Fertile: Mammals gain 10 VP for all 10 species (every animal) at B2 Forest.",
+        "actor": "mammals",
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Amphibians · Domination",
+        "body": "Score D1 Jungle. Amphibians +6 VP, Arachnids +3 VP. Amphibians choose a Dominance Card.",
+        "actor": "amphibians",
+        "card": 6
+      },
+      {
+        "turn": 4,
+        "title": "Amphibians took Niche Biomes",
+        "body": "Dominant on D1 Jungle. Use the physical card.",
+        "actor": "amphibians",
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Niche Biomes",
+        "body": "No rival has a higher score.",
+        "actor": "amphibians",
+        "card": null
+      },
+      {
+        "turn": 4,
+        "title": "Extinction and Survival",
+        "body": "No cubes lost. Insects gain 10 Survival VP.",
+        "actor": null,
+        "card": null
+      },
+      {
+        "turn": 5,
+        "title": "Planning begins",
+        "body": "Initiative order · Reptiles → Amphibians → Insects → Arachnids → Mammals",
+        "actor": null,
+        "card": null
+      },
+      {
+        "turn": 5,
+        "title": "Reptiles placed a pawn",
+        "body": "Domination · space 2. Red Queen, Domination first: Domination.",
+        "actor": "reptiles",
+        "card": 3
+      },
+      {
+        "turn": 5,
+        "title": "Amphibians placed a pawn",
+        "body": "Domination · space 3. Red Queen, Domination first: Domination.",
+        "actor": "amphibians",
+        "card": 0
+      },
+      {
+        "turn": 5,
+        "title": "Arachnids placed a pawn",
+        "body": "Domination · space 4. Red Queen, Domination first: Domination.",
+        "actor": "arachnids",
+        "card": 3
+      },
+      {
+        "turn": 5,
+        "title": "Mammals placed a pawn",
+        "body": "Domination · space 5. Red Queen, Domination first: Domination.",
+        "actor": "mammals",
+        "card": 2
+      },
+      {
+        "turn": 5,
+        "title": "Reptiles placed a pawn",
+        "body": "Wanderlust · space 1. Red Queen, Card action 1: Wanderlust.",
+        "actor": "reptiles",
+        "card": 2
+      },
+      {
+        "turn": 5,
+        "title": "Amphibians placed a pawn",
+        "body": "Migration · 7. Red Queen, Card action 1: Migration.",
+        "actor": "amphibians",
+        "card": 2
+      },
+      {
+        "turn": 5,
+        "title": "Insects placed a pawn",
+        "body": "Competition · Wetland / Desert / Tundra",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 5,
+        "title": "Arachnids placed a pawn",
+        "body": "Wanderlust · space 2. Red Queen, Card action 1: Wanderlust.",
+        "actor": "arachnids",
+        "card": 5
+      },
+      {
+        "turn": 5,
+        "title": "Mammals placed a pawn",
+        "body": "Migration · 6. Red Queen, Card action 1: Migration.",
+        "actor": "mammals",
+        "card": 0
+      },
+      {
+        "turn": 5,
+        "title": "Reptiles placed a pawn",
+        "body": "Abundance · space 1. Red Queen, Card action 1: Abundance.",
+        "actor": "reptiles",
+        "card": 4
+      },
+      {
+        "turn": 5,
+        "title": "Amphibians placed a pawn",
+        "body": "Abundance · space 2. Red Queen, Card action 1: Abundance.",
+        "actor": "amphibians",
+        "card": 4
+      },
+      {
+        "turn": 5,
+        "title": "Insects placed a pawn",
+        "body": "Competition · Desert / Forest / Tundra",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 5,
+        "title": "Arachnids placed a pawn",
+        "body": "Depletion. Red Queen, Card action 1: Depletion.",
+        "actor": "arachnids",
+        "card": 4
+      },
+      {
+        "turn": 5,
+        "title": "Mammals placed a pawn",
+        "body": "Speciation · Grub. Red Queen, Card action 1: Speciation.",
+        "actor": "mammals",
+        "card": 1
+      },
+      {
+        "turn": 5,
+        "title": "Reptiles placed a pawn",
+        "body": "Speciation · Meat. Red Queen, Card action 1: Speciation.",
+        "actor": "reptiles",
+        "card": 5
+      },
+      {
+        "turn": 5,
+        "title": "Amphibians placed a pawn",
+        "body": "Speciation · Water. Red Queen, Card action 1: Speciation.",
+        "actor": "amphibians",
+        "card": 6
+      },
+      {
+        "turn": 5,
+        "title": "Insects placed a pawn",
+        "body": "Wanderlust · space 3",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 5,
+        "title": "Arachnids placed a pawn",
+        "body": "Speciation · Grass. Red Queen, Card action 1: Speciation.",
+        "actor": "arachnids",
+        "card": 6
+      },
+      {
+        "turn": 5,
+        "title": "Mammals placed a pawn",
+        "body": "Initiative. Red Queen, Card action 1: Initiative.",
+        "actor": "mammals",
+        "card": 7
+      },
+      {
+        "turn": 5,
+        "title": "Reptiles placed a pawn",
+        "body": "Adaptation · space 1. Red Queen, Fallback: Adaptation.",
+        "actor": "reptiles",
+        "card": 7
+      },
+      {
+        "turn": 5,
+        "title": "Amphibians placed a pawn",
+        "body": "Adaptation · space 2. Red Queen, Fallback: Adaptation.",
+        "actor": "amphibians",
+        "card": 7
+      },
+      {
+        "turn": 5,
+        "title": "Insects placed a pawn",
+        "body": "Migration · 5",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 5,
+        "title": "Arachnids placed a pawn",
+        "body": "Adaptation · space 3. Red Queen, Fallback: Adaptation.",
+        "actor": "arachnids",
+        "card": 7
+      },
+      {
+        "turn": 5,
+        "title": "Mammals placed a pawn",
+        "body": "Competition · Forest / Savannah / Tundra. Red Queen, Fallback: Competition.",
+        "actor": "mammals",
+        "card": 6
+      },
+      {
+        "turn": 5,
+        "title": "Reptiles placed a pawn",
+        "body": "Migration · 4. Red Queen, Card action 2: Migration.",
+        "actor": "reptiles",
+        "card": 0
+      },
+      {
+        "turn": 5,
+        "title": "Amphibians placed a pawn",
+        "body": "Competition · Sea / Jungle / Tundra. Red Queen, Fallback: Competition.",
+        "actor": "amphibians",
+        "card": 5
+      },
+      {
+        "turn": 5,
+        "title": "Insects placed a pawn",
+        "body": "Migration · 3",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 5,
+        "title": "Mammals placed a pawn",
+        "body": "Regression · space 1. Red Queen, Fallback: Regression.",
+        "actor": "mammals",
+        "card": 5
+      },
+      {
+        "turn": 5,
+        "title": "Execution begins",
+        "body": "Resolve the action display from top to bottom.",
+        "actor": null,
+        "card": null
+      },
+      {
+        "turn": 5,
+        "title": "Mammals · Initiative",
+        "body": "Red Queen: advance and move this pawn to Speciation · Sun.",
+        "actor": "mammals",
+        "card": 7
+      },
+      {
+        "turn": 5,
+        "title": "Reptiles · Adaptation",
+        "body": "Red Queen: take Grass from Adaptation position 1 and add it to its display.",
+        "actor": "reptiles",
+        "card": 7
+      },
+      {
+        "turn": 5,
+        "title": "Amphibians · Adaptation",
+        "body": "Red Queen: take Water from Adaptation position 2 and add it to its display.",
+        "actor": "amphibians",
+        "card": 7
+      },
+      {
+        "turn": 5,
+        "title": "Arachnids · Adaptation",
+        "body": "Red Queen: take Water from Adaptation position 3 and add it to its display.",
+        "actor": "arachnids",
+        "card": 7
+      },
+      {
+        "turn": 5,
+        "title": "Mammals · Regression",
+        "body": "Red Queen: protect an element.",
+        "actor": "mammals",
+        "card": 5
+      },
+      {
+        "turn": 5,
+        "title": "Reptiles · Abundance",
+        "body": "Red Queen: take Sun from Abundance position 2 and place it at the corner shared by B1 Sea (corner 5 on B1).",
+        "actor": "reptiles",
+        "card": 4
+      },
+      {
+        "turn": 5,
+        "title": "Amphibians · Abundance",
+        "body": "Red Queen: take Water from Abundance position 1 and place it at the corner shared by B1 Sea / C1 Sea (corner 6 on B1).",
+        "actor": "amphibians",
+        "card": 4
+      },
+      {
+        "turn": 5,
+        "title": "Wasteland loss",
+        "body": "Remove Grass at D3 Tundra / E3 Savannah / E4 Tundra.",
+        "actor": null,
+        "card": null
+      },
+      {
+        "turn": 5,
+        "title": "Arachnids · Depletion",
+        "body": "Red Queen: remove Sun from the corner shared by C1 Sea / C2 Jungle / D1 Jungle (corner 2 on C1).",
+        "actor": "arachnids",
+        "card": 4
+      },
+      {
+        "turn": 5,
+        "title": "Arachnids · Glaciation",
+        "body": "Cover D4 with tundra. Return all but one cube per animal to their gene pools. Remove Meat at corner 5 of D4. +6 VP.",
+        "actor": "arachnids",
+        "card": 3
+      },
+      {
+        "turn": 5,
+        "title": "Reptiles · Speciation",
+        "body": "Red Queen: use the Meat disk at the corner shared by B2 Forest / B3 Desert / C3 Tundra (corner 2 on B2). Add 3 cubes to B2 Forest, 2 cubes to B3 Desert, 1 cube to C3 Tundra.",
+        "actor": "reptiles",
+        "card": 5
+      },
+      {
+        "turn": 5,
+        "title": "Mammals · Speciation",
+        "body": "Red Queen: use the Sun disk at the corner shared by A2 Savannah / A3 Forest (corner 3 on A2). Add 3 cubes to A2 Savannah, 3 cubes to A3 Forest.",
+        "actor": "mammals",
+        "card": 7
+      },
+      {
+        "turn": 5,
+        "title": "Amphibians · Speciation",
+        "body": "Red Queen: use the Water disk at the corner shared by B1 Sea / C1 Sea / C2 Jungle (corner 1 on B1). Add 4 cubes to B1 Sea, 2 cubes to C1 Sea.",
+        "actor": "amphibians",
+        "card": 6
+      },
+      {
+        "turn": 5,
+        "title": "Mammals · Speciation",
+        "body": "Red Queen: use the Grub disk at the corner shared by A1 Jungle / B1 Sea / B2 Forest (corner 1 on A1). Add 4 cubes to B1 Sea, 2 cubes to A1 Jungle.",
+        "actor": "mammals",
+        "card": 1
+      },
+      {
+        "turn": 5,
+        "title": "Arachnids · Speciation",
+        "body": "Red Queen: use the Grass disk at the corner shared by C5 Mountain / D4 Tundra / D5 Wetland (corner 1 on C5). Add 4 cubes to D5 Wetland, 2 cubes to C5 Mountain, 1 cube to D4 Tundra.",
+        "actor": "arachnids",
+        "card": 6
+      },
+      {
+        "turn": 5,
+        "title": "Insects · Free Speciation",
+        "body": "Add 1 cube to A2 Savannah.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 5,
+        "title": "Reptiles · Wanderlust",
+        "body": "Red Queen: place the face-up Wetland from stack 2 at E5, and add Seed from Wanderlust position 1 at corner 4 of E5. +6 VP.",
+        "actor": "reptiles",
+        "card": 2
+      },
+      {
+        "turn": 5,
+        "title": "Reptiles · Wanderlust arrival",
+        "body": "Red Queen: arrival: keep the cubes where they are.",
+        "actor": "reptiles",
+        "card": null
+      },
+      {
+        "turn": 5,
+        "title": "Amphibians · Wanderlust arrival",
+        "body": "Red Queen: arrival: keep the cubes where they are.",
+        "actor": "amphibians",
+        "card": null
+      },
+      {
+        "turn": 5,
+        "title": "Arachnids · Wanderlust arrival",
+        "body": "Red Queen: arrival: Move 1 from D5 Wetland to E5 Wetland.",
+        "actor": "arachnids",
+        "card": null
+      },
+      {
+        "turn": 5,
+        "title": "Insects · Wanderlust arrival",
+        "body": "Move 2 from E4 Tundra to E5 Wetland.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 5,
+        "title": "Arachnids · Wanderlust",
+        "body": "Red Queen: place the face-up Savannah from stack 1 at E2, and add Grub from Wanderlust position 4 at corner 4 of E2. +6 VP.",
+        "actor": "arachnids",
+        "card": 5
+      },
+      {
+        "turn": 5,
+        "title": "Amphibians · Wanderlust arrival",
+        "body": "Red Queen: arrival: Move 1 from D1 Jungle to E2 Savannah.",
+        "actor": "amphibians",
+        "card": null
+      },
+      {
+        "turn": 5,
+        "title": "Arachnids · Wanderlust arrival",
+        "body": "Red Queen: arrival: keep the cubes where they are.",
+        "actor": "arachnids",
+        "card": null
+      },
+      {
+        "turn": 5,
+        "title": "Insects · Wanderlust arrival",
+        "body": "Keep the cubes where they are.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 5,
+        "title": "Insects · Wanderlust",
+        "body": "Place Savannah from stack 3 at F2. Add Sun at corner 3. +3 VP.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 5,
+        "title": "Amphibians · Wanderlust arrival",
+        "body": "Red Queen: arrival: keep the cubes where they are.",
+        "actor": "amphibians",
+        "card": null
+      },
+      {
+        "turn": 5,
+        "title": "Insects · Wanderlust arrival",
+        "body": "Move 1 from E3 Savannah to F2 Savannah.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 5,
+        "title": "Amphibians · Migration",
+        "body": "Red Queen: Move 1 from C2 Jungle to B2 Forest.",
+        "actor": "amphibians",
+        "card": 2
+      },
+      {
+        "turn": 5,
+        "title": "Mammals · Migration",
+        "body": "Red Queen: Move 1 from B2 Forest to C2 Jungle; Move 1 from A2 Savannah to B3 Desert.",
+        "actor": "mammals",
+        "card": 0
+      },
+      {
+        "turn": 5,
+        "title": "Insects · Migration",
+        "body": "Move 3 from D3 Tundra to E4 Tundra; Move 1 from A3 Forest to A2 Savannah; Move 1 from E4 Tundra to D4 Tundra.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 5,
+        "title": "Reptiles · Migration",
+        "body": "Red Queen: Move 1 from B1 Sea to C1 Sea; Move 1 from B2 Forest to A2 Savannah; Move 1 from B2 Forest to C2 Jungle.",
+        "actor": "reptiles",
+        "card": 0
+      },
+      {
+        "turn": 5,
+        "title": "Insects · Migration",
+        "body": "Move 1 from C4 Tundra to C3 Tundra; Move 1 from C4 Tundra to C5 Mountain.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 5,
+        "title": "Arachnids · Free Competition",
+        "body": "Red Queen: Remove one Reptiles cube at C1 Sea.",
+        "actor": "arachnids",
+        "card": null
+      },
+      {
+        "turn": 5,
+        "title": "Insects · Competition",
+        "body": "Remove one Amphibians cube at E4 Tundra; Remove one Arachnids cube at E5 Wetland; Remove one Mammals cube at B3 Desert.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 5,
+        "title": "Insects · Competition",
+        "body": "Remove one Amphibians cube at C3 Tundra; Remove one Arachnids cube at B3 Desert; Remove one Amphibians cube at B2 Forest.",
+        "actor": "insects",
+        "card": null
+      },
+      {
+        "turn": 5,
+        "title": "Mammals · Competition",
+        "body": "Red Queen: Remove one Insects cube at A3 Forest; Remove one Amphibians cube at A2 Savannah.",
+        "actor": "mammals",
+        "card": 6
+      },
+      {
+        "turn": 5,
+        "title": "Amphibians · Competition",
+        "body": "Red Queen: Remove one Reptiles cube at C3 Tundra; Remove one Arachnids cube at B1 Sea; Remove one Mammals cube at C2 Jungle.",
+        "actor": "amphibians",
+        "card": 5
+      },
+      {
+        "turn": 5,
+        "title": "Amphibians · Domination",
+        "body": "Score C1 Sea. Amphibians +9 VP, Arachnids +5 VP. Amphibians choose a Dominance Card.",
+        "actor": "amphibians",
+        "card": null
+      },
+      {
+        "turn": 5,
+        "title": "Amphibians took Aquatic",
+        "body": "Dominant on C1 Sea. Use the physical card.",
+        "actor": "amphibians",
+        "card": null
+      }
+    ],
+    "paper": {
+      "extra": 1,
+      "rivalTie": true,
+      "planFirst": true,
+      "speciesTie": true,
+      "level": "Expert"
+    },
+    "paperRivals": [
+      "amphibians",
+      "mammals",
+      "arachnids",
+      "reptiles"
+    ]
+  }
+}

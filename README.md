@@ -66,6 +66,7 @@ See [benchmark instructions](source/benchmark/README.md) and [results](BENCHMARK
 - **Paper rivals** — rules for running the rivals at the table without the app. See [PAPER_RIVALS.md](PAPER_RIVALS.md).
 - **v0.3.5** — two to five rivals, with the base game's pawns and cubes for each player count; seven-change quick mode for paper rivals.
 - **v0.3.6** — the app can run the printed Paper Rivals rules (four levels); one paper version with Block the leader.
+- **v1.0.1** — Aquatic with an empty gene pool follows the printed rule (GPT's v1.0.0 release audit); the rulebook's last hedging line removed.
 - **v1.0.0** — first full release. The two Red Queen choices are renamed **guided** (the app runs the rivals and tracks the board) and **deck only** (the app draws the cards; you run the rivals); playtest wording removed; two rulebook rows clarified. No change to play. See [the pre-release audit](AUDIT_v1.0.0.md).
 - **v0.5.7** — fresh PDFs and a check that catches stale ones; in cards-only play, How to play and Rival decks follow the mode (GPT's v0.5.6 re-audit).
 - **v0.5.6** — The Red Queen · cards only: the app draws each rival's cards and shows the rulebook and player aids, and you run the rivals yourself; Ice Age decision fixes and fuller card reminders for GPT's v0.5.5 re-audit; rulebook clarifications.

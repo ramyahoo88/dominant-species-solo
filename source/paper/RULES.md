@@ -44,7 +44,7 @@ Two people can add one Red Queen rival as the third animal to get a full three-p
 
 - Set up a normal three-player game with the rival as the third animal.
 - Run the rival exactly as in solo. Its **leader** is whichever opponent is highest on the VP track, so it presses whoever is winning, not one fixed person.
-- Start at Standard. The levels were set for one person against the rivals, so they may feel different with two.
+- Start at Standard, then move up or down a level to suit your table.
 
 ## Planning: placing a pawn
 

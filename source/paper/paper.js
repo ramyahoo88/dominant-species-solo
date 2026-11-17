@@ -403,7 +403,11 @@ function paperEffect(s, step) {
         const before = pRank(s,t,actor);
         s.tiles[t].cubes[actor] += n; const after = pRank(s,t,actor); s.tiles[t].cubes[actor] -= n;
         if (free && type0) delete s.corners[free];
-        return ok ? (after === 0 && before !== 0 ? 2 : after < before || before < 0 ? 1 : 0) * pFirstVP(s,t) : -1;
+        // v1.0.1 (GPT's v1.0.0 release audit): a rank is gained only by entering the ranking or moving up in it. With an
+        // empty gene pool (n = 0) an absent rival stays absent (-1), so it gains nothing, as the printed rule says.
+        // v1.0.0 credited any tile the rival was absent from. PAPER.oldAquaticRank (testing) restores it.
+        const gained = PAPER.oldAquaticRank ? after < before || before < 0 : before < 0 ? after >= 0 : after < before;
+        return ok ? (after === 0 && before !== 0 ? 2 : gained ? 1 : 0) * pFirstVP(s,t) : -1;
       };
       const tile = PAPER.simpleCards ? pBy(wet, t => match(s,t,actor) > 0 ? 1 : 0, t => pFirstVP(s,t)) : pBy(wet, score, t => pFirstVP(s,t));
       const corner = bagTypes.length ? pFreeCorner(s,tile) : null;

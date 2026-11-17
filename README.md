@@ -6,6 +6,9 @@ This is an independent fan project, not affiliated with or endorsed by GMT Games
 
 ## Play
 
+- [Play in browser on Solo Table](https://solo-table.pages.dev/games/dominant-species/)
+- [Download the standalone HTML](https://solo-table.pages.dev/downloads/dominant-species)
+
 Open `Dominant_Species_Solo.html` in any modern browser (desktop or Android). It is fully self-contained and works offline.
 
 ## Build

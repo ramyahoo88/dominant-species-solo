@@ -1,6 +1,6 @@
 'use strict';
 
-const VERSION = '0.5.7';
+const VERSION = '1.0.0';
 const SAVE_KEY = 'dominant-species-solo-v1';
 // GMT rules p. 4: of the 50 gathered cubes, one marks VP.
 const THREE_PLAYER_CUBES = 50;

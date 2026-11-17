@@ -1,5 +1,5 @@
 {
-  "rulebook": "2026-11-15",
+  "rulebook": "2026-11-16",
   "method": "Each cell is 360 games on seeds (block 200000) not used to tune the rules, played with v0.5.4 (rivals plan first, rival ties by most species then food chain, Empty Earth, board order, scaled Easy, Migration placement test, card skips). Lower means tougher rivals. In a perfectly even game the player would win 33% against two rivals, 25% against three, 20% against four and 17% against five.",
   "rows": [
     {

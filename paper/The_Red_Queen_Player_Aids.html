@@ -24,7 +24,7 @@ ol,ul{margin:2px 0;padding-left:17px}li{margin:1.5px 0}
 p{margin:3px 0}
 </style><body>
 <div class="page">
-<header><h1>1 · Planning: a rival places a pawn</h1><span>The Red Queen · player aid 1 of 10 · version 0.5.7</span></header>
+<header><h1>1 · Planning: a rival places a pawn</h1><span>The Red Queen · player aid 1 of 10 · version 1.0.0</span></header>
 <div class="cols"><div style="flex:1.15">
 <h2>Each time a rival places</h2>
 <p><b>Rivals plan first:</b> at the start of Planning each rival places 1 pawn, in Initiative order (skip a rival with no pawn left to place). Then go round the Initiative order as usual.</p>
@@ -64,7 +64,7 @@ p{margin:3px 0}
 </div>
 
 <div class="page">
-<header><h1>2 · Execution: resolving a rival's action</h1><span>The Red Queen · player aid 2 of 10 · version 0.5.7</span></header>
+<header><h1>2 · Execution: resolving a rival's action</h1><span>The Red Queen · player aid 2 of 10 · version 1.0.0</span></header>
 <p>If the rule finds nothing legal, the rival forfeits the action. <b>Ties</b> left over: between tiles, the higher first-place value, then board order; between corners or empty spots, board order (furthest left, then highest).</p>
 <table>
 <tr><th style="width:1in">Action</th><th>What the rival does</th></tr>
@@ -107,7 +107,7 @@ p{margin:3px 0}
 </div>
 
 <div class="page">
-<header><h1>3 · Dominance Cards</h1><span>The Red Queen · player aid 3 of 10 · version 0.5.7</span></header>
+<header><h1>3 · Dominance Cards</h1><span>The Red Queen · player aid 3 of 10 · version 1.0.0</span></header>
 <div class="cols"><div style="flex:.62">
 <h2>Which card it takes</h2>
 <p>The first available card in this order:</p>
@@ -128,7 +128,7 @@ p{margin:3px 0}
 </div><div>
 <h2>What it chooses</h2>
 <table class="small">
-<tr><td>Aquatic</td><td>If the bag has an element and a sea or wetland tile has a free corner, only those tiles are candidates. Adds 4 species (fewer if its gene pool is short), counted with its element on the tile's first free corner in board order: the tile where they make it first → where they gain a rank → one it matches → any (tie: value → board order). Element: its printed one if in the bag; otherwise as Habitat.</td></tr>
+<tr><td>Aquatic</td><td>If the bag has an element and a sea or wetland tile has a free corner, only those tiles are candidates. Adds 4 species (fewer if its gene pool is short), counted with its element on the tile's first free corner in board order: the tile where they move it into first place (not one where it is already first) → where they gain a rank → one it matches → any (tie: value → board order). Element: its printed one if in the bag; otherwise as Habitat.</td></tr>
 <tr><td>Biomass</td><td>On each crowded tile: a species of the first opponent in VP order present, else its own.</td></tr>
 <tr><td>Blight</td><td>The tile and kept disk leaving the most opposing species on surrounding tiles without a match (its own count −2 each). Tie: higher value → the tile's board order → the kept disk's.</td></tr>
 <tr><td>Catastrophe</td><td>A tile with species on it, removing the most opposing species (its own count −2; tie: value → board order). Keeps its own species there, else the lowest-VP opponent's (tie: lower in the food chain). On each adjacent tile removes the first opponent in VP order present; its own only if alone.</td></tr>
@@ -138,7 +138,7 @@ p{margin:3px 0}
 <tr><td>Habitat</td><td><b>Element:</b> its printed one; else one it added (earliest first); else the first in the bag by element order. <b>Corner:</b> touching the most tiles it occupies → touching the highest value (any touching tile) → board order. Occupies no tile with an empty corner: first empty corner in board order.</td></tr>
 <tr><td>Hibernation</td><td>Returns 5 eliminated species (all, if fewer) to a tile it matches: tundra first → a tile it is not on → where they gain a rank (tie: value → board order).</td></tr>
 <tr><td>Ice Sheet</td><td>As the Glaciation action.</td></tr>
-<tr><td>Instinct</td><td>An open space not yet resolved this turn, by Planning steps 1–3, 5 and 6. None: an open space already resolved; the pawn waits there for next turn (not on the final turn).</td></tr>
+<tr><td>Instinct</td><td>An open space not yet resolved this turn, by Planning steps 1–3, 5 and 6. None: any other open space, by the same steps; the pawn waits there for next turn (not on the final turn).</td></tr>
 <tr><td>Mass Exodus</td><td>Among occupied tiles with an adjacent tile on Earth, prefer one without its own species; then the one holding the most opposing species (tie: higher value → board order). Its own go to the adjacent tile it matches best (tie: higher value → board order); each opponent's to the one that opponent matches least (tie: lower value → board order).</td></tr>
 <tr><td>Metamorphosis</td><td>Swaps the added element on the fewest corners of its tiles (tie: added earliest) for the bag element on the most (tie: its printed type → element order).</td></tr>
 <tr><td>Predator</td><td>On each of its tiles: a species of the first opponent in VP order present.</td></tr>
@@ -147,7 +147,7 @@ p{margin:3px 0}
 </div>
 
 <div class="page">
-<header><h1>4 · Setup, terms and other decisions</h1><span>The Red Queen · player aid 4 of 10 · version 0.5.7</span></header>
+<header><h1>4 · Setup, terms and other decisions</h1><span>The Red Queen · player aid 4 of 10 · version 1.0.0</span></header>
 <div class="cols"><div>
 <h2>Setup</h2>
 <ol>
@@ -188,7 +188,7 @@ p{margin:3px 0}
 </div></div>
 </div>
 <div class="page">
-<header><h1><b class="tag" style="background:#eee7d8;color:#40372c">Mammals</b> rival</h1><span>The Red Queen · player aid 5 of 10 · version 0.5.7</span></header>
+<header><h1><b class="tag" style="background:#eee7d8;color:#40372c">Mammals</b> rival</h1><span>The Red Queen · player aid 5 of 10 · version 1.0.0</span></header>
 <div class="cols"><div style="flex:1.1">
 <h2>Its deck</h2>
 <p class="small">Draw one card each time it places a pawn (or roll a d8). Try the three actions in order (step 4).</p>
@@ -222,7 +222,7 @@ p{margin:3px 0}
 <h2>Dominance ties</h2>
 <p>Only rivals tie for the most matches: the rival with the most species on the tile, then the one higher in the food chain. A tie that includes you: no one is dominant.</p>
 </div></div></div><div class="page">
-<header><h1><b class="tag" style="background:#3d4c4b;color:#ffffff">Reptiles</b> rival</h1><span>The Red Queen · player aid 6 of 10 · version 0.5.7</span></header>
+<header><h1><b class="tag" style="background:#3d4c4b;color:#ffffff">Reptiles</b> rival</h1><span>The Red Queen · player aid 6 of 10 · version 1.0.0</span></header>
 <div class="cols"><div style="flex:1.1">
 <h2>Its deck</h2>
 <p class="small">Draw one card each time it places a pawn (or roll a d8). Try the three actions in order (step 4).</p>
@@ -256,7 +256,7 @@ p{margin:3px 0}
 <h2>Dominance ties</h2>
 <p>Only rivals tie for the most matches: the rival with the most species on the tile, then the one higher in the food chain. A tie that includes you: no one is dominant.</p>
 </div></div></div><div class="page">
-<header><h1><b class="tag" style="background:#ead174;color:#302713">Birds</b> rival</h1><span>The Red Queen · player aid 7 of 10 · version 0.5.7</span></header>
+<header><h1><b class="tag" style="background:#ead174;color:#302713">Birds</b> rival</h1><span>The Red Queen · player aid 7 of 10 · version 1.0.0</span></header>
 <div class="cols"><div style="flex:1.1">
 <h2>Its deck</h2>
 <p class="small">Draw one card each time it places a pawn (or roll a d8). Try the three actions in order (step 4).</p>
@@ -290,7 +290,7 @@ p{margin:3px 0}
 <h2>Dominance ties</h2>
 <p>Only rivals tie for the most matches: the rival with the most species on the tile, then the one higher in the food chain. A tie that includes you: no one is dominant.</p>
 </div></div></div><div class="page">
-<header><h1><b class="tag" style="background:#8ec7db;color:#173746">Amphibians</b> rival</h1><span>The Red Queen · player aid 8 of 10 · version 0.5.7</span></header>
+<header><h1><b class="tag" style="background:#8ec7db;color:#173746">Amphibians</b> rival</h1><span>The Red Queen · player aid 8 of 10 · version 1.0.0</span></header>
 <div class="cols"><div style="flex:1.1">
 <h2>Its deck</h2>
 <p class="small">Draw one card each time it places a pawn (or roll a d8). Try the three actions in order (step 4).</p>
@@ -324,7 +324,7 @@ p{margin:3px 0}
 <h2>Dominance ties</h2>
 <p>Only rivals tie for the most matches: the rival with the most species on the tile, then the one higher in the food chain. A tie that includes you: no one is dominant.</p>
 </div></div></div><div class="page">
-<header><h1><b class="tag" style="background:#db9b91;color:#40231f">Arachnids</b> rival</h1><span>The Red Queen · player aid 9 of 10 · version 0.5.7</span></header>
+<header><h1><b class="tag" style="background:#db9b91;color:#40231f">Arachnids</b> rival</h1><span>The Red Queen · player aid 9 of 10 · version 1.0.0</span></header>
 <div class="cols"><div style="flex:1.1">
 <h2>Its deck</h2>
 <p class="small">Draw one card each time it places a pawn (or roll a d8). Try the three actions in order (step 4).</p>
@@ -358,7 +358,7 @@ p{margin:3px 0}
 <h2>Dominance ties</h2>
 <p>Only rivals tie for the most matches: the rival with the most species on the tile, then the one higher in the food chain. A tie that includes you: no one is dominant.</p>
 </div></div></div><div class="page">
-<header><h1><b class="tag" style="background:#a5c2a0;color:#25382a">Insects</b> rival</h1><span>The Red Queen · player aid 10 of 10 · version 0.5.7</span></header>
+<header><h1><b class="tag" style="background:#a5c2a0;color:#25382a">Insects</b> rival</h1><span>The Red Queen · player aid 10 of 10 · version 1.0.0</span></header>
 <div class="cols"><div style="flex:1.1">
 <h2>Its deck</h2>
 <p class="small">Draw one card each time it places a pawn (or roll a d8). Try the three actions in order (step 4).</p>

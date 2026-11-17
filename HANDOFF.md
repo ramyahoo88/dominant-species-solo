@@ -1,14 +1,14 @@
 # Dominant Species solo companion audit handoff
 
-Current review build is v0.5.7: two to five rivals, and a choice between the app's own rivals (Tooth & Claw), the printed rivals run by the app (The Red Queen), and The Red Queen in cards-only mode, where the app draws the cards and you run the rules (printable copies in [`paper/`](paper/)). See [release notes](CHANGELOG.md), [the response to GPT's v0.5.6 re-audit](AUDIT_RESPONSE_v0.5.6.md), [the response to GPT's v0.5.5 re-audit](AUDIT_RESPONSE_v0.5.5.md), [the response to GPT's v0.5.4 re-audits](AUDIT_RESPONSE_v0.5.4.md), [the response to GPT's v0.5.3 re-audit](AUDIT_RESPONSE_v0.5.3.md), [the response to GPT's v0.5.2 re-audit](AUDIT_RESPONSE_v0.5.2.md), [the response to GPT's v0.5.1 re-audit](AUDIT_RESPONSE_v0.5.1.md), [the response to GPT's v0.5.0 audit](AUDIT_RESPONSE_v0.5.0.md), [the response to GPT's v0.4.1 follow-up](AUDIT_RESPONSE_v0.4.1.md), [the response to GPT's v0.4.0 audit](AUDIT_RESPONSE_v0.4.0.md), [the response to GPT's v0.3.8 re-audit](AUDIT_RESPONSE_v0.3.8.md), [the response to GPT's v0.3.7 re-audit](AUDIT_RESPONSE_v0.3.7.md), [the response to GPT's v0.3.6 audit](AUDIT_RESPONSE_v0.3.6.md), [the v0.3.5 audit](AUDIT_v0.3.5.md), [paired benchmark results](BENCHMARK_RESULTS.md), and [Claude’s v0.2.0 review](REVIEW.md). The first-build handoff below records the original v0.1.0 scope and baseline. The source accepts v0.1 through v0.5.6 saves. UI regressions: `source/browser_test.py`, `source/browser_migration_test.py`, `source/browser_game_test.py`, `source/browser_restart_test.py`, `source/browser_setup_text_test.py`, `source/browser_draw_test.py`.
+Current release is v1.0.0: two to five rivals, and a choice between the app's own rivals (Tooth & Claw), The Red Queen · guided (the printed rivals, run by the app) and The Red Queen · deck only (the app draws the cards and you run the rules; printable copies in [`paper/`](paper/)). See [release notes](CHANGELOG.md), [the v1.0.0 pre-release audit](AUDIT_v1.0.0.md), [the response to GPT's v0.5.6 re-audit](AUDIT_RESPONSE_v0.5.6.md), [the response to GPT's v0.5.5 re-audit](AUDIT_RESPONSE_v0.5.5.md), [the response to GPT's v0.5.4 re-audits](AUDIT_RESPONSE_v0.5.4.md), [the response to GPT's v0.5.3 re-audit](AUDIT_RESPONSE_v0.5.3.md), [the response to GPT's v0.5.2 re-audit](AUDIT_RESPONSE_v0.5.2.md), [the response to GPT's v0.5.1 re-audit](AUDIT_RESPONSE_v0.5.1.md), [the response to GPT's v0.5.0 audit](AUDIT_RESPONSE_v0.5.0.md), [the response to GPT's v0.4.1 follow-up](AUDIT_RESPONSE_v0.4.1.md), [the response to GPT's v0.4.0 audit](AUDIT_RESPONSE_v0.4.0.md), [the response to GPT's v0.3.8 re-audit](AUDIT_RESPONSE_v0.3.8.md), [the response to GPT's v0.3.7 re-audit](AUDIT_RESPONSE_v0.3.7.md), [the response to GPT's v0.3.6 audit](AUDIT_RESPONSE_v0.3.6.md), [the v0.3.5 audit](AUDIT_v0.3.5.md), [paired benchmark results](BENCHMARK_RESULTS.md), and [Claude’s v0.2.0 review](REVIEW.md). The first-build handoff below records the original v0.1.0 scope and baseline. The source accepts v0.1 through v0.5.7 saves. Stress test for The Red Queen: `source/redqueen_fuzz.cjs`. UI regressions: `source/browser_test.py`, `source/browser_migration_test.py`, `source/browser_game_test.py`, `source/browser_restart_test.py`, `source/browser_setup_text_test.py`, `source/browser_draw_test.py`.
 
 For the next audit, run the targeted rules and Chromium checks in the README, then compare rival changes on fresh seeds. Open items: the paper rivals ([PAPER_RIVALS.md](PAPER_RIVALS.md)) have not been played at a real table; card-chasing remains the strongest scripted strategy against all rivals; the Empty Earth rule (v0.5.1) ends the known six-animal stalls, but one reseeded disk does not guarantee species return, so the benchmark still reports games that reach its 30-turn cap. Prioritize exact card effects, hard cases around Instinct or queued Glaciation, and which starting animals the scripts favor. Keep role-specific results separate from animal balance claims.
 
-## Request for Gemini
+## Request for Gemini (the original v0.1.0 handoff, kept for reference)
 
 Audit this first playable build of an offline solo companion for Chad Jensen’s original GMT edition of *Dominant Species*. Start by reproducing the baseline and checking important rules and player-facing instructions against GMT’s rulebook and the physical components. Give each finding a severity, a concrete example, a rule citation where applicable, and a source location. Then propose a small, testable improvement that makes the rivals play more like people in a three-player game.
 
-This project is an independent fan playtest. The aim is to have a credible public beta for the existing GMT box ahead of Allplay’s solo launch. Public previews can inform the design when they disclose a specific mechanic. Credit any published idea you propose to use.
+This project is an independent fan project for the existing GMT box. Public previews can inform the design when they disclose a specific mechanic. Credit any published idea you propose to use.
 
 ## Design requirements
 
@@ -39,12 +39,12 @@ node source/smoke.cjs --check
 The build produces `source/dist/Dominant_Species_Solo.html`. Its expected SHA-256 is:
 
 ```text
-7cf1647025658147a4bdec538056636dad031b925fc2827bd562db63cd826c6c
+9ccfbc27ff89abced44d1761e564255cd9334af7292823d7bee66ff9d2a09465
 ```
 
 The smoke check finished all 60 matchups through Ice Age and final scoring. It used one seeded game per matchup, split evenly between short and full games, with seeds 100–159. The human seat uses a bot heuristic in the harness. Terrain reveals are sampled with replacement, and `maxTime` is an environment-dependent timing field. Treat this as reachability and state validation. Balance, rules parity in unusual situations, and human play quality still need dedicated evidence.
 
-Earlier browser checks covered setup, deck browsing, one full Planning round, action confirmation, save resume, and a 390 px layout. Physical playtesting remains open.
+Earlier browser checks covered setup, deck browsing, one full Planning round, action confirmation, save resume, and a 390 px layout. Play at a real table has not been checked.
 
 ## Where to look
 
@@ -55,7 +55,7 @@ Earlier browser checks covered setup, deck browsing, one full Planning round, ac
 | Action sequence and animal powers | `engine.js`, `forms.js` | Regression and Wasteland timing, Birds’ movement, free Insect and Arachnid actions, Mammal Extinction save, and legal human inputs |
 | Scoring and card effects | `engine.js`, `effects.js`, `forms.js` | Cube majority versus element dominance, card recipient, event timing, Survival, Ice Age, and final scoring |
 | Tabletop synchronization | `ui.js`, `controls.js` | Accurate instructions for pawn, cube, element, cone, and score changes, plus undo and save recovery |
-| State and save compatibility | `ui.js`, `controls.js`, `data.js` | Validate imported data and retain existing playtest saves when the app version changes |
+| State and save compatibility | `ui.js`, `controls.js`, `data.js` | Validate imported data and retain existing saves when the app version changes |
 
 All listed modules live under `source/src/`. The current save envelope uses the format `dominant-species-solo-v1`, and `validateState` also checks the application version. Test loading a v0.1.0 save if proposing a version bump.
 

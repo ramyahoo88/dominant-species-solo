@@ -56,7 +56,7 @@ function drawCard(s, actor) {
   d.discards.push(index);
   return index;
 }
-// The Red Queen, cards only (v0.5.6): the app keeps each rival's deck and the player runs the printed rules. No board is
+// The Red Queen, deck only (v0.5.6; named cards only before v1.0.0, hence the format id): the app keeps each rival's deck and the player runs the printed rules. No board is
 // tracked, so this is its own small state, saved under its own key; it shares the deck shuffle and draw with full games.
 const DRAW_FORMAT = 'red-queen-cards-only-v1';
 function newDrawGame(human, rivals, extra, seed) {

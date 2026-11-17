@@ -1,5 +1,18 @@
 # Release notes
 
+## v1.0.0 · November 16, 2026 · first full release: The Red Queen · guided and · deck only; playtest wording removed; pre-release audit
+
+- **No change to play.** The rules modules are byte-identical to v0.5.7 (`paper.js`, `bot.js`, `effects.js`, `forms.js`, `decks.js`), and 27 games played on both versions with the same inputs end in identical states. The difficulty table, X35 and best against best stand as measured.
+- **Mode names (the user's request):** "printed rivals" and "cards only" read too alike. The setup screen now offers **The Red Queen · guided** (the app runs the rivals by the printed rules and tracks the board) and **The Red Queen · deck only** (the app only shuffles and draws each rival's deck; you run the rivals). Each shows a one-line description when chosen. A deck-only export is now named `The_Red_Queen_Deck_Only.json`. Save formats and storage keys are unchanged, so earlier saves and exports of both kinds still open.
+- **Playtest wording removed:** the footer reads "Unofficial solo companion · Original GMT edition · v1.0.0" (it said "Unofficial solo playtest"); HANDOFF.md no longer calls the project a playtest or public beta. Dated history (this file's older entries, the audit responses, the balance log) is left as written.
+- **How to play** states the current rules without version history. A game saved by an older version gets one notice listing every rule it keeps: its level and Planning order (before v0.5.0), −2 pawns for each rival in five-rival Easy (v0.5.0–v0.5.2), and its rival tie rule (before v0.5.4). The old notice left out the food-chain-only tie of v0.4.x games and the flat five-rival Easy.
+- **Guided games:** the drawn card is headed "<Animal> · card N" with "Its three actions, tried in order (Planning step 4)" (it said "Reverse face"); the button reads "Draw a rival card" (it said "bot card"). Rival decks describes the cards as printed.
+- **Rulebook and aids, two rows clarified to match the app:** Aquatic counts a tile only if the species *move* the rival into first place (a tile where it is already first does not count); Instinct, with no space left this turn, takes any other open space by the same steps and waits there (this includes Glaciation spaces 2–4). Rulebook date 16 November 2026. PDFs regenerated.
+- **Page description:** "Two to five card-driven solo rivals…" (it said two).
+- **Pre-release audit** ([AUDIT_v1.0.0.md](AUDIT_v1.0.0.md)): base-game rules and all 26 cards, The Red Queen's code against its rulebook, aids and cards row by row, saves, and a new stress test (`source/redqueen_fuzz.cjs`: complete games against an erratic player, state checks every step, save copies, a replay of every game, no decision outside the printed rules; 688 games, 234,064 steps, no errors). No rule defects.
+- **Tests:** 58 rules tests (the migration test now covers every version through v0.5.7); browser tests updated for the new names and the older-save notices; `check_print_fit.py` passes (no clipped text, PDFs current).
+- Reproducible build: SHA-256 9ccfbc27… (full hash in `HANDOFF.md`); accepts v0.1–v0.5.7 saves.
+
 ## v0.5.7 · November 15, 2026 · fixes for GPT's v0.5.6 re-audit: fresh PDFs; header references follow the cards-only mode
 
 - **PDFs regenerated (GPT finding 1):** v0.5.6's three PDFs were built before the last rulebook clarifications and card reminders (the HTML, Markdown and the app's built-in copy were current; the PDFs were not rebuilt). They now match the sources. `printables.py` says when it leaves the PDFs untouched, and `source/paper/check_print_fit.py` now also fails on stale PDFs: it checks the version, every card reminder and the legend, and every paragraph and list item of the rulebook's prose against the PDF text.

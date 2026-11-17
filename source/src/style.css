@@ -197,7 +197,7 @@ dialog::backdrop{background:#132d2c88}
   .wrap{padding-inline:18px}.game-grid{grid-template-columns:minmax(0,1fr) minmax(0,.9fr)}
   .block{padding:14px}.board-panel{padding:11px}.action-row{grid-template-columns:96px minmax(0,1fr)}
 }
-/* The Red Queen, cards only (v0.5.6) */
+/* The Red Queen, deck only (v0.5.6) */
 .rq-intro h2{font-size:30px;margin-bottom:6px}.rq-intro .muted{margin-top:7px;font-size:13px}
 .rq-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px;margin:14px 0}
 .rq-deck{padding:15px 16px;display:flex;flex-direction:column;gap:10px}.rq-deck .block-head{margin:0}

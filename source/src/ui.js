@@ -27,7 +27,7 @@ const cardRows = face => '<div class="card-flow">' + face.rows.map(row => '<span
 let game = null;
 let undo = [];
 let setup = {human:'amphibians',bots:['birds','arachnids'],short:true,paper:false,draw:false,extra:-1}; // extra: Standard on the Paper scale
-let drawGame = null; // The Red Queen, cards only (v0.5.6): decks without a board; never set at the same time as game
+let drawGame = null; // The Red Queen, deck only (v0.5.6; named cards only before v1.0.0): decks without a board; never set at the same time as game
 const DRAW_KEY = 'dominant-species-red-queen-cards-v1';
 // Re-measured for v0.3.8: +0 is a little easier than an even game, +1 a little tougher, +2 about as tough as the app's rivals.
 // v0.4.0: the rival tie-break makes paper rivals about one pawn stronger, so every level is one pawn lower.
@@ -95,9 +95,9 @@ function saveContents() {
   const supply = game.phase === 'supply' ? draft : undefined;
   return JSON.stringify({format:SAVE_KEY,game,supply});
 }
-// A cards-only save: each rival's eight cards split between its draw pile and its discards, and the draw history.
+// A deck-only save: each rival's eight cards split between its draw pile and its discards, and the draw history.
 function validateDraw(s) {
-  function assert(ok) { if (!ok) throw new Error('This is not a valid cards-only save for The Red Queen.'); }
+  function assert(ok) { if (!ok) throw new Error('This is not a valid deck-only save for The Red Queen.'); }
   assert(s && s.format === DRAW_FORMAT && typeof s.version === 'string' && FOOD.includes(s.human) && Array.isArray(s.rivals) &&
     s.rivals.length >= 2 && s.rivals.length <= 5 && unique([s.human, ...s.rivals]).length === s.rivals.length + 1 && s.rivals.every(id => FOOD.includes(id)) &&
     PAPER_LEVELS.some(([n]) => n === s.extra) && num(s.seed) && s.seed <= 0xffffffff && num(s.rng) && s.rng <= 0xffffffff && s.decks &&
@@ -134,7 +134,7 @@ function readSupplyDraft(s, raw) {
 function validateState(s) {
   function assert(ok) { if (!ok) throw new Error('This is not a valid Dominant Species companion save.'); }
   recordPaperLevel(s); // before the version is replaced: the level scale depends on it
-  if (s && ['0.1.0', '0.2.0', '0.3.0', '0.3.1', '0.3.2', '0.3.3', '0.3.4', '0.3.5', '0.3.6', '0.3.7', '0.3.8', '0.3.9', '0.4.0', '0.4.1', '0.5.0', '0.5.1', '0.5.2', '0.5.3', '0.5.4', '0.5.5', '0.5.6'].includes(s.version)) s.version = VERSION;
+  if (s && ['0.1.0', '0.2.0', '0.3.0', '0.3.1', '0.3.2', '0.3.3', '0.3.4', '0.3.5', '0.3.6', '0.3.7', '0.3.8', '0.3.9', '0.4.0', '0.4.1', '0.5.0', '0.5.1', '0.5.2', '0.5.3', '0.5.4', '0.5.5', '0.5.6', '0.5.7'].includes(s.version)) s.version = VERSION;
   const keys = value => value && typeof value === 'object' ? Object.keys(value) : [];
   assert(s && s.version === VERSION && ['supply','planning','execution','finished'].includes(s.phase) &&
     num(s.turn) && s.turn > 0 && num(s.rng) && s.rng <= 0xffffffff && num(s.seed) && s.seed <= 0xffffffff);
@@ -262,9 +262,10 @@ function setupPage() {
       (setup.bots.length === n ? ' checked' : '') + '> ' + n + '</label>').join('') + '</div></fieldset><div class="seats">' + seats.map(seat).join('') + '</div><p class="seat-hint">Choosing an animal already at the table swaps the two seats.</p><div class="setup-bottom">' +
     '<fieldset><legend>Rival rules</legend><div class="segment">' +
     '<label><input name="rules" type="radio" value="app"' + (!setup.paper ? ' checked' : '') + '> Tooth &amp; Claw · app rivals</label>' +
-    '<label><input name="rules" type="radio" value="paper"' + (setup.paper && !setup.draw ? ' checked' : '') + '> The Red Queen · printed rivals</label>' +
-    '<label><input name="rules" type="radio" value="draw"' + (setup.draw ? ' checked' : '') + '> The Red Queen · cards only</label></div>' +
-    (setup.draw ? '<p class="seat-hint">The app shuffles and draws each rival’s cards and keeps the rulebook and player aids at hand. You run the rivals yourself; nothing on the board is tracked.</p>' : '') +
+    '<label><input name="rules" type="radio" value="paper"' + (setup.paper && !setup.draw ? ' checked' : '') + '> The Red Queen · guided</label>' +
+    '<label><input name="rules" type="radio" value="draw"' + (setup.draw ? ' checked' : '') + '> The Red Queen · deck only</label></div>' +
+    (setup.draw ? '<p class="seat-hint"><b>Deck only:</b> the app only shuffles and draws each rival’s deck, with the rulebook and player aids at hand. You run the rivals yourself; nothing on the board is tracked.</p>' :
+      setup.paper ? '<p class="seat-hint"><b>Guided:</b> the app runs the rivals by the printed Red Queen rules, tracks the board and tells you each change to make on your table.</p>' : '') +
     (setup.paper ? '<div class="segment paper-level">' + PAPER_LEVELS.map(([n,name]) => '<label><input name="extra" type="radio" value="' + n + '"' + (setup.extra === n ? ' checked' : '') + '> ' + name + ' · ' + (n === -2 && setup.bots.length === 5 ? '−1 pawn, you +1' : (n < 0 ? '−' + -n : '+' + n) + ' pawn' + (Math.abs(n) === 1 ? '' : 's')) + '</label>').join('') + '</div>' : '') +
     '</fieldset>' +
     (setup.draw ? '' : '<fieldset><legend>Dominance deck</legend><div class="segment">' +
@@ -402,15 +403,15 @@ function drawPanel() {
     const left = game.decks[reveal.actor].queue.length || DECKS[reveal.actor].length;
     return '<div class="block-head"><h2 id="turn-focus" tabindex="-1">Place the pawn</h2><span class="phase-badge">Planning</span></div>' +
       '<p class="actorline">' + badge(reveal.actor,true) + nameOf(reveal.actor) + ' · ' + (left - 1) + ' left in deck</p>' +
-      '<div class="current-card"><p class="eyebrow">' + (reveal.face ? 'Primary face' : 'Reverse face') + '</p><p class="display">' + card.title +
-      '</p><p class="muted">' + (game.paper ? 'The Red Queen always uses this face.' : CHECKS[card.check] + ' · ' + (reveal.face ? 'Yes' : 'No')) + '</p>' + cardRows(face) + '</div>' +
+      '<div class="current-card"><p class="eyebrow">' + (game.paper ? nameOf(reveal.actor) + ' · card ' + (reveal.card + 1) : reveal.face ? 'Primary face' : 'Reverse face') + '</p><p class="display">' + card.title +
+      '</p><p class="muted">' + (game.paper ? 'Its three actions, tried in order (Planning step 4).' : CHECKS[card.check] + ' · ' + (reveal.face ? 'Yes' : 'No')) + '</p>' + cardRows(face) + '</div>' +
       '<div class="result-box"><strong>' + slotLabel(reveal.slot) + '</strong><p>' + reveal.reason + '</p></div>' +
       button('Pawn placed · Continue','next','primary');
   }
   if (!planner) return '';
   const actor = planner.actor;
   const yours = actor === game.human;
-  return '<div class="block-head"><h2 id="turn-focus" tabindex="-1">' + (yours ? 'Place your pawn' : 'Draw a bot card') + '</h2><span class="phase-badge">Planning</span></div>' +
+  return '<div class="block-head"><h2 id="turn-focus" tabindex="-1">' + (yours ? 'Place your pawn' : 'Draw a rival card') + '</h2><span class="phase-badge">Planning</span></div>' +
     '<p class="actorline">' + badge(actor,true) + nameOf(actor) + ' · ' + game.animals[actor].remaining + ' pawns to place</p>' +
     '<p class="instruction">' + (yours ? 'Choose an open space, then place the matching pawn on your board.' :
       'Reveal the next card from this rival’s deck. The app will choose an open action space.') + '</p>' +
@@ -485,7 +486,7 @@ function render(focus = false, noScroll = false) {
   if (focus) document.getElementById('turn-focus')?.focus({preventScroll:noScroll});
 }
 
-// The Red Queen, cards only (v0.5.6). One deck per rival; the player resolves every rule from the rulebook.
+// The Red Queen, deck only (v0.5.6). One deck per rival; the player resolves every rule from the rulebook.
 function rivalPawns(s) {
   const [pawns, cubes] = SETUP_BY_PLAYERS[s.rivals.length + 1];
   const scaled = s.extra === -2 && s.rivals.length === 5; // Easy with five rivals: −1 for each rival and +1 for you
@@ -519,7 +520,7 @@ function drawPage(focus = false) {
   }).join('');
   const recent = s.draws.slice(-12).reverse().map(x => '<li>' + badge(x.actor, true) + nameOf(x.actor) + ' · ' + (x.card + 1) + ' ' +
     esc(DECKS[x.actor][x.card].title) + (x.reshuffled ? ' · reshuffled first' : '') + '</li>').join('');
-  main.innerHTML = '<div class="game-top rq-top"><div><p class="eyebrow">The Red Queen · cards only · ' + esc(paperLevel(s.extra)) + '</p><h1>Rival decks</h1></div>' +
+  main.innerHTML = '<div class="game-top rq-top"><div><p class="eyebrow">The Red Queen · deck only · ' + esc(paperLevel(s.extra)) + '</p><h1>Rival decks</h1></div>' +
     '<div class="toolrow">' + button('Rules','rules','sm subtle') + button('Player aids','aids','sm subtle') + button('Undo','undo','sm subtle',enable(undo.length > 0)) + '</div></div>' +
     '<section class="panel block rq-intro"><div id="notice" class="notice" role="alert"' + (notice ? '' : ' hidden') + '>' + esc(notice) + '</div>' +
     '<h2 id="turn-focus" tabindex="-1">You run the rivals</h2><p class="instruction">Draw a rival’s card each time it places a pawn in Planning, including the pawn it places before anyone else. ' +

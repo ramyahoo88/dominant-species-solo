@@ -58,11 +58,23 @@ for case in [("0.3.6", -1, -2), ("0.3.6", 0, -1), ("0.3.9", 1, -1), ("0.3.9", 3,
     print("PASS", run(*case))
 # R1: a legacy save's Help names its level and the old tie result; a new game's Help has no such notice.
 legacy = help_text(old_save("0.3.6", 0))
-assert "This saved game was started before v0.4.0" in legacy and "Standard (+0 pawns per rival)" in legacy and "In Red Queen games started in v0.4.0 or later" in legacy, legacy
+assert "This saved game was started before v0.4.0" in legacy and "Standard (+0 pawns per rival)" in legacy and "in place of the ones above" in legacy and "a tie between rivals leaves the tile with no dominant animal" in legacy, legacy
 v04 = help_text(old_save("0.4.1", 1, True))
-assert "This saved game was started before v0.5.0" in v04 and "Hard (+1 pawn per rival)" in v04, v04
+assert "This saved game was started before v0.5.0" in v04 and "Hard (+1 pawn per rival)" in v04 and "in place of the ones above" in v04 and "the one higher in the food chain is dominant" in v04 and "a tie between rivals leaves the tile with no dominant animal" not in v04, v04
+# v1.0.0: every rule an older save keeps is named. A five-rival Easy game from v0.5.0-v0.5.2 keeps -2 for each rival (and the
+# food-chain tie); a v0.5.3 game keeps only the food-chain tie; a current game has no notice.
+five = json.loads((ROOT / "source/fixtures/gpt-v053-legacy-v052-five-easy.json").read_text())
+five = five.get("game", five)
+assert five["paper"]["extra"] == -2 and len(five["rivals"]) == 5 and not five["paper"].get("scaledEasy"), five["paper"]
+flat = help_text(five)
+assert "This saved game was started before v0.5.3" in flat and "Easy is −2 pawns for each rival, with no extra pawn for you" in flat and "the one higher in the food chain is dominant" in flat, flat
+scaled = json.loads((ROOT / "source/fixtures/gpt-v053-new-five-easy.json").read_text()); scaled = scaled.get("game", scaled)
+assert scaled["paper"].get("scaledEasy"), scaled["paper"]
+now = help_text(scaled)
+assert ("This saved game was started before v0.5.4" in now) == (not scaled["paper"].get("speciesTie")) and "Easy is −2 pawns" not in now, now
 fresh = help_text(None)
-assert "This saved game" not in fresh and "In Red Queen games started in v0.4.0 or later" in fresh and "place one pawn each before anyone else" in fresh and "any empty corner" in fresh and "any empty corner" in legacy, fresh
+# v1.0.0: How to play states the current rules without version history; a legacy save adds its own notice.
+assert "This saved game" not in fresh and "from v0." not in fresh and "or later" not in fresh and "The Red Queen · guided" in fresh and "The Red Queen · deck only" in fresh and "place one pawn each before anyone else" in fresh and "any empty corner" in fresh and "any empty corner" in legacy, fresh
 print("PASS Help notice for a legacy Paper save")
 
 # Restart from an App-rivals game, then switch to Paper rules: Standard (-1) is preselected, not the old 0 (now Hard).

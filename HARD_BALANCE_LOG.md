@@ -558,3 +558,15 @@ Sources: `ba67`, `ba34`, `pb_c1`–`c3`, `pb_e1`, `pb_e2`.
 - **Not re-measured** (the user's call: minor). The smoke check is unchanged. The queued PC jobs `bp01`–`bp41` were replaced with no-op selftests before they started.
 - **Cards-only mode** draws with the full game's shuffle and draw code and tracks no board; nothing in play changes.
 
+### 16 Nov — look-ahead test player; four Domination variants tested, none adopted; v1.0.0 (no change to play)
+
+- **Look-ahead (search) player** (player-bot's `--search 4:8` on pb5; 530000, 60 paired tables a cell): X35 +0.91 against pb5's +0.79 on the same tables, a difference of +0.12. It is much stronger than pb5 everywhere (about +40 points of win rate at Hard and against Tooth & Claw alike), so it does not find a bigger hole in The Red Queen than pb5 does.
+- **Current rules, best against best X35 (470000 / 490000; `bs01`–`bs16`):** Easy −0.36 / −0.34, Standard −0.21 / −0.27, Hard −0.20 / −0.16, Expert −0.01 / −0.17. Pooled pb5 win %: 86 / 64 / 37 / 24; Tooth & Claw 42.
+- **Four test-only Domination variants** (branch `claude/domnet-test`, never on main):
+  - `domNet` (score the tile with the most VP net of the leader's): easier and a bit more exploitable.
+  - `domNetYou` (net of the player's): about one level harder, hitting simple play hardest (best against best up to +0.58 at Expert).
+  - `domCap1` (one Domination claim a turn): much easier (always-Domination at Hard 17% → 31%).
+  - `blockNet` (a Block the leader pawn scores the tile giving the leader least): difficulty kept, best against best at Hard +0.17 / −0.01 from −0.20 / −0.16.
+  - **None adopted:** none closes the look-ahead player's gain without making the game easier or more exploitable. Reported to the user; the rules stay as they are.
+- **v1.0.0:** names and wording only; the rules modules are byte-identical to v0.5.7 and 27 paired games end identically, so nothing was re-measured. Pre-release audit in `AUDIT_v1.0.0.md`. One observation left as is: a rival's Domination pawn that can earn nothing still scores the best tile (1–5% of rival Domination pawns with the reference player).
+

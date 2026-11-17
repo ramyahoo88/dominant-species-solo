@@ -90,9 +90,9 @@ def difficulty(ladder):
             + "".join(f"| {name} | {pawns(off[key])}{EASY_FIVE if key == 'easy' else ''} |\n" for key, name in
                       [("easy", "Easy"), ("standard", "Standard"), ("hard", "Hard"), ("expert", "Expert")]) + "\n"
             "**Playing with the companion app:** the app can run these exact rules, so you don't need to print anything. "
-            "On the setup screen choose **The Red Queen** and a level. The app draws each rival's card, names the Planning step "
+            "On the setup screen choose **The Red Queen · guided** and a level. The app draws each rival's card, names the Planning step "
             "that chose each space, and spells out every change to make on the board. To run the rivals yourself without printing, "
-            "choose **The Red Queen · cards only**: the app shuffles and draws each rival's cards, with this rulebook and the player "
+            "choose **The Red Queen · deck only**: the app shuffles and draws each rival's cards, with this rulebook and the player "
             "aids a tap away, and you resolve everything else. (The app's other option, Tooth & Claw, is a separate set of rivals "
             "with their own rules.)")
 
@@ -163,7 +163,7 @@ CARD_TARGET = {
     "competition": "shares a tile of these terrains or tundra with an opponent",
     "domination": "an unscored tile holds one of its species",
 }
-# The legend at the foot of every card front (also shown under the card in the app's cards-only mode).
+# The legend at the foot of every card front (also shown under the card in the app's deck-only mode).
 LEGEND = ("Under each action: when it has a target. Grey: a weak action, skipped. "
           "Planning steps 1–3 come first; if nothing fits, step 5.")
 CHAIN = ["first in the food chain", "second in the food chain", "third in the food chain", "fourth in the food chain",
@@ -373,7 +373,7 @@ p{margin:3px 0}
 """
 
 
-# Screen-only additions for the copies shown inside the app (cards-only mode): narrow screens, no fixed page heights.
+# Screen-only additions for the copies shown inside the app (deck-only mode): narrow screens, no fixed page heights.
 EMBED_RULES_CSS = ("@media screen{body{margin:12px auto;padding:0 12px}}@media (max-width:640px){body{font-size:14.5px}"
                    "h1{font-size:21pt}table{font-size:12.5px}}")
 EMBED_AIDS_CSS = ("@media screen{body{max-width:7.6in;margin:10px auto;padding:0 10px}.page{height:auto;overflow:visible;"
@@ -382,7 +382,7 @@ EMBED_AIDS_CSS = ("@media screen{body{max-width:7.6in;margin:10px auto;padding:0
 
 
 def embed_module(rules_body, aids_page):
-    """source/paper/rq_embed.js: what the app's cards-only mode shows (built into the app by build.py)."""
+    """source/paper/rq_embed.js: what the app's deck-only mode shows (built into the app by build.py)."""
     def js(value):
         return json.dumps(value, ensure_ascii=False).replace("</", "<\\/")
     rules = ("<!doctype html><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'>"

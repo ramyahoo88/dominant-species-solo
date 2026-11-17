@@ -1,4 +1,4 @@
-"""v0.5.6: The Red Queen, cards only. Start, draw until a deck reshuffles, undo, reload, export and import, open the
+"""The Red Queen, deck only (v0.5.6; named cards only before v1.0.0). Start, draw until a deck reshuffles, undo, reload, export and import, open the
 built-in rules and player aids, and come back to setup. Phone width, offline, no page or console errors.
 Usage: python3 source/browser_draw_test.py Dominant_Species_Solo.html"""
 import json, sys
@@ -25,23 +25,31 @@ with sync_playwright() as pw:
     page.on('request', lambda r: not r.url.startswith(('file:', 'data:', 'blob:', 'about:')) and requests.append(r.url))
     page.goto(HTML)
 
-    # Setup: three rivals, cards only, Hard. The level choice stays; the Dominance deck length is not asked.
+    # Setup: three rivals, deck only, Hard. The level choice stays; the Dominance deck length is not asked.
+    # v1.0.0: the two Red Queen choices are named guided and deck only, each with a one-line hint.
     page.locator('input[name=count][value="3"]').check()
+    expect(page.locator('form[data-form=start]')).to_contain_text('The Red Queen · guided')
+    expect(page.locator('form[data-form=start]')).to_contain_text('The Red Queen · deck only')
+    expect(page.locator('form[data-form=start]')).not_to_contain_text('printed rivals')
+    expect(page.locator('form[data-form=start]')).not_to_contain_text('cards only')
+    page.locator('input[name=rules][value=paper]').check()
+    expect(page.locator('.setup-bottom .seat-hint')).to_contain_text('Guided: the app runs the rivals')
     page.locator('input[name=rules][value=draw]').check()
+    expect(page.locator('.setup-bottom .seat-hint')).to_contain_text('Deck only: the app only shuffles and draws')
     expect(page.locator('input[name=length]')).to_have_count(0)
     page.locator('input[name=extra][value="0"]').check()
     page.locator('button[type=submit]').click()
     expect(page.locator('h1')).to_have_text('Rival decks')
-    expect(page.locator('.eyebrow').first).to_contain_text('The Red Queen · cards only · Hard')
+    expect(page.locator('.eyebrow').first).to_contain_text('The Red Queen · deck only · Hard')
     expect(page.locator('.rq-intro')).to_contain_text('Each rival has 5 action pawns, you have 5')
-    # The header's references follow the mode (GPT v0.5.6 re-audit): Red Queen card faces and cards-only help.
+    # The header's references follow the mode (GPT v0.5.6 re-audit): Red Queen card faces and deck-only help.
     page.locator('header [data-do=decks]').click()
     expect(page.locator('#modal-heading')).to_have_text('Rival decks')
     expect(page.locator('.modal-body .rq-card')).to_have_count(8)
     expect(page.locator('.modal-body details')).to_have_count(0)
     page.locator('[data-do=close]').click()
     page.locator('header [data-do=help]').click()
-    expect(page.locator('.modal-body p').first).to_contain_text('The Red Queen · cards only')
+    expect(page.locator('.modal-body p').first).to_contain_text('The Red Queen · deck only')
     expect(page.locator('.modal-body')).not_to_contain_text('Enter the actual elements')
     page.locator('[data-do=close]').click()
     rivals = stored(page)['draw']['rivals']
@@ -106,7 +114,7 @@ with sync_playwright() as pw:
         page.locator('.modal-body [data-do=export]').click()
     exported = json.loads(Path(downloaded.value.path()).read_text())
     assert exported['format'] == 'red-queen-cards-only-v1' and exported['draw']['decks'] == saved['draw']['decks']
-    assert downloaded.value.suggested_filename == 'The_Red_Queen_Cards_Only.json'
+    assert downloaded.value.suggested_filename == 'The_Red_Queen_Deck_Only.json'
     page.locator('.modal-body [data-do=new]').click()
     page.locator('[data-do=new-confirm]').click()
     expect(page.locator('input[name=rules][value=draw]')).to_be_checked()
@@ -130,4 +138,4 @@ with sync_playwright() as pw:
     assert not requests, requests
     context.close()
     browser.close()
-print('PASS cards-only mode: setup, 8 draws then reshuffle, undo, reload, rules and aids, export/import, back to a full game; offline, no errors')
+print('PASS deck-only mode: setup, 8 draws then reshuffle, undo, reload, rules and aids, export/import, back to a full game; offline, no errors')

@@ -183,23 +183,41 @@ function openModal(kind) {
   if (!modal.open) modal.showModal();
   else modal.querySelector('[data-do="close"]')?.focus();
 }
+// A Red Queen game keeps the rules it began with (recorded in the save). How to play states the current rules, so a
+// game saved by an older version lists every rule it keeps that differs (v1.0.0; before, the notice missed the
+// food-chain-only tie of v0.4.x games and the flat Easy of five-rival games from v0.5.0–v0.5.2).
+function legacyNotice() {
+  const p = game?.paper;
+  if (!p) return '';
+  const kept = [];
+  if (!p.planFirst) kept.push(esc(paperLevel(p.extra, p)) + ' (' + (p.extra < 0 ? '−' + -p.extra : '+' + p.extra) + ' pawn' + (Math.abs(p.extra) === 1 ? '' : 's') + ' per rival)',
+    'the rivals place in normal Initiative order');
+  const flatEasy = !!p.planFirst && p.extra === -2 && game.rivals.length === 5 && !p.scaledEasy;
+  if (flatEasy) kept.push('Easy is −2 pawns for each rival, with no extra pawn for you');
+  if (!p.rivalTie) kept.push('a tie between rivals leaves the tile with no dominant animal');
+  else if (!p.speciesTie) kept.push('when only rivals tie for the most matches on a tile, the one higher in the food chain is dominant');
+  if (!kept.length) return '';
+  const since = !p.rivalTie ? 'v0.4.0' : !p.planFirst ? 'v0.5.0' : flatEasy ? 'v0.5.3' : 'v0.5.4';
+  return '<p><b>This saved game</b> was started before ' + since + ' and keeps these rules from then, in place of the ones above: ' +
+    (kept.length > 1 ? kept.slice(0,-1).join(', ') + ', and ' + kept.at(-1) : kept[0]) + '.</p>';
+}
 function renderModal() {
   const titles={help:'How to play',decks:'Rival decks',menu:'Game menu',new:'Start a new game?',rules:'Rules',aids:'Player aids'};
   let content='';
   const doc=modalKind === 'rules' || modalKind === 'aids';
   modal.classList.toggle('doc-modal',doc);
   if (doc) content='<iframe class="doc-frame" sandbox title="' + titles[modalKind] + '"></iframe>';
-  // v0.5.7 (GPT's v0.5.6 re-audit): the header's references follow the mode. In cards-only play the app tracks no board, so
+  // v0.5.7 (GPT's v0.5.6 re-audit): the header's references follow the mode. In deck-only play the app tracks no board, so
   // How to play starts with that mode and Rival decks shows the printed card faces.
   const queen = !!(game ? game.paper : drawGame || setup.paper);
   const cardsOnly = !game && (drawGame ? true : !!setup.draw);
   if (modalKind === 'help' && cardsOnly) content =
-    '<p>You are playing <b>The Red Queen · cards only</b>: you run the rivals yourself, by the printed rules, on your physical copy of Chad Jensen’s original GMT game. The app keeps each rival’s deck; it does not track the board.</p>' +
+    '<p>You are playing <b>The Red Queen · deck only</b>: you run the rivals yourself, by the printed rules, on your physical copy of Chad Jensen’s original GMT game. The app keeps each rival’s deck; it does not track the board.</p>' +
     '<ol><li>Set up the base game for your player count, with the pawns the app shows for your level (the rulebook’s Setup and difficulty).</li>' +
     '<li>Each time a rival places a pawn in Planning, including the pawn it places before anyone else, tap <b>Draw</b> for that rival and follow Planning steps 1–6 with that card. Moving a pawn with Initiative or Instinct does not draw a card.</li>' +
     '<li>Resolve everything else yourself: <b>Rules</b> opens the full rulebook and <b>Player aids</b> the ten reference sheets, both inside the app.</li>' +
     '<li>When a rival’s deck runs out, the app reshuffles its discards and says so. <b>Undo</b> takes back the last draw. The decks are saved on this device; export a save before switching browsers or devices.</li></ol>' +
-    '<p>To let the app run the rivals and track the board instead, start a new game and choose <b>The Red Queen · printed rivals</b> or <b>Tooth &amp; Claw</b>.</p>' +
+    '<p>To let the app run the rivals and track the board instead, start a new game and choose <b>The Red Queen · guided</b> or <b>Tooth &amp; Claw</b>.</p>' +
     '<p><a href="'+RULEBOOK+'" target="_blank" rel="noopener noreferrer">GMT rulebook</a> · <a href="'+PHOTO+'" target="_blank" rel="noopener noreferrer">Portage Glacier photo, USGS</a></p>';
   else if (modalKind === 'help') content =
     '<p>Use your physical copy of Chad Jensen’s original GMT game. Set up one animal for yourself and two to five rivals with the base game’s allotment for that player count (6 pawns and 50 cubes per animal with two rivals; 5 and 45 with three; 4 and 40 with four; 3 and 35 with five), including each VP marker. Use the standard starting map shown in the app.</p>' +
@@ -207,15 +225,14 @@ function renderModal() {
     '<li>Place your own pawns. Reveal a card for each rival placement and mirror the indicated slot on your action display.</li>' +
     '<li>Apply each action to the physical board and confirm it here. The Earth map uses the starting wetland as north. Corner 1 points right, and corners 2–6 follow clockwise. The map shows a shared corner once.</li>' +
     '<li>Follow the app’s Extinction and Survival prompts. After Ice Age, complete the turn and compare the final scores.</li></ol>' +
-    '<h3>Rival cards</h3><p>With <b>Tooth &amp; Claw</b>, the app\'s own rivals, each rival shuffles its own eight-card deck, checks one condition per placement and starts on the corresponding face. The action list guides the pawn placement. The bot can take another open space when it sees a stronger opportunity. Targets are chosen when the pawn resolves.</p><p>With <b>The Red Queen</b>, the rivals follow the printed rulebook (The Red Queen: solo rivals for Dominant Species) exactly: always the reverse face of the card, simple counting rules, and a pawn adjustment for difficulty (' + PAPER_LEVELS.map(([n,name]) => name + ' ' + (n < 0 ? '−' + -n : n ? '+' + n : '0')).join(', ') + '; from v0.5.3, Easy with five rivals is −1 for each rival and +1 for you). In Red Queen games started in v0.5.0 or later, the rivals plan first: at the start of each Planning, they place one pawn each before anyone else, in Initiative order. In Red Queen games started in v0.4.0 or later, when only rivals tie for the most matches on a tile, one of them is dominant: from v0.5.4 the rival with the most species there, then the one higher in the food chain (earlier games: the food chain alone); a tie that includes you leaves the tile with no dominant animal. In every Red Queen game (from v0.5.1, saved games included), if no rival has any species left on Earth (from v0.5.4 even if yours remain), a rival\'s Abundance may use any empty corner, so species can return. Use it to learn the printed rules, or to play them without printing anything.</p>' +
-    '<p>With <b>The Red Queen · cards only</b>, you run the rivals yourself from the rulebook, without printing it or the cards. The app shuffles each rival’s eight-card deck, shows the card you draw (reshuffling a rival’s discards when its deck runs out), and keeps the rulebook and player aids a tap away. It does not track the board.</p>' +
-    (game?.paper && !game.paper.planFirst ? '<p><b>This saved game</b> was started before ' + (game.paper.rivalTie ? 'v0.5.0' : 'v0.4.0') + ' and keeps these rules from then: ' + esc(paperLevel(game.paper.extra, game.paper)) + ' (' + (game.paper.extra < 0 ? '−' + -game.paper.extra : '+' + game.paper.extra) + ' pawn' + (Math.abs(game.paper.extra) === 1 ? '' : 's') + ' per rival), the rivals place in normal Initiative order' + (game.paper.rivalTie ? '' : ', and a tie between rivals leaves the tile with no dominant animal') + '.</p>' : '') +
-    (game?.paper?.planFirst && !game.paper.speciesTie ? '<p><b>This saved game</b> was started before v0.5.4 and keeps its rival tie rule from then: when only rivals tie for the most matches on a tile, the one higher in the food chain is dominant.</p>' : '') +
+    '<h3>Rival cards</h3><p>With <b>Tooth &amp; Claw</b>, the app\'s own rivals, each rival shuffles its own eight-card deck, checks one condition per placement and starts on the corresponding face. The action list guides the pawn placement. The rival can take another open space when it sees a stronger opportunity. Targets are chosen when the pawn resolves.</p><p>With <b>The Red Queen · guided</b>, the rivals follow the printed rulebook (The Red Queen: solo rivals for Dominant Species) exactly, and the app works out every decision and tracks the board: one fixed set of three actions on each card, simple counting rules, and a pawn adjustment for difficulty (' + PAPER_LEVELS.map(([n,name]) => name + ' ' + (n < 0 ? '−' + -n : n ? '+' + n : '0')).join(', ') + '; Easy with five rivals is −1 for each rival and +1 for you). The rivals plan first: at the start of each Planning, they place one pawn each before anyone else, in Initiative order. When only rivals tie for the most matches on a tile, the rival with the most species there is dominant, then the one higher in the food chain; a tie that includes you leaves the tile with no dominant animal. If no rival has any species left on Earth, a rival\'s Abundance may use any empty corner, so species can return. Use it to learn the printed rules, or to play them without printing anything.</p>' +
+    '<p>With <b>The Red Queen · deck only</b>, you run the rivals yourself from the rulebook, without printing it or the cards. The app shuffles each rival’s eight-card deck, shows the card you draw (reshuffling a rival’s discards when its deck runs out), and keeps the rulebook and player aids a tap away. It does not track the board.</p>' +
+    legacyNotice() +
     '<h3>Board tracking</h3><p>The companion checks cones automatically. When a protected Hibernation cube shares a tile with other cubes of the same animal, the app moves or removes the ordinary cubes first. Confirm each physical move to save it. Undo is available until you close or reload the page. Export a save before switching browsers or devices.</p>' +
     '<p><a href="'+RULEBOOK+'" target="_blank" rel="noopener noreferrer">GMT rulebook</a> · <a href="'+PHOTO+'" target="_blank" rel="noopener noreferrer">Portage Glacier photo, USGS</a></p>';
   if (modalKind === 'decks' && queen) content='<div class="deck-tabs" role="group" aria-label="Animal deck">' + FOOD.map(id=>button(nameOf(id),'deck-tab','sm',
     'data-animal="'+id+'" aria-pressed="'+(id===deckTab)+'"')).join('') + '</div><p class="actorline">' + badge(deckTab) + ANIMALS[deckTab].power + '</p>' +
-    '<p class="muted">The Red Queen always uses these faces (the reverse, No, face of each card).</p><div class="rq-grid rq-deck-grid">' +
+    '<p class="muted">The Red Queen’s cards, as printed: each lists three actions, tried in order (Planning step 4).</p><div class="rq-grid rq-deck-grid">' +
     DECKS[deckTab].map((card,i)=>rqCard(deckTab,i)).join('') + '</div>';
   else if (modalKind === 'decks') content='<div class="deck-tabs" role="group" aria-label="Animal deck">' + FOOD.map(id=>button(nameOf(id),'deck-tab','sm',
     'data-animal="'+id+'" aria-pressed="'+(id===deckTab)+'"')).join('') + '</div><p class="actorline">' + badge(deckTab) + ANIMALS[deckTab].power + '</p>' +
@@ -234,7 +251,7 @@ function exportSave() {
   const body=saveContents();
   const url=URL.createObjectURL(new Blob([body],{type:'application/json'}));
   const a=document.createElement('a');
-  a.href=url; a.download=game ? 'Dominant_Species_Turn_'+game.turn+'.json' : 'The_Red_Queen_Cards_Only.json';
+  a.href=url; a.download=game ? 'Dominant_Species_Turn_'+game.turn+'.json' : 'The_Red_Queen_Deck_Only.json';
   document.body.append(a); a.click(); a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),1000);
 }

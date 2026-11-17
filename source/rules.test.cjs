@@ -17,8 +17,9 @@ verify('GMT p. 4: six APs and 50 cubes include one VP marker and four starting s
   }
 `);
 
-verify('v0.1 through v0.5.5 save migration preserves inventory, pending choices, and random state', `
-  for (const version of ['0.1.0','0.2.0','0.3.0','0.3.1','0.3.2','0.3.3','0.3.4','0.3.5','0.3.6','0.3.7','0.3.8','0.3.9','0.4.0','0.4.1','0.5.0','0.5.1','0.5.2','0.5.3','0.5.4','0.5.5']) {
+verify('v0.1 through v0.5.7 save migration preserves inventory, pending choices, and random state', `
+  assert.equal(VERSION, '1.0.0');
+  for (const version of ['0.1.0','0.2.0','0.3.0','0.3.1','0.3.2','0.3.3','0.3.4','0.3.5','0.3.6','0.3.7','0.3.8','0.3.9','0.4.0','0.4.1','0.5.0','0.5.1','0.5.2','0.5.3','0.5.4','0.5.5','0.5.6','0.5.7']) {
     const s = newGame('insects',['mammals','birds'],true,51);
     s.version = version;
     s.phase = 'execution';
@@ -1127,8 +1128,8 @@ test('v0.5.6 on GPT\'s v0.5.5 saves: a human Mammals save that wins, a losing ti
   assert.ok(aid1.includes('Barren Earth') && aid1.includes('Empty Earth'), 'aid 1 holds the Abundance exceptions the card points to');
 });
 
-// v0.5.6: The Red Queen, cards only. The app keeps each rival's deck; the player runs the printed rules.
-verify('cards only: eight draws deal each card once, the ninth reshuffles the discards, and a save replays exactly', `
+// v0.5.6: The Red Queen, deck only (named cards only before v1.0.0). The app keeps each rival's deck; the player runs the printed rules.
+verify('deck only: eight draws deal each card once, the ninth reshuffles the discards, and a save replays exactly', `
   const s = newDrawGame('amphibians', ['birds','arachnids','mammals'], 0, 777);
   validateDraw(s);
   const seen = [];
@@ -1151,19 +1152,19 @@ verify('cards only: eight draws deal each card once, the ninth reshuffles the di
   assert.deepEqual(twin.decks.birds.queue, seen);
 `);
 
-verify('cards only: a cards-only save and a full-game save are never read as each other', `
+verify('deck only: a deck-only save and a full-game save are never read as each other', `
   const cards = newDrawGame('insects', ['reptiles','birds'], -1, 5);
   const full = newGame('insects', ['reptiles','birds'], true, 5);
   assert.throws(() => validateState(JSON.parse(JSON.stringify(cards))), /valid Dominant Species/);
-  assert.throws(() => validateDraw(JSON.parse(JSON.stringify(full))), /cards-only save/);
+  assert.throws(() => validateDraw(JSON.parse(JSON.stringify(full))), /deck-only save/);
   const bad = JSON.parse(JSON.stringify(cards));
   bad.decks.reptiles.discards.push(bad.decks.reptiles.queue[0]);
-  assert.throws(() => validateDraw(bad), /cards-only save/);
+  assert.throws(() => validateDraw(bad), /deck-only save/);
   const level = JSON.parse(JSON.stringify(cards)); level.extra = 3;
-  assert.throws(() => validateDraw(level), /cards-only save/);
+  assert.throws(() => validateDraw(level), /deck-only save/);
 `);
 
-test('cards only: the rules and aids built into the app match the printables (run printables.py after any rules change)', () => {
+test('deck only: the rules and aids built into the app match the printables (run printables.py after any rules change)', () => {
   const fs = require('node:fs'), path = require('node:path');
   const root = path.resolve(__dirname, '..');
   runtime.run(fs.readFileSync(path.join(root, 'source/paper/rq_embed.js'), 'utf8'));

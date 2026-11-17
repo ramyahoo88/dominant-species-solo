@@ -1,6 +1,6 @@
 # The Red Queen
 
-**Solo rivals for *Dominant Species*** · Version 0.5.7 · 15 November 2026 · An unofficial solo variant for *Dominant Species* (designed by Chad Jensen, published by GMT Games), for one player against two to five rival animals.
+**Solo rivals for *Dominant Species*** · Version 1.0.0 · 16 November 2026 · An unofficial solo variant for *Dominant Species* (designed by Chad Jensen, published by GMT Games), for one player against two to five rival animals.
 
 *In biology, the Red Queen hypothesis says a species must keep evolving just to hold its place against its rivals. These rivals make you do exactly that.*
 
@@ -39,7 +39,7 @@ Set up a normal game for your player count: you plus two to five rival animals, 
 | Hard | Base count |
 | Expert | Base count +1 |
 
-**Playing with the companion app:** the app can run these exact rules, so you don't need to print anything. On the setup screen choose **The Red Queen** and a level. The app draws each rival's card, names the Planning step that chose each space, and spells out every change to make on the board. To run the rivals yourself without printing, choose **The Red Queen · cards only**: the app shuffles and draws each rival's cards, with this rulebook and the player aids a tap away, and you resolve everything else. (The app's other option, Tooth & Claw, is a separate set of rivals with their own rules.)
+**Playing with the companion app:** the app can run these exact rules, so you don't need to print anything. On the setup screen choose **The Red Queen · guided** and a level. The app draws each rival's card, names the Planning step that chose each space, and spells out every change to make on the board. To run the rivals yourself without printing, choose **The Red Queen · deck only**: the app shuffles and draws each rival's cards, with this rulebook and the player aids a tap away, and you resolve everything else. (The app's other option, Tooth & Claw, is a separate set of rivals with their own rules.)
 
 Everything else follows the normal rules. Rivals never break a rule to make a choice: if a rule points at something illegal, skip to the next option.
 
@@ -124,7 +124,7 @@ Keep half-points exactly; do not round.
 
 | Card | The rival chooses |
 | --- | --- |
-| Aquatic | If the bag has an element and any sea or wetland tile has a free corner, only those tiles are candidates (the element is part of the card). It adds 4 species, or all its gene pool holds if that is fewer; count them with its element on the tile's free corner first in board order. Choose the tile where they make it first; else where they gain a rank; else one it matches; a tile it does not match only if it matches none (ties: higher first-place value, then board order). It takes its printed element if in the bag; otherwise it chooses the element using Habitat's element priority |
+| Aquatic | If the bag has an element and any sea or wetland tile has a free corner, only those tiles are candidates (the element is part of the card). It adds 4 species, or all its gene pool holds if that is fewer; count them with its element on the tile's free corner first in board order. Choose the tile where they move it into first place (a tile where it is already first does not count); else where they gain a rank; else one it matches; a tile it does not match only if it matches none (ties: higher first-place value, then board order). It takes its printed element if in the bag; otherwise it chooses the element using Habitat's element priority |
 | Biomass | On each crowded tile, a species of the first opponent in VP order present there, else its own |
 | Blight | The tile and kept disk that leave the most opposing species on surrounding tiles without a match, counting its own as −2 each (tie: higher first-place value, then the tile's board order, then the kept disk's) |
 | Catastrophe | Only a tile with species on it can be chosen. Keeps its own species on the tile, else the lowest-VP opponent's (at equal lowest VP, the animal lower in the food chain). On each adjacent tile, removes the first opponent in VP order present, its own only if alone. Picks the tile removing the most opposing species, its own counting −2 (tie: higher first-place value, then board order) |
@@ -134,7 +134,7 @@ Keep half-points exactly; do not round.
 | Habitat | Its printed element; if the bag has none, an element it added (earliest first); if none of those either, the first element in the bag in this order: Meat, Sun, Seed, Water, Grub, Grass. On the empty corner touching the most tiles it occupies, then the corner touching the highest first-place value (any touching tile counts, even one it is not on), then board order; if it occupies no tile with an empty corner, the first empty corner in board order |
 | Hibernation | Returns 5 of its eliminated species, or all of them if it has fewer, to one tile it matches: tundra first, then a tile it is not on, then where the returned species gain a rank (tie: higher first-place value, then board order) |
 | Ice Sheet | As the Glaciation action |
-| Instinct | An open space not yet resolved this turn, by Planning steps 1–3, 5 and 6. If none is open, an open space that already resolved: the pawn waits there for next turn (not on the final turn) |
+| Instinct | An open space not yet resolved this turn, by Planning steps 1–3, 5 and 6. If none is open, any other open space, by the same steps: the pawn waits there for next turn (not on the final turn) |
 | Mass Exodus | Among occupied tiles with an adjacent tile on Earth, prefer one without its own species; then choose the one holding the most opposing species. Break ties by higher first-place value, then board order. Its own species go to the adjacent tile it matches best (tie: higher first-place value, then board order); each opponent's to the one that opponent matches least (tie: the lower first-place value, then board order) |
 | Metamorphosis | Swaps the added element on the fewest corners of its tiles (tie: the one it added earliest) for the bag element on the most. Among equally useful bag elements, prefer its printed type; if still tied, use Meat, Sun, Seed, Water, Grub, Grass order |
 | Predator | On each of its tiles, a species of the first opponent in VP order present there |

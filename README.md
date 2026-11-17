@@ -1,6 +1,6 @@
 # Dominant Species — Solo Companion
 
-An unofficial, offline solo companion for Chad Jensen's *Dominant Species* (GMT Games). One human plays an animal against two to five card-driven bot rivals; the physical box supplies the board, tiles, elements and Dominance Cards, and the app tells you exactly what the rivals do.
+An unofficial, offline solo companion for Chad Jensen's *Dominant Species* (GMT Games). One human plays an animal against two to five card-driven rivals; the physical box supplies the board, tiles, elements and Dominance Cards, and the app tells you exactly what the rivals do.
 
 This is an independent fan project, not affiliated with or endorsed by GMT Games.
 
@@ -31,6 +31,7 @@ For targeted rules checks and a fixed-player comparison, run the following comma
 
 ```sh
 node --test source/rules.test.cjs
+node source/redqueen_fuzz.cjs                  # 48 complete Red Queen games against an erratic player (about 10 seconds)
 node source/benchmark.cjs --base 3a7e6d0 --candidate worktree
 ```
 
@@ -47,7 +48,8 @@ See [benchmark instructions](source/benchmark/README.md) and [results](BENCHMARK
 | `source/rules.test.cjs` | Small-board rules checks, planning regressions and save migration |
 | `source/benchmark.cjs` | Paired bot comparison with fixed scripted player policies |
 | `source/browser_test.py` | Offline Chromium verification of supply entry and save flows |
-| `source/browser_draw_test.py` | Offline Chromium check of The Red Queen's cards-only mode |
+| `source/browser_draw_test.py` | Offline Chromium check of The Red Queen's deck-only mode |
+| `source/redqueen_fuzz.cjs` | Stress test: complete Red Queen games against an erratic player, with state checks every step |
 | `source/paper/check_print_fit.py` | Fails if any printed card or player-aid sheet would cut off text |
 | `BASELINE_RESULTS.json` | Smoke-test baseline for the current build |
 | `HANDOFF.md` | Design requirements and handoff notes |
@@ -64,6 +66,7 @@ See [benchmark instructions](source/benchmark/README.md) and [results](BENCHMARK
 - **Paper rivals** — rules for running the rivals at the table without the app. See [PAPER_RIVALS.md](PAPER_RIVALS.md).
 - **v0.3.5** — two to five rivals, with the base game's pawns and cubes for each player count; seven-change quick mode for paper rivals.
 - **v0.3.6** — the app can run the printed Paper Rivals rules (four levels); one paper version with Block the leader.
+- **v1.0.0** — first full release. The two Red Queen choices are renamed **guided** (the app runs the rivals and tracks the board) and **deck only** (the app draws the cards; you run the rivals); playtest wording removed; two rulebook rows clarified. No change to play. See [the pre-release audit](AUDIT_v1.0.0.md).
 - **v0.5.7** — fresh PDFs and a check that catches stale ones; in cards-only play, How to play and Rival decks follow the mode (GPT's v0.5.6 re-audit).
 - **v0.5.6** — The Red Queen · cards only: the app draws each rival's cards and shows the rulebook and player aids, and you run the rivals yourself; Ice Age decision fixes and fuller card reminders for GPT's v0.5.5 re-audit; rulebook clarifications.
 - **v0.5.5** — the app names its two rival systems: Tooth & Claw (the app's own) and The Red Queen (the printed rules); a correct Ice Age forecast; printed Catastrophe and Hibernation details; a professional rulebook with card fronts and species backs; fixes for GPT's v0.5.4 comprehensive audit.
